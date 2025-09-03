@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,4 +8,218 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+// NextAuth.js required models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  role          UserRole  @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  accounts          Account[]
+  sessions          Session[]
+  createdBearbricks Bearbrick[] @relation("CreatedBy")
+  uploadedImages    BearbrickImage[] @relation("UploadedBy")
+  editRequests      EditRequest[]
+  imageRequests     ImageRequest[]
+
+  @@map("users")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Bearbrick specific models
+model Series {
+  id           String      @id @default(cuid())
+  number       Int         @unique
+  name         String
+  season       String      // "Summer" or "Winter"
+  releaseYear  Int
+  theme        String?
+  description  String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  bearbricks   Bearbrick[]
+
+  @@map("series")
+}
+
+model Category {
+  id           String      @id @default(cuid())
+  name         String      @unique
+  description  String?
+  rarityWeight Float       @default(1.0)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  bearbricks   Bearbrick[]
+
+  @@map("categories")
+}
+
+model Collaboration {
+  id          String      @id @default(cuid())
+  brandName   String
+  artistName  String?
+  type        String      // "Brand", "Artist", "Mixed"
+  description String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  bearbricks  Bearbrick[]
+
+  @@map("collaborations")
+}
+
+model Bearbrick {
+  id                    String        @id @default(cuid())
+  name                  String
+  sizePercentage        Int           // 50, 70, 100, 200, 400, 1000
+  releaseDate           DateTime?
+  rarityPercentage      Float?
+  estimatedQuantity     Int?
+  materialType          String?       @default("ABS Plastic")
+  description           String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  // Foreign keys
+  seriesId              String
+  categoryId            String
+  collaborationId       String?
+  createdById           String
+
+  // Relations
+  series                Series        @relation(fields: [seriesId], references: [id])
+  category              Category      @relation(fields: [categoryId], references: [id])
+  collaboration         Collaboration? @relation(fields: [collaborationId], references: [id])
+  createdBy             User          @relation("CreatedBy", fields: [createdById], references: [id])
+  
+  images                BearbrickImage[]
+  editRequests          EditRequest[]
+  imageRequests         ImageRequest[]
+
+  @@map("bearbricks")
+}
+
+model BearbrickImage {
+  id          String    @id @default(cuid())
+  url         String
+  altText     String?
+  isPrimary   Boolean   @default(false)
+  uploadedAt  DateTime  @default(now())
+
+  // Foreign keys
+  bearbrickId String
+  uploadedById String
+
+  // Relations
+  bearbrick   Bearbrick @relation(fields: [bearbrickId], references: [id], onDelete: Cascade)
+  uploadedBy  User      @relation("UploadedBy", fields: [uploadedById], references: [id])
+
+  @@map("bearbrick_images")
+}
+
+model EditRequest {
+  id          String             @id @default(cuid())
+  type        EditRequestType
+  status      RequestStatus      @default(PENDING)
+  description String?
+  oldData     Json?
+  newData     Json
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  reviewedAt  DateTime?
+
+  // Foreign keys
+  bearbrickId String
+  requestedById String
+  reviewedById  String?
+
+  // Relations
+  bearbrick   Bearbrick @relation(fields: [bearbrickId], references: [id])
+  requestedBy User      @relation(fields: [requestedById], references: [id])
+
+  @@map("edit_requests")
+}
+
+model ImageRequest {
+  id          String        @id @default(cuid())
+  newImageUrl String
+  reason      String?
+  status      RequestStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  reviewedAt  DateTime?
+
+  // Foreign keys
+  bearbrickId   String
+  requestedById String
+  reviewedById  String?
+
+  // Relations
+  bearbrick     Bearbrick @relation(fields: [bearbrickId], references: [id])
+  requestedBy   User      @relation(fields: [requestedById], references: [id])
+
+  @@map("image_requests")
+}
+
+// Enums
+enum UserRole {
+  USER
+  CONTRIBUTOR
+  ADMIN
+}
+
+enum EditRequestType {
+  INFO_UPDATE
+  CATEGORY_CHANGE
+  SERIES_CORRECTION
+  OTHER
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
