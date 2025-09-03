@@ -2,9 +2,16 @@
 
 import { useState } from 'react';
 
+interface ApiResult {
+  success: boolean;
+  message?: string;
+  error?: string;
+  output?: string;
+}
+
 export default function SetupPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<ApiResult | null>(null);
 
   const setupDatabase = async () => {
     setIsLoading(true);
@@ -17,7 +24,7 @@ export default function SetupPage() {
       
       const data = await response.json();
       setResult(data);
-    } catch (error) {
+    } catch {
       setResult({ success: false, error: 'Failed to setup database' });
     } finally {
       setIsLoading(false);
