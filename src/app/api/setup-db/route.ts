@@ -5,7 +5,9 @@ import { PrismaClient } from '@prisma/client';
 const databaseUrl = 
   process.env.DATABASE_URL || 
   process.env.POSTGRES_URL || 
-  process.env.POSTGRES_PRISMA_URL;
+  process.env.POSTGRES_PRISMA_URL ||
+  // Fallback to direct connection string for testing
+  "postgres://postgres.vbjbuprrgsvuecsqiorg:gombrick00%40@aws-1-ap-northeast-2.pooler.supabase.com:6543/postgres?sslmode=require&pgbouncer=true";
 
 const prisma = new PrismaClient({
   datasources: {
