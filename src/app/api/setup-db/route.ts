@@ -1,11 +1,29 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+// Use the correct environment variable from Vercel/Supabase
+const databaseUrl = 
+  process.env.DATABASE_URL || 
+  process.env.POSTGRES_URL || 
+  process.env.POSTGRES_PRISMA_URL;
+
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: databaseUrl
+    }
+  }
+});
 
 export async function POST() {
   try {
     console.log('Starting database setup...');
+    console.log('Database URL exists:', !!databaseUrl);
+    console.log('Database URL starts with:', databaseUrl?.substring(0, 20));
+    
+    if (!databaseUrl) {
+      throw new Error('No database URL found in environment variables');
+    }
     
     // Test database connection first
     await prisma.$connect();
