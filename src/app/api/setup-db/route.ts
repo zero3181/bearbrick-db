@@ -59,7 +59,21 @@ export async function POST() {
       END $$;
     `;
     
-    // Create tables if they don't exist
+    // Create NextAuth tables first
+    await prisma.$executeRaw`
+      CREATE TABLE IF NOT EXISTS "users" (
+        "id" TEXT NOT NULL,
+        "name" TEXT,
+        "email" TEXT NOT NULL,
+        "emailVerified" TIMESTAMP(3),
+        "image" TEXT,
+        "role" "UserRole" NOT NULL DEFAULT 'USER',
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "users_pkey" PRIMARY KEY ("id")
+      );
+    `;
+    
     await prisma.$executeRaw`
       CREATE TABLE IF NOT EXISTS "Account" (
         "id" TEXT NOT NULL,
@@ -89,25 +103,69 @@ export async function POST() {
     `;
     
     await prisma.$executeRaw`
-      CREATE TABLE IF NOT EXISTS "users" (
-        "id" TEXT NOT NULL,
-        "name" TEXT,
-        "email" TEXT NOT NULL,
-        "emailVerified" TIMESTAMP(3),
-        "image" TEXT,
-        "role" "UserRole" NOT NULL DEFAULT 'USER',
-        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        CONSTRAINT "users_pkey" PRIMARY KEY ("id")
-      );
-    `;
-    
-    await prisma.$executeRaw`
       CREATE TABLE IF NOT EXISTS "VerificationToken" (
         "identifier" TEXT NOT NULL,
         "token" TEXT NOT NULL,
         "expires" TIMESTAMP(3) NOT NULL
       );
+    `;
+    
+    // Create unique constraints and indexes for NextAuth
+    await prisma.$executeRaw`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'Account_provider_providerAccountId_key') THEN
+          ALTER TABLE "Account" ADD CONSTRAINT "Account_provider_providerAccountId_key" UNIQUE ("provider", "providerAccountId");
+        END IF;
+      END $$;
+    `;
+    
+    await prisma.$executeRaw`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'Session_sessionToken_key') THEN
+          ALTER TABLE "Session" ADD CONSTRAINT "Session_sessionToken_key" UNIQUE ("sessionToken");
+        END IF;
+      END $$;
+    `;
+    
+    await prisma.$executeRaw`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'users_email_key') THEN
+          ALTER TABLE "users" ADD CONSTRAINT "users_email_key" UNIQUE ("email");
+        END IF;
+      END $$;
+    `;
+    
+    await prisma.$executeRaw`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'VerificationToken_token_key') THEN
+          ALTER TABLE "VerificationToken" ADD CONSTRAINT "VerificationToken_token_key" UNIQUE ("token");
+        END IF;
+      END $$;
+    `;
+    
+    await prisma.$executeRaw`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'VerificationToken_identifier_token_key') THEN
+          ALTER TABLE "VerificationToken" ADD CONSTRAINT "VerificationToken_identifier_token_key" UNIQUE ("identifier", "token");
+        END IF;
+      END $$;
+    `;
+    
+    // Add foreign key constraints
+    await prisma.$executeRaw`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'Account_userId_fkey') THEN
+          ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+        END IF;
+      END $$;
+    `;
+    
+    await prisma.$executeRaw`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'Session_userId_fkey') THEN
+          ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+        END IF;
+      END $$;
     `;
     
     await prisma.$executeRaw`
@@ -168,6 +226,134 @@ export async function POST() {
         "createdById" TEXT NOT NULL,
         CONSTRAINT "bearbricks_pkey" PRIMARY KEY ("id")
       );
+    `;
+    
+    await prisma.$executeRaw`
+      CREATE TABLE IF NOT EXISTS "bearbrick_images" (
+        "id" TEXT NOT NULL,
+        "url" TEXT NOT NULL,
+        "altText" TEXT,
+        "isPrimary" BOOLEAN NOT NULL DEFAULT false,
+        "uploadedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "bearbrickId" TEXT NOT NULL,
+        "uploadedById" TEXT NOT NULL,
+        CONSTRAINT "bearbrick_images_pkey" PRIMARY KEY ("id")
+      );
+    `;
+    
+    await prisma.$executeRaw`
+      CREATE TABLE IF NOT EXISTS "edit_requests" (
+        "id" TEXT NOT NULL,
+        "type" TEXT NOT NULL,
+        "status" TEXT NOT NULL DEFAULT 'PENDING',
+        "description" TEXT,
+        "oldData" JSONB,
+        "newData" JSONB NOT NULL,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "reviewedAt" TIMESTAMP(3),
+        "bearbrickId" TEXT NOT NULL,
+        "requestedById" TEXT NOT NULL,
+        "reviewedById" TEXT,
+        CONSTRAINT "edit_requests_pkey" PRIMARY KEY ("id")
+      );
+    `;
+    
+    await prisma.$executeRaw`
+      CREATE TABLE IF NOT EXISTS "image_requests" (
+        "id" TEXT NOT NULL,
+        "newImageUrl" TEXT NOT NULL,
+        "reason" TEXT,
+        "status" TEXT NOT NULL DEFAULT 'PENDING',
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "reviewedAt" TIMESTAMP(3),
+        "bearbrickId" TEXT NOT NULL,
+        "requestedById" TEXT NOT NULL,
+        "reviewedById" TEXT,
+        CONSTRAINT "image_requests_pkey" PRIMARY KEY ("id")
+      );
+    `;
+    
+    // Add foreign key constraints for bearbrick related tables
+    await prisma.$executeRaw`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'bearbricks_seriesId_fkey') THEN
+          ALTER TABLE "bearbricks" ADD CONSTRAINT "bearbricks_seriesId_fkey" FOREIGN KEY ("seriesId") REFERENCES "series"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+        END IF;
+      END $$;
+    `;
+    
+    await prisma.$executeRaw`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'bearbricks_categoryId_fkey') THEN
+          ALTER TABLE "bearbricks" ADD CONSTRAINT "bearbricks_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "categories"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+        END IF;
+      END $$;
+    `;
+    
+    await prisma.$executeRaw`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'bearbricks_collaborationId_fkey') THEN
+          ALTER TABLE "bearbricks" ADD CONSTRAINT "bearbricks_collaborationId_fkey" FOREIGN KEY ("collaborationId") REFERENCES "collaborations"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+        END IF;
+      END $$;
+    `;
+    
+    await prisma.$executeRaw`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'bearbricks_createdById_fkey') THEN
+          ALTER TABLE "bearbricks" ADD CONSTRAINT "bearbricks_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+        END IF;
+      END $$;
+    `;
+    
+    await prisma.$executeRaw`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'bearbrick_images_bearbrickId_fkey') THEN
+          ALTER TABLE "bearbrick_images" ADD CONSTRAINT "bearbrick_images_bearbrickId_fkey" FOREIGN KEY ("bearbrickId") REFERENCES "bearbricks"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+        END IF;
+      END $$;
+    `;
+    
+    await prisma.$executeRaw`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'bearbrick_images_uploadedById_fkey') THEN
+          ALTER TABLE "bearbrick_images" ADD CONSTRAINT "bearbrick_images_uploadedById_fkey" FOREIGN KEY ("uploadedById") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+        END IF;
+      END $$;
+    `;
+    
+    await prisma.$executeRaw`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'edit_requests_bearbrickId_fkey') THEN
+          ALTER TABLE "edit_requests" ADD CONSTRAINT "edit_requests_bearbrickId_fkey" FOREIGN KEY ("bearbrickId") REFERENCES "bearbricks"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+        END IF;
+      END $$;
+    `;
+    
+    await prisma.$executeRaw`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'edit_requests_requestedById_fkey') THEN
+          ALTER TABLE "edit_requests" ADD CONSTRAINT "edit_requests_requestedById_fkey" FOREIGN KEY ("requestedById") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+        END IF;
+      END $$;
+    `;
+    
+    await prisma.$executeRaw`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'image_requests_bearbrickId_fkey') THEN
+          ALTER TABLE "image_requests" ADD CONSTRAINT "image_requests_bearbrickId_fkey" FOREIGN KEY ("bearbrickId") REFERENCES "bearbricks"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+        END IF;
+      END $$;
+    `;
+    
+    await prisma.$executeRaw`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'image_requests_requestedById_fkey') THEN
+          ALTER TABLE "image_requests" ADD CONSTRAINT "image_requests_requestedById_fkey" FOREIGN KEY ("requestedById") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+        END IF;
+      END $$;
     `;
     
     console.log('All tables created successfully');
