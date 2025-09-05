@@ -7,9 +7,7 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  experimental: {
-    appDir: true,
-  },
+  // Remove experimental settings for better Vercel compatibility
 };
 
 export default nextConfig;
