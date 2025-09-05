@@ -11,6 +11,7 @@ interface Bearbrick {
   rarityPercentage: number
   estimatedQuantity: number
   description: string
+  materialType: string
   series: {
     id: string
     number: number
@@ -42,10 +43,18 @@ interface Bearbrick {
   }>
 }
 
+interface User {
+  id: string
+  name: string
+  email: string
+  role: string
+}
+
 export default function BearbrickDetailPage() {
   const { data: session } = useSession()
   const params = useParams()
   const [bearbrick, setBearbrick] = useState<Bearbrick | null>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
@@ -53,29 +62,65 @@ export default function BearbrickDetailPage() {
   const [showImageUpload, setShowImageUpload] = useState(false)
   const [showEditRequest, setShowEditRequest] = useState(false)
   const [showImageRequest, setShowImageRequest] = useState(false)
+  const [showAdminEdit, setShowAdminEdit] = useState(false)
+  const [showAdminImageUpload, setShowAdminImageUpload] = useState(false)
+
+  // Admin form states
+  const [adminEditForm, setAdminEditForm] = useState({
+    name: '',
+    description: '',
+    rarityPercentage: '',
+    estimatedQuantity: '',
+    materialType: ''
+  })
+
+  const [adminImageForm, setAdminImageForm] = useState({
+    imageUrl: '',
+    altText: '',
+    isPrimary: false,
+    replacePrimary: false
+  })
+
+  const isAdmin = user?.role === 'ADMIN'
   
   useEffect(() => {
-    const fetchBearbrick = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch(`/api/bearbricks/${params.id}`)
-        if (response.ok) {
-          const data = await response.json()
+        const bearbrickResponse = await fetch(`/api/bearbricks/${params.id}`)
+        if (bearbrickResponse.ok) {
+          const data = await bearbrickResponse.json()
           setBearbrick(data)
+          setAdminEditForm({
+            name: data.name,
+            description: data.description,
+            rarityPercentage: data.rarityPercentage.toString(),
+            estimatedQuantity: data.estimatedQuantity.toString(),
+            materialType: data.materialType || ''
+          })
         } else {
           setError('베어브릭을 찾을 수 없습니다.')
         }
+
+        // Fetch user info if logged in
+        if (session?.user?.email) {
+          const userResponse = await fetch('/api/user/me')
+          if (userResponse.ok) {
+            const userData = await userResponse.json()
+            setUser(userData)
+          }
+        }
       } catch (error) {
-        console.error('Failed to fetch bearbrick:', error)
-        setError('베어브릭 정보를 불러오는데 실패했습니다.')
+        console.error('Failed to fetch data:', error)
+        setError('데이터를 불러오는데 실패했습니다.')
       } finally {
         setLoading(false)
       }
     }
     
     if (params.id) {
-      fetchBearbrick()
+      fetchData()
     }
-  }, [params.id])
+  }, [params.id, session])
 
   const getRarityColor = (rarity: number) => {
     if (rarity >= 10) return 'text-gray-600 bg-gray-100'
@@ -91,6 +136,82 @@ export default function BearbrickDetailPage() {
     if (rarity >= 2) return 'Rare'
     if (rarity >= 1) return 'Very Rare'
     return 'Ultra Rare'
+  }
+
+  const handleAdminEdit = () => {
+    if (!bearbrick) return
+    setAdminEditForm({
+      name: bearbrick.name,
+      description: bearbrick.description,
+      rarityPercentage: bearbrick.rarityPercentage.toString(),
+      estimatedQuantity: bearbrick.estimatedQuantity.toString(),
+      materialType: bearbrick.materialType || ''
+    })
+    setShowAdminEdit(true)
+  }
+
+  const handleAdminImageUpload = () => {
+    setAdminImageForm({
+      imageUrl: '',
+      altText: '',
+      isPrimary: false,
+      replacePrimary: false
+    })
+    setShowAdminImageUpload(true)
+  }
+
+  const submitAdminEdit = async () => {
+    if (!bearbrick) return
+
+    try {
+      const response = await fetch(`/api/admin/bearbricks/${bearbrick.id}/edit`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(adminEditForm)
+      })
+
+      if (response.ok) {
+        alert('베어브릭 정보가 성공적으로 수정되었습니다!')
+        setShowAdminEdit(false)
+        // Refresh data
+        window.location.reload()
+      } else {
+        const error = await response.json()
+        alert(`수정 실패: ${error.error}`)
+      }
+    } catch (error) {
+      console.error('Edit failed:', error)
+      alert('수정 중 오류가 발생했습니다.')
+    }
+  }
+
+  const submitAdminImageUpload = async () => {
+    if (!bearbrick || !adminImageForm.imageUrl) return
+
+    try {
+      const response = await fetch(`/api/admin/bearbricks/${bearbrick.id}/upload-image`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(adminImageForm)
+      })
+
+      if (response.ok) {
+        alert('이미지가 성공적으로 업로드되었습니다!')
+        setShowAdminImageUpload(false)
+        // Refresh data
+        window.location.reload()
+      } else {
+        const error = await response.json()
+        alert(`업로드 실패: ${error.error}`)
+      }
+    } catch (error) {
+      console.error('Upload failed:', error)
+      alert('업로드 중 오류가 발생했습니다.')
+    }
   }
 
   if (loading) {
@@ -196,8 +317,31 @@ export default function BearbrickDetailPage() {
               )}
             </div>
 
+            {/* Admin Actions */}
+            {session && isAdmin && (
+              <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-6 shadow-sm border border-red-200 dark:border-red-800">
+                <h3 className="text-lg font-semibold text-red-900 dark:text-red-100 mb-4">
+                  🔧 관리자 직접 편집
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    onClick={handleAdminEdit}
+                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                  >
+                    정보 즉시 수정
+                  </button>
+                  <button
+                    onClick={handleAdminImageUpload}
+                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                  >
+                    이미지 즉시 업로드
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Contribution Actions */}
-            {session && (
+            {session && !isAdmin && (
               <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                   📝 기여하기
@@ -310,13 +454,13 @@ export default function BearbrickDetailPage() {
         </div>
       </div>
 
-      {/* Modals would go here */}
+      {/* Regular User Modals */}
       {showImageUpload && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full">
             <h3 className="text-lg font-semibold mb-4">이미지 업로드</h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              곧 이미지 업로드 기능이 추가될 예정입니다.
+              곧 사용자 이미지 업로드 기능이 추가될 예정입니다.
             </p>
             <button
               onClick={() => setShowImageUpload(false)}
@@ -324,6 +468,193 @@ export default function BearbrickDetailPage() {
             >
               닫기
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Admin Edit Modal */}
+      {showAdminEdit && bearbrick && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4 max-h-screen overflow-y-auto">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+              관리자 정보 수정
+            </h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  이름
+                </label>
+                <input
+                  type="text"
+                  value={adminEditForm.name}
+                  onChange={(e) => setAdminEditForm({...adminEditForm, name: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  설명
+                </label>
+                <textarea
+                  value={adminEditForm.description}
+                  onChange={(e) => setAdminEditForm({...adminEditForm, description: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  rows={3}
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    희귀도 (%)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={adminEditForm.rarityPercentage}
+                    onChange={(e) => setAdminEditForm({...adminEditForm, rarityPercentage: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    예상 수량
+                  </label>
+                  <input
+                    type="number"
+                    value={adminEditForm.estimatedQuantity}
+                    onChange={(e) => setAdminEditForm({...adminEditForm, estimatedQuantity: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  재질 (선택사항)
+                </label>
+                <input
+                  type="text"
+                  value={adminEditForm.materialType}
+                  onChange={(e) => setAdminEditForm({...adminEditForm, materialType: e.target.value})}
+                  placeholder="ABS Plastic"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </div>
+            </div>
+            
+            <div className="flex space-x-3 mt-6">
+              <button
+                onClick={submitAdminEdit}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-md transition-colors"
+              >
+                즉시 저장
+              </button>
+              <button
+                onClick={() => setShowAdminEdit(false)}
+                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 rounded-md transition-colors"
+              >
+                취소
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Admin Image Upload Modal */}
+      {showAdminImageUpload && bearbrick && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+              관리자 이미지 업로드
+            </h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  이미지 URL
+                </label>
+                <input
+                  type="url"
+                  value={adminImageForm.imageUrl}
+                  onChange={(e) => setAdminImageForm({...adminImageForm, imageUrl: e.target.value})}
+                  placeholder="https://example.com/image.jpg"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  대체 텍스트 (선택사항)
+                </label>
+                <input
+                  type="text"
+                  value={adminImageForm.altText}
+                  onChange={(e) => setAdminImageForm({...adminImageForm, altText: e.target.value})}
+                  placeholder="이미지 설명"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={adminImageForm.isPrimary}
+                    onChange={(e) => setAdminImageForm({...adminImageForm, isPrimary: e.target.checked})}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                    메인 이미지로 설정
+                  </span>
+                </label>
+                
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={adminImageForm.replacePrimary}
+                    onChange={(e) => setAdminImageForm({...adminImageForm, replacePrimary: e.target.checked})}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                    기존 메인 이미지 교체
+                  </span>
+                </label>
+              </div>
+              
+              {adminImageForm.imageUrl && (
+                <div className="mt-4">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">미리보기:</p>
+                  <img
+                    src={adminImageForm.imageUrl}
+                    alt="Preview"
+                    className="w-full h-32 object-cover rounded border"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTJweCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iIGZpbGw9IiM5OTkiPkVycm9yPC90ZXh0Pjwvc3ZnPg=='
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+            
+            <div className="flex space-x-3 mt-6">
+              <button
+                onClick={submitAdminImageUpload}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-md transition-colors"
+                disabled={!adminImageForm.imageUrl}
+              >
+                즉시 업로드
+              </button>
+              <button
+                onClick={() => setShowAdminImageUpload(false)}
+                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 rounded-md transition-colors"
+              >
+                취소
+              </button>
+            </div>
           </div>
         </div>
       )}
