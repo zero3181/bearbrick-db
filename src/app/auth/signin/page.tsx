@@ -1,21 +1,31 @@
 'use client'
 
-import { signIn, getProviders } from 'next-auth/react'
+import { signIn, getProviders, useSession } from 'next-auth/react'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 export default function SignIn() {
   const [providers, setProviders] = useState<any>(null)
+  const { data: session, status } = useSession()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl') || '/'
 
   useEffect(() => {
     const fetchProviders = async () => {
       const providers = await getProviders()
+      console.log('로드된 providers:', providers)
       setProviders(providers)
     }
     fetchProviders()
   }, [])
+
+  useEffect(() => {
+    console.log('현재 세션 상태:', status, '세션 데이터:', session)
+    if (session) {
+      console.log('이미 로그인되어 있음. 리다이렉트:', callbackUrl)
+      window.location.href = callbackUrl
+    }
+  }, [session, callbackUrl, status])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
@@ -27,6 +37,12 @@ export default function SignIn() {
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
             베어브릭 데이터베이스에 오신 것을 환영합니다
           </p>
+          {/* 디버그 정보 */}
+          <div className="mt-4 text-xs text-gray-500 text-center">
+            <p>세션 상태: {status}</p>
+            <p>콜백 URL: {callbackUrl}</p>
+            {session && <p>로그인됨: {session.user?.email}</p>}
+          </div>
         </div>
         
         <div className="mt-8 space-y-6">
@@ -35,7 +51,18 @@ export default function SignIn() {
               Object.values(providers).map((provider) => (
                 <div key={provider.name}>
                   <button
-                    onClick={() => signIn(provider.id, { callbackUrl })}
+                    onClick={async () => {
+                      console.log('로그인 버튼 클릭:', provider.id, 'callbackUrl:', callbackUrl)
+                      try {
+                        const result = await signIn(provider.id, { 
+                          callbackUrl,
+                          redirect: true 
+                        })
+                        console.log('signIn 결과:', result)
+                      } catch (error) {
+                        console.error('로그인 오류:', error)
+                      }
+                    }}
                     className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
                   >
                     <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
