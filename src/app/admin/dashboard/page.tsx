@@ -35,7 +35,7 @@ export default function AdminDashboard() {
     if (status === 'loading') return
 
     if (!session?.user) {
-      router.push('/auth/signin')
+      router.push('/auth/signin?callbackUrl=/admin/dashboard')
       return
     }
 

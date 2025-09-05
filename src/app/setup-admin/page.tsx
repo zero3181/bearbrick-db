@@ -64,7 +64,7 @@ export default function SetupAdminPage() {
             관리자 권한을 설정하려면 먼저 로그인해주세요.
           </p>
           <a 
-            href="/auth/signin"
+            href="/auth/signin?callbackUrl=/setup-admin"
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors"
           >
             로그인하기

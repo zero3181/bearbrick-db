@@ -30,7 +30,7 @@ export default function AdminSetupPage() {
     if (status === 'loading') return
 
     if (!session?.user) {
-      router.push('/auth/signin')
+      router.push('/auth/signin?callbackUrl=/admin/setup')
       return
     }
 

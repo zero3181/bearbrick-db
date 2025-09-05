@@ -2,9 +2,12 @@
 
 import { signIn, getProviders } from 'next-auth/react'
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 
 export default function SignIn() {
   const [providers, setProviders] = useState<any>(null)
+  const searchParams = useSearchParams()
+  const callbackUrl = searchParams.get('callbackUrl') || '/'
 
   useEffect(() => {
     const fetchProviders = async () => {
@@ -32,7 +35,7 @@ export default function SignIn() {
               Object.values(providers).map((provider) => (
                 <div key={provider.name}>
                   <button
-                    onClick={() => signIn(provider.id, { callbackUrl: '/' })}
+                    onClick={() => signIn(provider.id, { callbackUrl })}
                     className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
                   >
                     <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">

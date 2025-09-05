@@ -79,7 +79,7 @@ export default function AdminManagePage() {
     if (status === 'loading') return
 
     if (!session?.user) {
-      router.push('/auth/signin')
+      router.push('/auth/signin?callbackUrl=/admin/manage')
       return
     }
 
