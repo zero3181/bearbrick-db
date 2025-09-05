@@ -6,18 +6,48 @@ const prisma = new PrismaClient()
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     if (req.method === 'GET') {
-      const { page = '1', limit = '20' } = req.query
+      const { 
+        page = '1', 
+        limit = '20', 
+        series, 
+        category, 
+        search 
+      } = req.query
       const pageNum = parseInt(page as string)
       const limitNum = parseInt(limit as string)
       const skip = (pageNum - 1) * limitNum
 
+      // Build where clause
+      const where: any = {}
+      
+      if (series) {
+        where.series = {
+          number: parseInt(series as string)
+        }
+      }
+      
+      if (category) {
+        where.category = {
+          name: category as string
+        }
+      }
+      
+      if (search) {
+        where.name = {
+          contains: search as string,
+          mode: 'insensitive'
+        }
+      }
+
       const [bearbricks, total] = await Promise.all([
         prisma.bearbrick.findMany({
+          where,
           skip,
           take: limitNum,
           include: {
             series: true,
             category: true,
+            collaboration: true,
             images: {
               where: { isPrimary: true },
               take: 1
@@ -25,16 +55,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           },
           orderBy: { createdAt: 'desc' }
         }),
-        prisma.bearbrick.count()
+        prisma.bearbrick.count({ where })
       ])
 
+      const totalPages = Math.ceil(total / limitNum)
+      
       res.status(200).json({
-        bearbricks,
+        data: bearbricks,
         pagination: {
           page: pageNum,
           limit: limitNum,
           total,
-          pages: Math.ceil(total / limitNum)
+          totalPages,
+          hasNextPage: pageNum < totalPages,
+          hasPrevPage: pageNum > 1
         }
       })
     } else {
