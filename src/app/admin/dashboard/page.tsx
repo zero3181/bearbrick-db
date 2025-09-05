@@ -153,6 +153,12 @@ export default function AdminDashboard() {
                 {session.user.name} (관리자)
               </span>
               <a
+                href="/admin/setup"
+                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+              >
+                권한 관리
+              </a>
+              <a
                 href="/admin/manage"
                 className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
               >
