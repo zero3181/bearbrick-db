@@ -30,6 +30,9 @@ interface Bearbrick {
     url: string
     altText: string
   }>
+  _count: {
+    recommendations: number
+  }
 }
 
 interface BearbrickResponse {
@@ -78,6 +81,9 @@ export default function BearbricsPage() {
   const [selectedSeries, setSelectedSeries] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
+
+  // Recommendation states
+  const [userRecommendations, setUserRecommendations] = useState<Set<string>>(new Set())
 
   // Fetch metadata
   useEffect(() => {
@@ -166,6 +172,76 @@ export default function BearbricsPage() {
 
   const handlePageChange = (newPage: number) => {
     setPagination(prev => ({ ...prev, page: newPage }))
+  }
+
+  // Load user recommendations when bearbricks change
+  useEffect(() => {
+    if (session && bearbricks.length > 0) {
+      const fetchUserRecommendations = async () => {
+        try {
+          const promises = bearbricks.map(async (bearbrick) => {
+            const response = await fetch(`/api/bearbricks/${bearbrick.id}/recommend`)
+            if (response.ok) {
+              const data = await response.json()
+              return data.recommended ? bearbrick.id : null
+            }
+            return null
+          })
+          
+          const results = await Promise.all(promises)
+          const recommendedIds = results.filter(id => id !== null) as string[]
+          setUserRecommendations(new Set(recommendedIds))
+        } catch (error) {
+          console.error('Failed to fetch user recommendations:', error)
+        }
+      }
+      
+      fetchUserRecommendations()
+    }
+  }, [bearbricks, session])
+
+  const handleRecommend = async (bearbrickId: string, event: React.MouseEvent) => {
+    event.preventDefault() // Prevent navigation
+    event.stopPropagation()
+
+    if (!session) {
+      alert('로그인이 필요합니다.')
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/bearbricks/${bearbrickId}/recommend`, {
+        method: 'POST'
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        
+        // Update local state
+        setUserRecommendations(prev => {
+          const newSet = new Set(prev)
+          if (data.recommended) {
+            newSet.add(bearbrickId)
+          } else {
+            newSet.delete(bearbrickId)
+          }
+          return newSet
+        })
+
+        // Update bearbricks data with new count
+        setBearbricks(prev => prev.map(bearbrick => 
+          bearbrick.id === bearbrickId 
+            ? { ...bearbrick, _count: { recommendations: data.totalRecommendations } }
+            : bearbrick
+        ))
+      } else {
+        const error = await response.json()
+        alert(error.error || '추천 처리 중 오류가 발생했습니다.')
+      }
+    } catch (error) {
+      console.error('Recommendation failed:', error)
+      alert('추천 처리 중 오류가 발생했습니다.')
+    }
   }
 
   if (loading && bearbricks.length === 0) {
@@ -325,6 +401,40 @@ export default function BearbricsPage() {
                           × {bearbrick.collaboration.brandName}
                         </div>
                       )}
+
+                      {/* Recommendation section */}
+                      <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-700">
+                        <div className="flex items-center space-x-1 text-xs text-gray-600 dark:text-gray-400">
+                          <span>❤️</span>
+                          <span>{bearbrick._count.recommendations}</span>
+                        </div>
+                        
+                        {session && (
+                          <button
+                            onClick={(e) => handleRecommend(bearbrick.id, e)}
+                            className={`p-1 rounded-full transition-colors ${
+                              userRecommendations.has(bearbrick.id)
+                                ? 'text-red-500 hover:text-red-600'
+                                : 'text-gray-400 hover:text-red-500'
+                            }`}
+                            title={userRecommendations.has(bearbrick.id) ? '추천 취소' : '추천하기'}
+                          >
+                            <svg
+                              className="w-4 h-4"
+                              fill={userRecommendations.has(bearbrick.id) ? 'currentColor' : 'none'}
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                              />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </a>

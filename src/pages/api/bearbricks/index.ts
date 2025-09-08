@@ -51,6 +51,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             images: {
               where: { isPrimary: true },
               take: 1
+            },
+            _count: {
+              select: {
+                recommendations: true
+              }
             }
           },
           orderBy: { id: 'asc' }

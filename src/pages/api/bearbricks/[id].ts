@@ -33,6 +33,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               { isPrimary: 'desc' },
               { uploadedAt: 'asc' }
             ]
+          },
+          _count: {
+            select: {
+              recommendations: true
+            }
           }
         }
       })

@@ -41,6 +41,9 @@ interface Bearbrick {
       name: string
     }
   }>
+  _count: {
+    recommendations: number
+  }
 }
 
 interface User {
@@ -57,6 +60,10 @@ export default function BearbrickDetailPage() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  
+  // Recommendation states
+  const [isRecommended, setIsRecommended] = useState(false)
+  const [recommendationCount, setRecommendationCount] = useState(0)
   
   // Contribution states
   const [showImageUpload, setShowImageUpload] = useState(false)
@@ -90,6 +97,7 @@ export default function BearbrickDetailPage() {
         if (bearbrickResponse.ok) {
           const data = await bearbrickResponse.json()
           setBearbrick(data)
+          setRecommendationCount(data._count.recommendations)
           setAdminEditForm({
             name: data.name || '',
             description: data.description || '',
@@ -97,6 +105,19 @@ export default function BearbrickDetailPage() {
             estimatedQuantity: data.estimatedQuantity ? data.estimatedQuantity.toString() : '0',
             materialType: data.materialType || 'ABS Plastic'
           })
+
+          // Fetch user recommendation status if logged in
+          if (session?.user?.email) {
+            try {
+              const recommendResponse = await fetch(`/api/bearbricks/${data.id}/recommend`)
+              if (recommendResponse.ok) {
+                const recommendData = await recommendResponse.json()
+                setIsRecommended(recommendData.recommended)
+              }
+            } catch (error) {
+              console.error('Failed to fetch recommendation status:', error)
+            }
+          }
         } else {
           setError('베어브릭을 찾을 수 없습니다.')
         }
@@ -216,6 +237,33 @@ export default function BearbrickDetailPage() {
     }
   }
 
+  const handleRecommend = async () => {
+    if (!session) {
+      alert('로그인이 필요합니다.')
+      return
+    }
+
+    if (!bearbrick) return
+
+    try {
+      const response = await fetch(`/api/bearbricks/${bearbrick.id}/recommend`, {
+        method: 'POST'
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setIsRecommended(data.recommended)
+        setRecommendationCount(data.totalRecommendations)
+      } else {
+        const error = await response.json()
+        alert(error.error || '추천 처리 중 오류가 발생했습니다.')
+      }
+    } catch (error) {
+      console.error('Recommendation failed:', error)
+      alert('추천 처리 중 오류가 발생했습니다.')
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen p-8 bg-gray-50 dark:bg-gray-900">
@@ -304,7 +352,11 @@ export default function BearbrickDetailPage() {
               ) : (
                 <div className="w-full h-96 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
                   <div className="text-center">
-                    <span className="text-4xl mb-4 block">🧸</span>
+                    <img 
+                      src="/bearbrick-placeholder.svg"
+                      alt="베어브릭 이미지 없음"
+                      className="w-32 h-32 mx-auto mb-4 opacity-50"
+                    />
                     <p className="text-gray-500 dark:text-gray-400 mb-4">이미지가 없습니다</p>
                     {session && (
                       <button
@@ -425,33 +477,56 @@ export default function BearbrickDetailPage() {
                 </div>
               )}
 
-              <div className="border-t dark:border-gray-700 pt-4">
+              {/* Recommendation Section */}
+              <div className="border-t dark:border-gray-700 pt-6 mt-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="flex items-center space-x-1">
+                      <span className="text-2xl">❤️</span>
+                      <span className="text-lg font-medium text-gray-900 dark:text-white">
+                        {recommendationCount}
+                      </span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                        명이 추천
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {session && (
+                    <button
+                      onClick={handleRecommend}
+                      className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                        isRecommended
+                          ? 'bg-red-500 hover:bg-red-600 text-white'
+                          : 'bg-gray-100 hover:bg-red-50 text-gray-700 hover:text-red-600 border border-gray-300'
+                      }`}
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        fill={isRecommended ? 'currentColor' : 'none'}
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                        />
+                      </svg>
+                      <span>{isRecommended ? '추천 취소' : '추천하기'}</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="border-t dark:border-gray-700 pt-4 mt-4">
                 <span className="text-xs text-gray-500 dark:text-gray-400">
                   등록자: {bearbrick.createdBy.name}
                 </span>
               </div>
             </div>
 
-            {/* Stats */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                📊 통계 정보
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">예상 수량</span>
-                  <p className="text-lg font-medium text-gray-900 dark:text-white">
-                    {bearbrick.estimatedQuantity?.toLocaleString() || 'N/A'}개
-                  </p>
-                </div>
-                <div>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">시즌</span>
-                  <p className="text-lg font-medium text-gray-900 dark:text-white">
-                    {bearbrick.series.season}
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>

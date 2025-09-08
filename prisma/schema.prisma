@@ -55,6 +55,7 @@ model User {
   uploadedImages    BearbrickImage[] @relation("UploadedBy")
   editRequests      EditRequest[]
   imageRequests     ImageRequest[]
+  recommendations   Recommendation[]
 
   @@map("users")
 }
@@ -138,6 +139,7 @@ model Bearbrick {
   images                BearbrickImage[]
   editRequests          EditRequest[]
   imageRequests         ImageRequest[]
+  recommendations       Recommendation[]
 
   @@map("bearbricks")
 }
@@ -202,6 +204,22 @@ model ImageRequest {
   requestedBy   User      @relation(fields: [requestedById], references: [id])
 
   @@map("image_requests")
+}
+
+model Recommendation {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  
+  // Foreign keys
+  userId      String
+  bearbrickId String
+  
+  // Relations
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bearbrick   Bearbrick @relation(fields: [bearbrickId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, bearbrickId])
+  @@map("recommendations")
 }
 
 // Enums
