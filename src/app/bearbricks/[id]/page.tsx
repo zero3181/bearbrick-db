@@ -8,10 +8,10 @@ interface Bearbrick {
   id: string
   name: string
   sizePercentage: number
-  rarityPercentage: number
-  estimatedQuantity: number
-  description: string
-  materialType: string
+  rarityPercentage: number | null
+  estimatedQuantity: number | null
+  description: string | null
+  materialType: string | null
   series: {
     id: string
     number: number
@@ -91,11 +91,11 @@ export default function BearbrickDetailPage() {
           const data = await bearbrickResponse.json()
           setBearbrick(data)
           setAdminEditForm({
-            name: data.name,
-            description: data.description,
-            rarityPercentage: data.rarityPercentage.toString(),
-            estimatedQuantity: data.estimatedQuantity.toString(),
-            materialType: data.materialType || ''
+            name: data.name || '',
+            description: data.description || '',
+            rarityPercentage: data.rarityPercentage ? data.rarityPercentage.toString() : '0',
+            estimatedQuantity: data.estimatedQuantity ? data.estimatedQuantity.toString() : '0',
+            materialType: data.materialType || 'ABS Plastic'
           })
         } else {
           setError('베어브릭을 찾을 수 없습니다.')
@@ -122,7 +122,8 @@ export default function BearbrickDetailPage() {
     }
   }, [params.id, session])
 
-  const getRarityColor = (rarity: number) => {
+  const getRarityColor = (rarity: number | null) => {
+    if (!rarity || rarity <= 0) return 'text-gray-600 bg-gray-100'
     if (rarity >= 10) return 'text-gray-600 bg-gray-100'
     if (rarity >= 5) return 'text-green-600 bg-green-100'
     if (rarity >= 2) return 'text-blue-600 bg-blue-100'
@@ -130,7 +131,8 @@ export default function BearbrickDetailPage() {
     return 'text-amber-600 bg-amber-100'
   }
 
-  const getRarityLabel = (rarity: number) => {
+  const getRarityLabel = (rarity: number | null) => {
+    if (!rarity || rarity <= 0) return 'Unknown'
     if (rarity >= 10) return 'Common'
     if (rarity >= 5) return 'Uncommon'
     if (rarity >= 2) return 'Rare'
@@ -141,11 +143,11 @@ export default function BearbrickDetailPage() {
   const handleAdminEdit = () => {
     if (!bearbrick) return
     setAdminEditForm({
-      name: bearbrick.name,
-      description: bearbrick.description,
-      rarityPercentage: bearbrick.rarityPercentage.toString(),
-      estimatedQuantity: bearbrick.estimatedQuantity.toString(),
-      materialType: bearbrick.materialType || ''
+      name: bearbrick.name || '',
+      description: bearbrick.description || '',
+      rarityPercentage: bearbrick.rarityPercentage ? bearbrick.rarityPercentage.toString() : '0',
+      estimatedQuantity: bearbrick.estimatedQuantity ? bearbrick.estimatedQuantity.toString() : '0',
+      materialType: bearbrick.materialType || 'ABS Plastic'
     })
     setShowAdminEdit(true)
   }
@@ -400,7 +402,7 @@ export default function BearbrickDetailPage() {
                 <div>
                   <span className="text-sm text-gray-500 dark:text-gray-400">레어도</span>
                   <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getRarityColor(bearbrick.rarityPercentage)}`}>
-                    {getRarityLabel(bearbrick.rarityPercentage)} ({bearbrick.rarityPercentage}%)
+                    {getRarityLabel(bearbrick.rarityPercentage)} ({bearbrick.rarityPercentage || 0}%)
                   </span>
                 </div>
               </div>

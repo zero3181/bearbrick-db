@@ -7,7 +7,7 @@ interface Bearbrick {
   id: string
   name: string
   sizePercentage: number
-  rarityPercentage: number
+  rarityPercentage: number | null
   estimatedQuantity: number
   description: string
   series: {
@@ -139,7 +139,8 @@ export default function BearbricsPage() {
     fetchBearbricks()
   }, [pagination.page, selectedSeries, selectedCategory, searchTerm])
 
-  const getRarityColor = (rarity: number) => {
+  const getRarityColor = (rarity: number | null) => {
+    if (!rarity || rarity <= 0) return 'text-gray-600 bg-gray-100'
     if (rarity >= 10) return 'text-gray-600 bg-gray-100'
     if (rarity >= 5) return 'text-green-600 bg-green-100'
     if (rarity >= 2) return 'text-blue-600 bg-blue-100'
@@ -147,7 +148,8 @@ export default function BearbricsPage() {
     return 'text-amber-600 bg-amber-100'
   }
 
-  const getRarityLabel = (rarity: number) => {
+  const getRarityLabel = (rarity: number | null) => {
+    if (!rarity || rarity <= 0) return 'Unknown'
     if (rarity >= 10) return 'Common'
     if (rarity >= 5) return 'Uncommon'
     if (rarity >= 2) return 'Rare'
@@ -314,7 +316,7 @@ export default function BearbricsPage() {
                       
                       <div className="flex items-center justify-between">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRarityColor(bearbrick.rarityPercentage)}`}>
-                          {getRarityLabel(bearbrick.rarityPercentage)} ({bearbrick.rarityPercentage}%)
+                          {getRarityLabel(bearbrick.rarityPercentage)} ({bearbrick.rarityPercentage || 0}%)
                         </span>
                       </div>
                       

@@ -53,7 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               take: 1
             }
           },
-          orderBy: { createdAt: 'desc' }
+          orderBy: { id: 'asc' }
         }),
         prisma.bearbrick.count({ where })
       ])
