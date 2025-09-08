@@ -353,10 +353,10 @@ export default function BearbricsPage() {
           <>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mb-8">
               {bearbricks.map((bearbrick) => (
-                <a 
+                <div 
                   key={bearbrick.id}
-                  href={`/bearbricks/${bearbrick.id}`}
-                  className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-1 block"
+                  className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer"
+                  onClick={() => window.location.href = `/bearbricks/${bearbrick.id}`}
                 >
                   <div className="p-4">
                     {/* Image with 3:4 aspect ratio */}
@@ -437,7 +437,7 @@ export default function BearbricsPage() {
                       </div>
                     </div>
                   </div>
-                </a>
+                </div>
               ))}
             </div>
 
