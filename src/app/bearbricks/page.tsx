@@ -91,6 +91,10 @@ export default function BearbricsPage() {
         if (seriesRes.ok) {
           const seriesData = await seriesRes.json()
           setSeries(seriesData)
+          // Set the first series (latest) as default selection
+          if (seriesData.length > 0 && selectedSeries === '') {
+            setSelectedSeries(seriesData[0].number.toString())
+          }
         }
         
         if (categoriesRes.ok) {
@@ -168,9 +172,9 @@ export default function BearbricsPage() {
         <div className="max-w-7xl mx-auto">
           <div className="animate-pulse space-y-8">
             <div className="h-8 bg-gray-300 rounded w-1/4"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {[...Array(8)].map((_, i) => (
-                <div key={i} className="bg-gray-300 rounded-lg h-80"></div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              {[...Array(12)].map((_, i) => (
+                <div key={i} className="bg-gray-300 rounded-lg aspect-[3/4.5]"></div>
               ))}
             </div>
           </div>
@@ -269,7 +273,7 @@ export default function BearbricsPage() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mb-8">
               {bearbricks.map((bearbrick) => (
                 <a 
                   key={bearbrick.id}
@@ -277,11 +281,21 @@ export default function BearbricsPage() {
                   className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-1 block"
                 >
                   <div className="p-4">
-                    {/* Placeholder for image */}
-                    <div className="w-full h-48 bg-gray-200 dark:bg-gray-700 rounded-lg mb-4 flex items-center justify-center">
-                      <span className="text-gray-500 dark:text-gray-400 text-sm">
-                        {bearbrick.category.name}
-                      </span>
+                    {/* Image with 3:4 aspect ratio */}
+                    <div className="w-full aspect-[3/4] bg-gray-100 dark:bg-gray-700 rounded-lg mb-4 overflow-hidden">
+                      {bearbrick.images.length > 0 ? (
+                        <img 
+                          src={bearbrick.images[0].url}
+                          alt={bearbrick.images[0].altText || bearbrick.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <img 
+                          src="/bearbrick-placeholder.svg"
+                          alt={`${bearbrick.name} placeholder`}
+                          className="w-full h-full object-contain p-4"
+                        />
+                      )}
                     </div>
                     
                     <div className="space-y-2">

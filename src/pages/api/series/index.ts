@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             select: { bearbricks: true }
           }
         },
-        orderBy: { number: 'asc' }
+        orderBy: { number: 'desc' }
       })
 
       res.status(200).json(series)
