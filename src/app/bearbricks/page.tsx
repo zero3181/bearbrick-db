@@ -30,7 +30,7 @@ interface Bearbrick {
     url: string
     altText: string
   }>
-  _count: {
+  _count?: {
     recommendations: number
   }
 }
@@ -406,7 +406,7 @@ export default function BearbricsPage() {
                       <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-700">
                         <div className="flex items-center space-x-1 text-xs text-gray-600 dark:text-gray-400">
                           <span>❤️</span>
-                          <span>{bearbrick._count.recommendations}</span>
+                          <span>{bearbrick._count?.recommendations || 0}</span>
                         </div>
                         
                         {session && (

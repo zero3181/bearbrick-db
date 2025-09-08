@@ -41,7 +41,7 @@ interface Bearbrick {
       name: string
     }
   }>
-  _count: {
+  _count?: {
     recommendations: number
   }
 }
@@ -97,7 +97,7 @@ export default function BearbrickDetailPage() {
         if (bearbrickResponse.ok) {
           const data = await bearbrickResponse.json()
           setBearbrick(data)
-          setRecommendationCount(data._count.recommendations)
+          setRecommendationCount(data._count?.recommendations || 0)
           setAdminEditForm({
             name: data.name || '',
             description: data.description || '',
