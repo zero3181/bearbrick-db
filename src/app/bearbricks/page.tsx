@@ -250,7 +250,7 @@ export default function BearbricsPage() {
         <div className="max-w-7xl mx-auto">
           <div className="animate-pulse space-y-8">
             <div className="h-8 bg-gray-300 rounded w-1/4"></div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3">
               {[...Array(12)].map((_, i) => (
                 <div key={i} className="bg-gray-300 rounded-lg aspect-[3/4.5]"></div>
               ))}
@@ -351,16 +351,16 @@ export default function BearbricsPage() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mb-8">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3 mb-8">
               {bearbricks.map((bearbrick) => (
                 <div 
                   key={bearbrick.id}
                   className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer"
                   onClick={() => window.location.href = `/bearbricks/${bearbrick.id}`}
                 >
-                  <div className="p-4">
+                  <div className="p-3 sm:p-4">
                     {/* Image with 3:4 aspect ratio */}
-                    <div className="w-full aspect-[3/4] bg-gray-100 dark:bg-gray-700 rounded-lg mb-4 overflow-hidden">
+                    <div className="w-full aspect-[3/4] bg-gray-100 dark:bg-gray-700 rounded-lg mb-3 sm:mb-4 overflow-hidden">
                       {bearbrick.images.length > 0 ? (
                         <img 
                           src={bearbrick.images[0].url}
@@ -377,7 +377,7 @@ export default function BearbricsPage() {
                     </div>
                     
                     <div className="space-y-2">
-                      <h3 className="font-semibold text-gray-900 dark:text-white text-sm line-clamp-2">
+                      <h3 className="font-semibold text-gray-900 dark:text-white text-xs sm:text-sm line-clamp-2">
                         {bearbrick.name}
                       </h3>
                       
