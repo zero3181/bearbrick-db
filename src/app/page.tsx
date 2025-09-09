@@ -67,6 +67,39 @@ export default function Home() {
         <h2 className="text-4xl font-semibold text-gray-800 dark:text-gray-200">
           BearbrickDB
         </h2>
+
+        {/* Personalized greeting for logged-in users */}
+        {session ? (
+          <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-xl p-6">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <span className="text-2xl">👋</span>
+              <h3 className="text-2xl font-semibold text-blue-800 dark:text-blue-200">
+                안녕하세요, {session.user?.name}님!
+              </h3>
+            </div>
+            <p className="text-blue-700 dark:text-blue-300">
+              BearbrickDB에 오신 것을 환영합니다. 오늘도 멋진 베어브릭을 만나보세요!
+            </p>
+          </div>
+        ) : (
+          <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <span className="text-2xl">🎯</span>
+              <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
+                베어브릭 세계로의 여행을 시작하세요
+              </h3>
+            </div>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              로그인하시면 개인화된 추천과 베어브릭 즐겨찾기 기능을 이용할 수 있습니다.
+            </p>
+            <button
+              onClick={() => signIn()}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors"
+            >
+              지금 로그인하기
+            </button>
+          </div>
+        )}
         
         <p className="text-xl text-gray-600 dark:text-gray-400">
           실제 환경 배포 테스트 성공! <br />
