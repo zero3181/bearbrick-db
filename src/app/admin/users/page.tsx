@@ -59,7 +59,10 @@ export default function UsersManagement() {
     }
 
     if (session.user.role !== 'OWNER') {
-      router.push('/')
+      setError('OWNER 권한이 필요합니다.')
+      setTimeout(() => {
+        router.push('/')
+      }, 3000)
       return
     }
 

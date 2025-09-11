@@ -126,10 +126,16 @@ export default function BearbrickDetailPage() {
 
         // Fetch user info if logged in
         if (session?.user?.email) {
-          const userResponse = await fetch('/api/user/me')
-          if (userResponse.ok) {
-            const userData = await userResponse.json()
-            setUser(userData)
+          try {
+            const userResponse = await fetch('/api/user/me')
+            if (userResponse.ok) {
+              const userData = await userResponse.json()
+              setUser(userData)
+            } else {
+              console.warn('Failed to fetch user data:', userResponse.status)
+            }
+          } catch (error) {
+            console.warn('User data fetch error:', error)
           }
         }
       } catch (error) {

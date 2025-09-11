@@ -33,20 +33,26 @@ export const authOptions: NextAuthOptions = {
       return token
     },
     signIn: async ({ user, account, profile }) => {
-      // Set andyjin@gmail.com as OWNER on first sign-in
-      if (user.email === 'andyjin@gmail.com') {
-        await prisma.user.upsert({
-          where: { email: user.email },
-          update: { role: UserRole.OWNER },
-          create: {
-            email: user.email,
-            name: user.name,
-            image: user.image,
-            role: UserRole.OWNER
-          }
-        })
+      try {
+        // Set andyjin@gmail.com as OWNER on first sign-in
+        if (user.email === 'andyjin@gmail.com') {
+          await prisma.user.upsert({
+            where: { email: user.email },
+            update: { role: UserRole.OWNER },
+            create: {
+              email: user.email,
+              name: user.name,
+              image: user.image,
+              role: UserRole.OWNER
+            }
+          })
+        }
+        return true
+      } catch (error) {
+        console.error('SignIn callback error:', error)
+        // Allow sign-in to continue even if role setting fails
+        return true
       }
-      return true
     },
   },
   session: {

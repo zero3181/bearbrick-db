@@ -78,7 +78,10 @@ export default function EditRequestsManagement() {
     }
 
     if (session.user.role !== 'ADMIN' && session.user.role !== 'OWNER') {
-      router.push('/')
+      setError('관리자 권한이 필요합니다.')
+      setTimeout(() => {
+        router.push('/')
+      }, 3000)
       return
     }
 
