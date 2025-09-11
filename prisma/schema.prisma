@@ -227,6 +227,7 @@ enum UserRole {
   USER
   CONTRIBUTOR
   ADMIN
+  OWNER
 }
 
 enum EditRequestType {

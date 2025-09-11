@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useParams } from 'next/navigation'
+import EditRequestForm from '@/components/EditRequestForm'
+import ImageUpload from '@/components/ImageUpload'
 
 interface Bearbrick {
   id: string
@@ -88,7 +90,7 @@ export default function BearbrickDetailPage() {
     replacePrimary: false
   })
 
-  const isAdmin = user?.role === 'ADMIN'
+  const isAdmin = session?.user?.role === 'ADMIN' || session?.user?.role === 'OWNER'
   
   useEffect(() => {
     const fetchData = async () => {
@@ -373,54 +375,64 @@ export default function BearbrickDetailPage() {
 
             {/* Admin Actions */}
             {session && isAdmin && (
-              <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-6 shadow-sm border border-red-200 dark:border-red-800">
-                <h3 className="text-lg font-semibold text-red-900 dark:text-red-100 mb-4">
-                  🔧 관리자 직접 편집
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <button
-                    onClick={handleAdminEdit}
-                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
-                  >
-                    정보 즉시 수정
-                  </button>
-                  <button
-                    onClick={handleAdminImageUpload}
-                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
-                  >
-                    이미지 즉시 업로드
-                  </button>
+              <div className="space-y-4">
+                <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-6 shadow-sm border border-red-200 dark:border-red-800">
+                  <h3 className="text-lg font-semibold text-red-900 dark:text-red-100 mb-4">
+                    🔧 관리자 직접 편집
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button
+                      onClick={handleAdminEdit}
+                      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                    >
+                      정보 즉시 수정
+                    </button>
+                    <button
+                      onClick={handleAdminImageUpload}
+                      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                    >
+                      이미지 즉시 업로드
+                    </button>
+                  </div>
                 </div>
+                
+                <ImageUpload 
+                  bearbrickId={bearbrick.id} 
+                  onUploadSuccess={() => window.location.reload()}
+                />
               </div>
             )}
 
             {/* Contribution Actions */}
             {session && !isAdmin && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                  📝 기여하기
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <button
-                    onClick={() => setShowImageUpload(true)}
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
-                  >
-                    이미지 추가
-                  </button>
-                  <button
-                    onClick={() => setShowImageRequest(true)}
-                    className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
-                    disabled={!bearbrick.images || bearbrick.images.length === 0}
-                  >
-                    이미지 교체 요청
-                  </button>
-                  <button
-                    onClick={() => setShowEditRequest(true)}
-                    className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
-                  >
-                    정보 수정 요청
-                  </button>
+              <div className="space-y-4">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    📝 기여하기
+                  </h3>
+                  <div className="space-y-3">
+                    <button
+                      onClick={() => setShowEditRequest(true)}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                    >
+                      정보 수정 요청
+                    </button>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 text-center">
+                      수정 요청은 관리자 검토 후 반영됩니다
+                    </p>
+                  </div>
                 </div>
+                
+                {showEditRequest && (
+                  <EditRequestForm 
+                    bearbrick={bearbrick}
+                    onSuccess={() => {
+                      setShowEditRequest(false)
+                      alert('수정 요청이 성공적으로 제출되었습니다!')
+                    }}
+                    onCancel={() => setShowEditRequest(false)}
+                  />
+                )}
               </div>
             )}
           </div>

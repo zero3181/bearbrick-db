@@ -23,12 +23,30 @@ export default function Home() {
             >
               베어브릭 목록
             </a>
-            {session?.user && (
+            {/* Admin/Owner only menus */}
+            {session?.user && (session.user.role === 'ADMIN' || session.user.role === 'OWNER') && (
+              <>
+                <a
+                  href="/admin/edit-requests"
+                  className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                >
+                  수정 요청 관리
+                </a>
+                <a
+                  href="/admin/dashboard"
+                  className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                >
+                  관리자 대시보드
+                </a>
+              </>
+            )}
+            {/* Owner only menu */}
+            {session?.user && session.user.role === 'OWNER' && (
               <a
-                href="/admin/dashboard"
+                href="/admin/users"
                 className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
               >
-                관리자
+                회원 관리
               </a>
             )}
           </nav>
@@ -38,9 +56,19 @@ export default function Home() {
               <div className="animate-pulse bg-gray-300 h-10 w-20 rounded"></div>
             ) : session ? (
               <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-600 dark:text-gray-400">
-                  안녕하세요, {session.user?.name}님
-                </span>
+                <div className="text-right">
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    안녕하세요, {session.user?.name}님
+                  </div>
+                  {session.user.role && (
+                    <div className="text-xs text-gray-500 dark:text-gray-500">
+                      {session.user.role === 'OWNER' && '🏆 오너'}
+                      {session.user.role === 'ADMIN' && '👑 관리자'}
+                      {session.user.role === 'CONTRIBUTOR' && '✨ 기여자'}
+                      {session.user.role === 'USER' && '👤 사용자'}
+                    </div>
+                  )}
+                </div>
                 <button
                   onClick={() => signOut()}
                   className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"

@@ -1,7 +1,7 @@
 import NextAuth, { NextAuthOptions } from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, UserRole } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
@@ -17,6 +17,12 @@ export const authOptions: NextAuthOptions = {
     session: async ({ session, token }) => {
       if (session?.user && token?.sub) {
         session.user.id = token.sub
+        // Get user role from database
+        const user = await prisma.user.findUnique({
+          where: { id: token.sub },
+          select: { role: true }
+        })
+        session.user.role = user?.role || UserRole.USER
       }
       return session
     },
@@ -26,9 +32,25 @@ export const authOptions: NextAuthOptions = {
       }
       return token
     },
+    signIn: async ({ user, account, profile }) => {
+      // Set andyjin@gmail.com as OWNER on first sign-in
+      if (user.email === 'andyjin@gmail.com') {
+        await prisma.user.upsert({
+          where: { email: user.email },
+          update: { role: UserRole.OWNER },
+          create: {
+            email: user.email,
+            name: user.name,
+            image: user.image,
+            role: UserRole.OWNER
+          }
+        })
+      }
+      return true
+    },
   },
   session: {
-    strategy: 'jwt',
+    strategy: 'database',
   },
   pages: {
     signIn: '/auth/signin',
