@@ -5,6 +5,13 @@ import { useSession, signIn, signOut } from 'next-auth/react';
 export default function Home() {
   const { data: session, status } = useSession();
 
+  // 디버깅: 세션 상태 확인
+  if (typeof window !== 'undefined') {
+    console.log('Session status:', status);
+    console.log('Session data:', session);
+    console.log('User role:', session?.user?.role);
+  }
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-8">
       {/* Header */}
@@ -23,9 +30,23 @@ export default function Home() {
             >
               베어브릭 목록
             </a>
+            {session?.user && (
+              <a
+                href="/images/submit"
+                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+              >
+                이미지 등록
+              </a>
+            )}
             {/* Admin/Owner only menus */}
             {session?.user && (session.user.role === 'ADMIN' || session.user.role === 'OWNER') && (
               <>
+                <a
+                  href="/admin/submissions"
+                  className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                >
+                  이미지 승인 관리
+                </a>
                 <a
                   href="/admin/edit-requests"
                   className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
@@ -64,7 +85,6 @@ export default function Home() {
                     <div className="text-xs text-gray-500 dark:text-gray-500">
                       {session.user.role === 'OWNER' && '🏆 오너'}
                       {session.user.role === 'ADMIN' && '👑 관리자'}
-                      {session.user.role === 'CONTRIBUTOR' && '✨ 기여자'}
                       {session.user.role === 'USER' && '👤 사용자'}
                     </div>
                   )}
@@ -143,23 +163,75 @@ export default function Home() {
         </div>
 
         {/* Quick Actions */}
-        <div className="max-w-md mx-auto">
-          <div className="bg-blue-100 dark:bg-blue-900 p-8 rounded-lg text-center">
-            <h3 className="text-xl font-semibold text-blue-800 dark:text-blue-200 mb-4">
-              🧸 베어브릭 탐색
-            </h3>
-            <p className="text-blue-700 dark:text-blue-300 mb-6">
-              1,100개 이상의 베어브릭 컬렉션을 만나보세요. 시리즈별, 카테고리별로 필터링하고 검색할 수 있습니다.
-            </p>
-            
-            <a
-              href="/bearbricks"
-              className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg transition-colors"
-            >
-              베어브릭 목록 보기
-            </a>
+        <div className="max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-blue-100 dark:bg-blue-900 p-8 rounded-lg text-center">
+              <h3 className="text-xl font-semibold text-blue-800 dark:text-blue-200 mb-4">
+                🧸 베어브릭 탐색
+              </h3>
+              <p className="text-blue-700 dark:text-blue-300 mb-6">
+                1,100개 이상의 베어브릭 컬렉션을 만나보세요. 시리즈별, 카테고리별로 필터링하고 검색할 수 있습니다.
+              </p>
+
+              <a
+                href="/bearbricks"
+                className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg transition-colors"
+              >
+                베어브릭 목록 보기
+              </a>
+            </div>
+
+            {/* Image Upload Section */}
+            {session ? (
+              <div className="bg-green-100 dark:bg-green-900 p-8 rounded-lg text-center">
+                <h3 className="text-xl font-semibold text-green-800 dark:text-green-200 mb-4">
+                  📸 이미지 등록
+                </h3>
+                <p className="text-green-700 dark:text-green-300 mb-6">
+                  베어브릭 이미지를 업로드하여 커뮤니티와 공유해보세요. 관리자 승인 후 공개됩니다.
+                </p>
+
+                <a
+                  href="/images/submit"
+                  className="inline-block bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-8 rounded-lg transition-colors"
+                >
+                  이미지 업로드
+                </a>
+              </div>
+            ) : (
+              <div className="bg-gray-100 dark:bg-gray-800 p-8 rounded-lg text-center">
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
+                  🔐 로그인 필요
+                </h3>
+                <p className="text-gray-700 dark:text-gray-300 mb-6">
+                  이미지 업로드 및 개인화된 기능을 이용하려면 로그인이 필요합니다.
+                </p>
+
+                <button
+                  onClick={() => signIn()}
+                  className="inline-block bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-8 rounded-lg transition-colors"
+                >
+                  로그인하기
+                </button>
+              </div>
+            )}
           </div>
         </div>
+
+        {/* Current Login Status Debug */}
+        {session && (
+          <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 max-w-2xl mx-auto">
+            <h4 className="text-sm font-medium text-yellow-800 dark:text-yellow-200 mb-2">
+              🔍 현재 로그인 상태 (디버깅 정보)
+            </h4>
+            <div className="text-xs text-yellow-700 dark:text-yellow-300 space-y-1">
+              <p>상태: {status}</p>
+              <p>사용자: {session.user?.name} ({session.user?.email})</p>
+              <p>역할: {session.user?.role || '역할 정보 없음'}</p>
+              <p>ID: {session.user?.id}</p>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

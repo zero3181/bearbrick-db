@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useParams } from 'next/navigation'
 import EditRequestForm from '@/components/EditRequestForm'
 import ImageUpload from '@/components/ImageUpload'
+import UserImageSubmission from '@/components/UserImageSubmission'
 
 interface Bearbrick {
   id: string
@@ -423,8 +424,14 @@ export default function BearbrickDetailPage() {
                     >
                       정보 수정 요청
                     </button>
+                    <button
+                      onClick={() => setShowImageUpload(true)}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                    >
+                      이미지 등록하기
+                    </button>
                     <p className="text-xs text-gray-600 dark:text-gray-400 text-center">
-                      수정 요청은 관리자 검토 후 반영됩니다
+                      수정 요청과 이미지는 관리자 검토 후 반영됩니다
                     </p>
                   </div>
                 </div>
@@ -552,17 +559,27 @@ export default function BearbrickDetailPage() {
       {/* Regular User Modals */}
       {showImageUpload && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-lg font-semibold mb-4">이미지 업로드</h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              곧 사용자 이미지 업로드 기능이 추가될 예정입니다.
-            </p>
-            <button
-              onClick={() => setShowImageUpload(false)}
-              className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg"
-            >
-              닫기
-            </button>
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {bearbrick.name} - 이미지 등록
+              </h3>
+              <button
+                onClick={() => setShowImageUpload(false)}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <UserImageSubmission
+              onImageSubmitted={() => {
+                setShowImageUpload(false);
+                alert('이미지가 성공적으로 등록되었습니다! 관리자 승인 후 이 베어브릭에 반영됩니다.');
+              }}
+            />
           </div>
         </div>
       )}

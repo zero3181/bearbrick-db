@@ -23,7 +23,7 @@ export default function AdminSetupPage() {
 
   const [form, setForm] = useState({
     email: '',
-    role: 'ADMIN'
+    role: 'OWNER'
   })
 
   useEffect(() => {
@@ -80,7 +80,7 @@ export default function AdminSetupPage() {
 
       if (response.ok) {
         setSuccess(`${data.user.name}님의 권한이 ${data.user.role}로 변경되었습니다.`)
-        setForm({ email: '', role: 'ADMIN' })
+        setForm({ email: '', role: 'OWNER' })
         fetchData() // Refresh data
       } else {
         setError(data.error || '권한 변경에 실패했습니다.')
@@ -95,16 +95,16 @@ export default function AdminSetupPage() {
 
   const getRoleColor = (role: string) => {
     switch (role) {
+      case 'OWNER': return 'text-purple-600 bg-purple-100'
       case 'ADMIN': return 'text-red-600 bg-red-100'
-      case 'CONTRIBUTOR': return 'text-blue-600 bg-blue-100'
       default: return 'text-gray-600 bg-gray-100'
     }
   }
 
   const getRoleLabel = (role: string) => {
     switch (role) {
+      case 'OWNER': return '오너'
       case 'ADMIN': return '관리자'
-      case 'CONTRIBUTOR': return '기여자'
       default: return '사용자'
     }
   }
@@ -127,9 +127,10 @@ export default function AdminSetupPage() {
   }
 
   const isAdmin = currentUser?.role === 'ADMIN'
+  const isOwner = currentUser?.role === 'OWNER'
   const isFirstUser = users.length === 1
 
-  if (!isAdmin && !isFirstUser) {
+  if (!isAdmin && !isOwner && !isFirstUser) {
     return (
       <div className="min-h-screen p-8 bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
@@ -137,7 +138,7 @@ export default function AdminSetupPage() {
             접근 권한이 없습니다
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mb-8">
-            관리자만 사용자 권한을 변경할 수 있습니다.
+            관리자 또는 오너만 사용자 권한을 변경할 수 있습니다.
           </p>
           <a 
             href="/"
@@ -193,7 +194,7 @@ export default function AdminSetupPage() {
                   첫 번째 사용자
                 </h3>
                 <p className="mt-1 text-sm text-yellow-700 dark:text-yellow-300">
-                  당신은 첫 번째 사용자입니다. 자신을 관리자로 설정하거나 다른 사용자에게 권한을 부여할 수 있습니다.
+                  당신은 첫 번째 사용자입니다. 자신을 오너로 설정하거나 다른 사용자에게 권한을 부여할 수 있습니다.
                 </p>
               </div>
             </div>
@@ -247,13 +248,13 @@ export default function AdminSetupPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 >
                   <option value="USER">사용자 (USER)</option>
-                  <option value="CONTRIBUTOR">기여자 (CONTRIBUTOR)</option>
-                  <option value="ADMIN">관리자 (ADMIN)</option>
+                  {(isOwner || isFirstUser) && <option value="ADMIN">관리자 (ADMIN)</option>}
+                  {(isOwner || isFirstUser) && <option value="OWNER">오너 (OWNER)</option>}
                 </select>
                 <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 space-y-1">
-                  <p>• USER: 기본 사용자, 조회만 가능</p>
-                  <p>• CONTRIBUTOR: 기여 요청 가능</p>
-                  <p>• ADMIN: 모든 권한, 즉시 편집 가능</p>
+                  <p>• USER: 기본 사용자, 기여 요청 가능</p>
+                  <p>• ADMIN: 관리자, 이미지 승인 및 편집 가능</p>
+                  <p>• OWNER: 오너, 모든 권한 및 관리자 지정 가능</p>
                 </div>
               </div>
 

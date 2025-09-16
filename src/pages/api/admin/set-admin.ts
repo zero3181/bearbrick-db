@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { PrismaClient } from '@prisma/client'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '../auth/[...nextauth]'
+import { authOptions } from "@/lib/auth"
 
 const prisma = new PrismaClient()
 
@@ -27,13 +27,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(404).json({ error: 'User not found' })
     }
 
-    // Check if this is the first user (make them super admin) or if they're already admin
+    // Check if this is the first user (make them OWNER) or if they have appropriate permissions
     const userCount = await prisma.user.count()
     const isFirstUser = userCount === 1
     const isCurrentAdmin = currentUser.role === 'ADMIN'
+    const isCurrentOwner = currentUser.role === 'OWNER'
 
-    if (!isFirstUser && !isCurrentAdmin) {
-      return res.status(403).json({ error: 'Only existing admins can set new admins' })
+    if (!isFirstUser && !isCurrentAdmin && !isCurrentOwner) {
+      return res.status(403).json({ error: 'Only ADMIN or OWNER can set user roles' })
     }
 
     const { email, role } = req.body
@@ -42,8 +43,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Email and role are required' })
     }
 
-    if (!['USER', 'CONTRIBUTOR', 'ADMIN'].includes(role)) {
-      return res.status(400).json({ error: 'Invalid role. Must be USER, CONTRIBUTOR, or ADMIN' })
+    if (!['USER', 'ADMIN', 'OWNER'].includes(role)) {
+      return res.status(400).json({ error: 'Invalid role. Must be USER, ADMIN, or OWNER' })
+    }
+
+    // Only OWNER can assign ADMIN role
+    if (role === 'ADMIN' && currentUser.role !== 'OWNER') {
+      return res.status(403).json({ error: 'Only OWNER can assign ADMIN role' })
+    }
+
+    // Only OWNER can assign OWNER role
+    if (role === 'OWNER' && currentUser.role !== 'OWNER') {
+      return res.status(403).json({ error: 'Only OWNER can assign OWNER role' })
     }
 
     // Update user role
