@@ -14,45 +14,17 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   callbacks: {
-    session: async ({ session, token, user }) => {
-      if (session?.user) {
-        if (token?.sub) {
-          session.user.id = token.sub
-        } else if (user?.id) {
-          session.user.id = user.id
-        }
-
-        // Get user role from database
-        try {
-          const dbUser = await prisma.user.findUnique({
-            where: { id: session.user.id },
-            select: { role: true },
-          });
-
-          session.user.role = dbUser?.role || UserRole.USER;
-        } catch (error) {
-          console.error('Error fetching user role:', error);
-          session.user.role = UserRole.USER;
-        }
+    session: async ({ session, user }) => {
+      // Database session strategy를 사용하므로 user 객체에서 정보 가져오기
+      if (session?.user && user) {
+        session.user.id = user.id
+        session.user.role = (user as any).role || UserRole.USER
       }
       return session
     },
-    jwt: async ({ user, token }) => {
-      if (user) {
-        token.uid = user.id
-      }
-      return token
-    },
     signIn: async ({ user, account, profile }) => {
-      try {
-        // 임시로 OWNER 역할 설정 비활성화 (데이터베이스 스키마 동기화 후 활성화)
-        console.log('User signed in:', user.email)
-        return true
-      } catch (error) {
-        console.error('SignIn callback error:', error)
-        // Allow sign-in to continue even if role setting fails
-        return true
-      }
+      console.log('SignIn callback - User:', user.email, 'Account:', account?.provider)
+      return true
     },
   },
   session: {
@@ -61,12 +33,21 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: '/auth/signin',
   },
-  // 개발 환경에서 계정 연결 문제 해결
-  debug: process.env.NODE_ENV === 'development',
-  // 이메일 계정 연결 허용 (개발 환경에서만)
+  debug: true, // 운영 환경에서도 로그 확인을 위해 임시로 활성화
   events: {
     linkAccount: async ({ user, account, profile }) => {
-      console.log('Account linked:', { user, account, profile });
+      console.log('Account linked - User:', user.email, 'Provider:', account.provider);
     },
   },
+  logger: {
+    error(code, metadata) {
+      console.error('NextAuth Error:', code, metadata)
+    },
+    warn(code) {
+      console.warn('NextAuth Warning:', code)
+    },
+    debug(code, metadata) {
+      console.log('NextAuth Debug:', code, metadata)
+    }
+  }
 }
