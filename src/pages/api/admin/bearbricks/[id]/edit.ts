@@ -23,7 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       where: { email: session.user.email }
     })
 
-    if (!user || user.role !== 'ADMIN') {
+    if (!user || (user.role !== 'ADMIN' && user.role !== 'OWNER')) {
       return res.status(403).json({ error: 'Admin access required' })
     }
 

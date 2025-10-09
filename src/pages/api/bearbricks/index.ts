@@ -4,81 +4,45 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  try {
-    if (req.method === 'GET') {
-      const { 
-        page = '1', 
-        limit = '20', 
-        series, 
-        category, 
-        search 
-      } = req.query
-      const pageNum = parseInt(page as string)
-      const limitNum = parseInt(limit as string)
-      const skip = (pageNum - 1) * limitNum
-
-      // Build where clause
-      const where: any = {}
-      
-      if (series) {
-        where.series = {
-          number: parseInt(series as string)
-        }
-      }
-      
-      if (category) {
-        where.category = {
-          name: category as string
-        }
-      }
-      
-      if (search) {
-        where.name = {
-          contains: search as string,
-          mode: 'insensitive'
-        }
-      }
-
-      const [bearbricks, total] = await Promise.all([
-        prisma.bearbrick.findMany({
-          where,
-          skip,
-          take: limitNum,
-          include: {
-            series: true,
-            category: true,
-            collaboration: true,
-            images: {
-              where: { isPrimary: true },
-              take: 1
-            }
+  if (req.method === 'GET') {
+    try {
+      const bearbricks = await prisma.bearbrick.findMany({
+        include: {
+          images: {
+            select: {
+              id: true,
+              url: true,
+              isPrimary: true,
+            },
           },
-          orderBy: { id: 'asc' }
-        }),
-        prisma.bearbrick.count({ where })
-      ])
-
-      const totalPages = Math.ceil(total / limitNum)
-      
-      res.status(200).json({
-        data: bearbricks,
-        pagination: {
-          page: pageNum,
-          limit: limitNum,
-          total,
-          totalPages,
-          hasNextPage: pageNum < totalPages,
-          hasPrevPage: pageNum > 1
-        }
+          series: {
+            select: {
+              name: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
       })
-    } else {
-      res.setHeader('Allow', ['GET'])
-      res.status(405).end(`Method ${req.method} Not Allowed`)
+
+      // Map to simpler structure
+      const mapped = bearbricks.map((b) => ({
+        id: b.id,
+        name: b.name,
+        series: b.series?.name || null,
+        size: b.sizePercentage,
+        images: b.images,
+      }))
+
+      return res.status(200).json(mapped)
+    } catch (error) {
+      console.error('Failed to fetch bearbricks:', error)
+      return res.status(500).json({ error: 'Failed to fetch bearbricks' })
+    } finally {
+      await prisma.$disconnect()
     }
-  } catch (error) {
-    console.error('Error fetching bearbricks:', error)
-    res.status(500).json({ error: 'Failed to fetch bearbricks' })
-  } finally {
-    await prisma.$disconnect()
   }
+
+  return res.status(405).json({ error: 'Method not allowed' })
 }

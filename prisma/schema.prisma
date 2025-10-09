@@ -1,65 +1,78 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
 }
 
-// NextAuth.js required models
+model Bearbrick {
+  id                String            @id @default(cuid())
+  name              String
+  sizePercentage    Int
+  releaseDate       DateTime?
+  rarityPercentage  Float?
+  estimatedQuantity Int?
+  materialType      String?           @default("ABS Plastic")
+  description       String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  seriesId          String
+  categoryId        String
+  collaborationId   String?
+  createdById       String
+  images            BearbrickImage[]
+  categories        categories        @relation(fields: [categoryId], references: [id])
+  collaborations    collaborations?   @relation(fields: [collaborationId], references: [id])
+  users             users             @relation(fields: [createdById], references: [id])
+  series            series            @relation(fields: [seriesId], references: [id])
+  edit_requests     edit_requests[]
+  image_requests    image_requests[]
+  recommendations   recommendations[]
+
+  @@map("bearbricks")
+}
+
+model BearbrickImage {
+  id           String    @id @default(cuid())
+  url          String
+  altText      String?
+  isPrimary    Boolean   @default(false)
+  uploadedAt   DateTime  @default(now())
+  bearbrickId  String
+  uploadedById String
+  bearbrick    Bearbrick @relation(fields: [bearbrickId], references: [id], onDelete: Cascade)
+  users        users     @relation(fields: [uploadedById], references: [id])
+
+  @@map("bearbrick_images")
+}
+
 model Account {
-  id                String  @id @default(cuid())
+  id                String  @id
   userId            String
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  users             users   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
 
 model Session {
-  id           String   @id @default(cuid())
+  id           String   @id
   sessionToken String   @unique
   userId       String
   expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
-  role          UserRole  @default(USER)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  // Relations
-  accounts          Account[]
-  sessions          Session[]
-  createdBearbricks Bearbrick[] @relation("CreatedBy")
-  uploadedImages    BearbrickImage[] @relation("UploadedBy")
-  editRequests      EditRequest[]
-  imageRequests     ImageRequest[]
-  recommendations   Recommendation[]
-  submittedImages   UserSubmittedImage[] @relation("SubmittedImages")
-  reviewedImages    UserSubmittedImage[] @relation("ReviewedImages")
-
-  @@map("users")
+  users        users    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
@@ -70,186 +83,116 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// Bearbrick specific models
-model Series {
-  id           String      @id @default(cuid())
-  number       Int         @unique
-  name         String
-  season       String      // "Summer" or "Winter"
-  releaseYear  Int
-  theme        String?
-  description  String?
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-
-  bearbricks   Bearbrick[]
-
-  @@map("series")
-}
-
-model Category {
-  id           String      @id @default(cuid())
+model categories {
+  id           String      @id
   name         String      @unique
   description  String?
   rarityWeight Float       @default(1.0)
   createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-
+  updatedAt    DateTime
   bearbricks   Bearbrick[]
-
-  @@map("categories")
 }
 
-model Collaboration {
-  id          String      @id @default(cuid())
+model collaborations {
+  id          String      @id
   brandName   String
   artistName  String?
-  type        String      // "Brand", "Artist", "Mixed"
+  type        String
   description String?
   createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-
+  updatedAt   DateTime
   bearbricks  Bearbrick[]
-
-  @@map("collaborations")
 }
 
-model Bearbrick {
-  id                    String        @id @default(cuid())
-  name                  String
-  sizePercentage        Int           // 50, 70, 100, 200, 400, 1000
-  releaseDate           DateTime?
-  rarityPercentage      Float?
-  estimatedQuantity     Int?
-  materialType          String?       @default("ABS Plastic")
-  description           String?
-  createdAt             DateTime      @default(now())
-  updatedAt             DateTime      @updatedAt
-
-  // Foreign keys
-  seriesId              String
-  categoryId            String
-  collaborationId       String?
-  createdById           String
-
-  // Relations
-  series                Series        @relation(fields: [seriesId], references: [id])
-  category              Category      @relation(fields: [categoryId], references: [id])
-  collaboration         Collaboration? @relation(fields: [collaborationId], references: [id])
-  createdBy             User          @relation("CreatedBy", fields: [createdById], references: [id])
-  
-  images                BearbrickImage[]
-  editRequests          EditRequest[]
-  imageRequests         ImageRequest[]
-  recommendations       Recommendation[]
-
-  @@map("bearbricks")
-}
-
-model BearbrickImage {
-  id          String    @id @default(cuid())
-  url         String
-  altText     String?
-  isPrimary   Boolean   @default(false)
-  uploadedAt  DateTime  @default(now())
-
-  // Foreign keys
-  bearbrickId String
-  uploadedById String
-
-  // Relations
-  bearbrick   Bearbrick @relation(fields: [bearbrickId], references: [id], onDelete: Cascade)
-  uploadedBy  User      @relation("UploadedBy", fields: [uploadedById], references: [id])
-
-  @@map("bearbrick_images")
-}
-
-model EditRequest {
-  id          String             @id @default(cuid())
-  type        EditRequestType
-  status      RequestStatus      @default(PENDING)
-  description String?
-  oldData     Json?
-  newData     Json
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  reviewedAt  DateTime?
-
-  // Foreign keys
-  bearbrickId String
-  requestedById String
-  reviewedById  String?
-
-  // Relations
-  bearbrick   Bearbrick @relation(fields: [bearbrickId], references: [id])
-  requestedBy User      @relation(fields: [requestedById], references: [id])
-
-  @@map("edit_requests")
-}
-
-model ImageRequest {
-  id          String        @id @default(cuid())
-  newImageUrl String
-  reason      String?
-  status      RequestStatus @default(PENDING)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  reviewedAt  DateTime?
-
-  // Foreign keys
+model edit_requests {
+  id            String          @id
+  description   String?
+  oldData       Json?
+  newData       Json
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime
+  reviewedAt    DateTime?
   bearbrickId   String
   requestedById String
   reviewedById  String?
-
-  // Relations
-  bearbrick     Bearbrick @relation(fields: [bearbrickId], references: [id])
-  requestedBy   User      @relation(fields: [requestedById], references: [id])
-
-  @@map("image_requests")
+  type          EditRequestType
+  status        RequestStatus   @default(PENDING)
+  bearbricks    Bearbrick       @relation(fields: [bearbrickId], references: [id])
+  users         users           @relation(fields: [requestedById], references: [id])
 }
 
-model Recommendation {
-  id          String   @id @default(cuid())
-  createdAt   DateTime @default(now())
+model image_requests {
+  id            String        @id
+  newImageUrl   String
+  reason        String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime
+  reviewedAt    DateTime?
+  bearbrickId   String
+  requestedById String
+  reviewedById  String?
+  status        RequestStatus @default(PENDING)
+  bearbricks    Bearbrick     @relation(fields: [bearbrickId], references: [id])
+  users         users         @relation(fields: [requestedById], references: [id])
+}
 
-  // Foreign keys
+model recommendations {
+  id          String    @id
+  createdAt   DateTime  @default(now())
   userId      String
   bearbrickId String
-
-  // Relations
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  bearbrick   Bearbrick @relation(fields: [bearbrickId], references: [id], onDelete: Cascade)
+  bearbricks  Bearbrick @relation(fields: [bearbrickId], references: [id], onDelete: Cascade)
+  users       users     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, bearbrickId])
-  @@map("recommendations")
 }
 
-model UserSubmittedImage {
-  id          String             @id @default(cuid())
-  imageUrl    String
-  title       String?
+model series {
+  id          String      @id
+  number      Int         @unique
+  name        String
+  season      String
+  releaseYear Int
+  theme       String?
   description String?
-  status      SubmissionStatus   @default(PENDING)
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  reviewedAt  DateTime?
-
-  // Foreign keys
-  submittedById String
-  reviewedById  String?
-
-  // Relations
-  submittedBy User @relation("SubmittedImages", fields: [submittedById], references: [id])
-  reviewedBy  User? @relation("ReviewedImages", fields: [reviewedById], references: [id])
-
-  @@map("user_submitted_images")
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime
+  bearbricks  Bearbrick[]
 }
 
-// Enums
-enum UserRole {
-  USER
-  ADMIN
-  OWNER
+model user_submitted_images {
+  id                                               String           @id
+  imageUrl                                         String
+  title                                            String?
+  description                                      String?
+  status                                           SubmissionStatus @default(PENDING)
+  createdAt                                        DateTime         @default(now())
+  updatedAt                                        DateTime
+  reviewedAt                                       DateTime?
+  submittedById                                    String
+  reviewedById                                     String?
+  users_user_submitted_images_reviewedByIdTousers  users?           @relation("user_submitted_images_reviewedByIdTousers", fields: [reviewedById], references: [id])
+  users_user_submitted_images_submittedByIdTousers users            @relation("user_submitted_images_submittedByIdTousers", fields: [submittedById], references: [id])
+}
+
+model users {
+  id                                                               String                  @id
+  name                                                             String?
+  email                                                            String                  @unique
+  emailVerified                                                    DateTime?
+  image                                                            String?
+  role                                                             UserRole                @default(USER)
+  createdAt                                                        DateTime                @default(now())
+  updatedAt                                                        DateTime
+  Account                                                          Account[]
+  Session                                                          Session[]
+  bearbrick_images                                                 BearbrickImage[]
+  bearbricks                                                       Bearbrick[]
+  edit_requests                                                    edit_requests[]
+  image_requests                                                   image_requests[]
+  recommendations                                                  recommendations[]
+  user_submitted_images_user_submitted_images_reviewedByIdTousers  user_submitted_images[] @relation("user_submitted_images_reviewedByIdTousers")
+  user_submitted_images_user_submitted_images_submittedByIdTousers user_submitted_images[] @relation("user_submitted_images_submittedByIdTousers")
 }
 
 enum EditRequestType {
@@ -269,4 +212,10 @@ enum SubmissionStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  OWNER
 }

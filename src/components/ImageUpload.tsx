@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react'
 import { CameraIcon, PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { useSession } from 'next-auth/react'
+import { upload } from '@vercel/blob/client'
 
 interface ImageUploadProps {
   bearbrickId: string
@@ -14,6 +15,7 @@ export default function ImageUpload({ bearbrickId, onUploadSuccess, className = 
   const { data: session } = useSession()
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
+  const [uploadProgress, setUploadProgress] = useState(0)
   const [preview, setPreview] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
@@ -39,30 +41,49 @@ export default function ImageUpload({ bearbrickId, onUploadSuccess, className = 
   const uploadImage = async (file: File) => {
     setIsUploading(true)
     setUploadError('')
+    setUploadProgress(0)
 
     try {
-      const formData = new FormData()
-      formData.append('image', file)
-      formData.append('bearbrickId', bearbrickId)
-      formData.append('altText', `${file.name}`)
-      
-      const response = await fetch('/api/upload/image', {
+      // Generate unique filename
+      const timestamp = Date.now()
+      const ext = file.name.split('.').pop() || 'jpg'
+      const filename = `bearbrick-${bearbrickId}-${timestamp}.${ext}`
+
+      // Upload directly to Vercel Blob
+      const blob = await upload(filename, file, {
+        access: 'public',
+        handleUploadUrl: '/api/upload/presigned',
+        onUploadProgress: (progress) => {
+          setUploadProgress(Math.round((progress.loaded / progress.total) * 100))
+        },
+      })
+
+      // Save metadata to database
+      const response = await fetch(`/api/admin/bearbricks/${bearbrickId}/upload-image`, {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          imageUrl: blob.url,
+          altText: file.name,
+          isPrimary: false,
+        }),
       })
 
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error || 'Upload failed')
+        throw new Error(result.error || 'Failed to save image metadata')
       }
 
-      onUploadSuccess?.(result.image.url)
+      onUploadSuccess?.(blob.url)
     } catch (error) {
       console.error('Upload error:', error)
       setUploadError(error instanceof Error ? error.message : 'Upload failed')
     } finally {
       setIsUploading(false)
+      setUploadProgress(0)
     }
   }
 
@@ -84,6 +105,7 @@ export default function ImageUpload({ bearbrickId, onUploadSuccess, className = 
   const clearPreview = () => {
     setPreview(null)
     setUploadError('')
+    setUploadProgress(0)
   }
 
   return (
@@ -137,9 +159,17 @@ export default function ImageUpload({ bearbrickId, onUploadSuccess, className = 
       </div>
 
       {isUploading && (
-        <div className="mt-4 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-          <span className="ml-2 text-sm text-gray-600">업로드 중...</span>
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-gray-600">업로드 중...</span>
+            <span className="text-sm font-medium text-gray-900">{uploadProgress}%</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
+              style={{ width: `${uploadProgress}%` }}
+            ></div>
+          </div>
         </div>
       )}
 

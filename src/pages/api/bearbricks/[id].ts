@@ -4,35 +4,23 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  try {
-    if (req.method === 'GET') {
-      const { id } = req.query
+  const { id } = req.query
 
+  if (req.method === 'GET') {
+    try {
       const bearbrick = await prisma.bearbrick.findUnique({
         where: { id: id as string },
         include: {
-          series: true,
-          category: true,
-          collaboration: true,
-          createdBy: {
-            select: {
-              id: true,
-              name: true
-            }
-          },
           images: {
-            include: {
-              uploadedBy: {
-                select: {
-                  id: true,
-                  name: true
-                }
-              }
-            },
             orderBy: [
               { isPrimary: 'desc' },
               { uploadedAt: 'asc' }
             ]
+          },
+          series: {
+            select: {
+              name: true,
+            }
           }
         }
       })
@@ -41,15 +29,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(404).json({ error: 'Bearbrick not found' })
       }
 
-      res.status(200).json(bearbrick)
-    } else {
-      res.setHeader('Allow', ['GET'])
-      res.status(405).end(`Method ${req.method} Not Allowed`)
+      // Map to simpler structure
+      const mapped = {
+        id: bearbrick.id,
+        name: bearbrick.name,
+        series: bearbrick.series?.name || null,
+        size: bearbrick.sizePercentage,
+        releaseDate: bearbrick.releaseDate,
+        description: bearbrick.description,
+        images: bearbrick.images,
+      }
+
+      return res.status(200).json(mapped)
+    } catch (error) {
+      console.error('Failed to fetch bearbrick:', error)
+      return res.status(500).json({ error: 'Failed to fetch bearbrick' })
+    } finally {
+      await prisma.$disconnect()
     }
-  } catch (error) {
-    console.error('Error fetching bearbrick:', error)
-    res.status(500).json({ error: 'Failed to fetch bearbrick' })
-  } finally {
-    await prisma.$disconnect()
   }
+
+  return res.status(405).json({ error: 'Method not allowed' })
 }
