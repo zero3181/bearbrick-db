@@ -31,9 +31,11 @@ export default function HomePage() {
     try {
       const res = await fetch('/api/bearbricks')
       const data = await res.json()
-      setBearbricks(data)
+      // Ensure data is an array before setting state
+      setBearbricks(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Failed to fetch bearbricks:', error)
+      setBearbricks([])
     } finally {
       setLoading(false)
     }

@@ -1,7 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
@@ -38,9 +36,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(200).json(mapped)
     } catch (error) {
       console.error('Failed to fetch bearbricks:', error)
-      return res.status(500).json({ error: 'Failed to fetch bearbricks' })
-    } finally {
-      await prisma.$disconnect()
+      // Return empty array instead of error object to prevent client-side crashes
+      return res.status(200).json([])
     }
   }
 
