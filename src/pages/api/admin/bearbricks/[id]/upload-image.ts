@@ -38,7 +38,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       data: {
         url: imageUrl,
         isPrimary,
-        bearbrickId: id as string,
+        bearbrick: {
+          connect: {
+            id: id as string,
+          },
+        },
       }
     })
 

@@ -6,19 +6,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  // Simple password check
-  const password = req.headers.authorization?.replace('Bearer ', '')
-  if (password !== '4321') {
-    return res.status(401).json({ error: 'Unauthorized' })
-  }
-
   try {
     const body = req.body as HandleUploadBody
 
     const jsonResponse = await handleUpload({
       body,
       request: req,
-      onBeforeGenerateToken: async () => {
+      onBeforeGenerateToken: async (pathname, clientPayload) => {
+        // Check for admin authorization in client payload
+        const payload = clientPayload ? JSON.parse(clientPayload) : {}
+        if (payload.authorization !== '4321') {
+          throw new Error('Unauthorized')
+        }
+
         return {
           allowedContentTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
           tokenPayload: JSON.stringify({
@@ -29,7 +29,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       onUploadCompleted: async ({ blob }) => {
         try {
           console.log('Blob upload completed:', blob.url)
-          // Additional processing can be done here
         } catch (error) {
           console.error('Error in onUploadCompleted:', error)
         }
@@ -39,6 +38,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(200).json(jsonResponse)
   } catch (error) {
     console.error('Presigned upload error:', error)
-    return res.status(500).json({ error: 'Internal server error' })
+    return res.status(401).json({ error: error instanceof Error ? error.message : 'Unauthorized' })
   }
 }

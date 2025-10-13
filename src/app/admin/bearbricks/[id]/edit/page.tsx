@@ -65,13 +65,14 @@ export default function EditBearbrickPage() {
     e.preventDefault()
 
     try {
-      const res = await fetch(`/api/admin/bearbricks/${params.id}`, {
+      const res = await fetch(`/api/admin/bearbricks/update-bearbrick`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer 4321',
         },
         body: JSON.stringify({
+          id: params.id,
           ...formData,
           size: parseInt(formData.size),
           releaseDate: formData.releaseDate || null,
