@@ -178,7 +178,7 @@ export default function AdminManagePage() {
                     <td className="px-6 py-4">
                       <div className="w-16 h-16 bg-gray-100 rounded overflow-hidden">
                         <img
-                          src={primaryImage?.url || bearbrick.images[0]?.url || '/placeholder.png'}
+                          src={primaryImage?.url || bearbrick.images[0]?.url || '/bearbrick-placeholder.svg'}
                           alt={bearbrick.name}
                           className="w-full h-full object-cover"
                         />

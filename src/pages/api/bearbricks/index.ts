@@ -4,7 +4,14 @@ import { prisma } from '@/lib/prisma'
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     try {
+      const { series } = req.query
+
       const bearbricks = await prisma.bearbrick.findMany({
+        where: series && typeof series === 'string' ? {
+          series: {
+            name: series,
+          },
+        } : undefined,
         include: {
           images: {
             select: {

@@ -39,7 +39,7 @@ export default function BearbrickDetailPage() {
         const data = await res.json()
         setBearbrick(data)
         const primary = data.images.find((img: any) => img.isPrimary)
-        setSelectedImage(primary?.url || data.images[0]?.url || '')
+        setSelectedImage(primary?.url || data.images[0]?.url || '/bearbrick-placeholder.svg')
       }
     } catch (error) {
       console.error('Failed to fetch bearbrick:', error)
@@ -108,7 +108,7 @@ export default function BearbrickDetailPage() {
             <div>
               <div className="aspect-square bg-gray-100 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
                 <img
-                  src={selectedImage || '/placeholder.png'}
+                  src={selectedImage || '/bearbrick-placeholder.svg'}
                   alt={bearbrick.name}
                   className="w-full h-full object-cover"
                 />

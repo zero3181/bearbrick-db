@@ -14,22 +14,58 @@ interface Bearbrick {
   }[]
 }
 
+interface Series {
+  id: string
+  name: string
+  _count?: {
+    bearbricks: number
+  }
+}
+
 export default function HomePage() {
   const [bearbricks, setBearbricks] = useState<Bearbrick[]>([])
+  const [allSeries, setAllSeries] = useState<Series[]>([])
+  const [selectedSeries, setSelectedSeries] = useState<string>('all')
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [password, setPassword] = useState('')
 
   useEffect(() => {
-    fetchBearbricks()
+    fetchSeries()
     const adminStatus = localStorage.getItem('isAdmin') === 'true'
     setIsAdmin(adminStatus)
   }, [])
 
-  const fetchBearbricks = async () => {
+  useEffect(() => {
+    if (allSeries.length > 0 && selectedSeries === 'all') {
+      // Auto-select the latest series (first in the list)
+      const latestSeries = allSeries[0]?.name
+      if (latestSeries) {
+        setSelectedSeries(latestSeries)
+        fetchBearbricks(latestSeries)
+      }
+    } else if (selectedSeries !== 'all') {
+      fetchBearbricks(selectedSeries)
+    }
+  }, [selectedSeries, allSeries])
+
+  const fetchSeries = async () => {
     try {
-      const res = await fetch('/api/bearbricks')
+      const res = await fetch('/api/series')
+      const data = await res.json()
+      setAllSeries(Array.isArray(data) ? data : [])
+    } catch (error) {
+      console.error('Failed to fetch series:', error)
+      setAllSeries([])
+    }
+  }
+
+  const fetchBearbricks = async (series?: string) => {
+    try {
+      setLoading(true)
+      const url = series && series !== 'all' ? `/api/bearbricks?series=${encodeURIComponent(series)}` : '/api/bearbricks'
+      const res = await fetch(url)
       const data = await res.json()
       // Ensure data is an array before setting state
       setBearbricks(Array.isArray(data) ? data : [])
@@ -39,6 +75,10 @@ export default function HomePage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleSeriesChange = (series: string) => {
+    setSelectedSeries(series)
   }
 
   const handleAdminLogin = () => {
@@ -60,7 +100,7 @@ export default function HomePage() {
 
   const getPrimaryImage = (bearbrick: Bearbrick) => {
     const primary = bearbrick.images.find(img => img.isPrimary)
-    return primary?.url || bearbrick.images[0]?.url || '/placeholder.png'
+    return primary?.url || bearbrick.images[0]?.url || '/bearbrick-placeholder.svg'
   }
 
   if (loading) {
@@ -107,7 +147,26 @@ export default function HomePage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <h2 className="text-3xl font-bold mb-6">베어브릭 컬렉션</h2>
+        {/* Series Filter */}
+        <div className="mb-6 flex items-center justify-between gap-4">
+          <h2 className="text-3xl font-bold">베어브릭 컬렉션</h2>
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-semibold text-gray-700">시리즈:</label>
+            <select
+              value={selectedSeries}
+              onChange={(e) => handleSeriesChange(e.target.value)}
+              className="px-4 py-2 border rounded bg-white text-gray-700 hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">전체</option>
+              {allSeries.map((series) => (
+                <option key={series.id} value={series.name}>
+                  {series.name}
+                  {series._count && ` (${series._count.bearbricks})`}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
 
         {bearbricks.length === 0 ? (
           <div className="text-center py-12">
@@ -122,7 +181,7 @@ export default function HomePage() {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
             {bearbricks.map((bearbrick) => (
               <Link
                 key={bearbrick.id}
@@ -136,9 +195,9 @@ export default function HomePage() {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="p-4">
-                  <h3 className="font-semibold text-lg mb-1">{bearbrick.name}</h3>
-                  <p className="text-sm text-gray-600">
+                <div className="p-2 md:p-4">
+                  <h3 className="font-semibold text-xs md:text-lg mb-1 line-clamp-2">{bearbrick.name}</h3>
+                  <p className="text-xs md:text-sm text-gray-600">
                     {bearbrick.series && `${bearbrick.series} · `}
                     {bearbrick.size}%
                   </p>

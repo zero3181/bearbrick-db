@@ -1,0 +1,1179 @@
+﻿ID,Series,ReleaseYear,Figure,Probability
+S01-001,1,2001,Basic [B],1.11
+S01-002,1,2001,Basic [E],1.11
+S01-003,1,2001,Basic [@],1.11
+S01-004,1,2001,Basic [R],1.11
+S01-005,1,2001,Basic [b],1.11
+S01-006,1,2001,Basic [R(2)],1.11
+S01-007,1,2001,Basic [I],1.11
+S01-008,1,2001,Basic [C],1.11
+S01-009,1,2001,Basic [K],1.11
+S01-010,1,2001,Jellybean,13.54
+S01-011,1,2001,Pattern,11.46
+S01-012,1,2001,Flag,9.38
+S01-013,1,2001,Horror,12.5
+S01-014,1,2001,SF,12.5
+S01-015,1,2001,Cute,14.58
+S01-016,1,2001,Animal,8.33
+S01-017,1,2001,Artist [Hiroto],4.16
+S01-018,1,2001,Artist [Hanakuma],1.04
+S01-019,1,2001,Secret [Hiroto],0.52
+S01-020,1,2001,Secret [Hazure],1.11
+S02-001,2,2001,Basic [B],1.62
+S02-002,2,2001,Basic [E],1.62
+S02-003,2,2001,Basic [@],1.62
+S02-004,2,2001,Basic [R],1.62
+S02-005,2,2001,Basic [b],1.62
+S02-006,2,2001,Basic [R(2)],1.62
+S02-007,2,2001,Basic [I],1.62
+S02-008,2,2001,Basic [C],1.62
+S02-009,2,2001,Basic [K],1.62
+S02-010,2,2001,Jellybean,11.46
+S02-011,2,2001,Pattern,12.5
+S02-012,2,2001,Flag,12.5
+S02-013,2,2001,Horror,11.46
+S02-014,2,2001,SF,10.42
+S02-015,2,2001,Cute,7.29
+S02-016,2,2001,Animal,12.5
+S02-017,2,2001,Artist [Takeyama Noriya],4.16
+S02-018,2,2001,Artist [Mori Chack],1.04
+S02-019,2,2001,Secret [Daruma],0.52
+S02-020,2,2001,Secret [Unknown],0.52
+S03-001,3,2002,Basic [B],1.62
+S03-002,3,2002,Basic [E],1.62
+S03-003,3,2002,Basic [@],1.62
+S03-004,3,2002,Basic [R],1.62
+S03-005,3,2002,Basic [b],1.62
+S03-006,3,2002,Basic [R(2)],1.62
+S03-007,3,2002,Basic [I],1.62
+S03-008,3,2002,Basic [C],1.62
+S03-009,3,2002,Basic [K],1.62
+S03-010,3,2002,Jellybean,9.38
+S03-011,3,2002,Pattern,12.5
+S03-012,3,2002,Flag,8.33
+S03-013,3,2002,Horror,8.33
+S03-014,3,2002,SF,11.45
+S03-015,3,2002,Cute,14.58
+S03-016,3,2002,Animal,13.54
+S03-017,3,2002,Artist [Devilrobots],4.16
+S03-018,3,2002,Artist [HF],1.04
+S03-019,3,2002,Secret [Winnie the Pooh],0.52
+S04-001,4,2002,Basic [B],1.62
+S04-002,4,2002,Basic [E],1.62
+S04-003,4,2002,Basic [@],1.62
+S04-004,4,2002,Basic [R],1.62
+S04-005,4,2002,Basic [b],1.62
+S04-006,4,2002,Basic [R(2)],1.62
+S04-007,4,2002,Basic [I],1.62
+S04-008,4,2002,Basic [C],1.62
+S04-009,4,2002,Basic [K],1.62
+S04-010,4,2002,Jellybean,13.54
+S04-011,4,2002,Pattern,13.54
+S04-012,4,2002,Flag,8.33
+S04-013,4,2002,Horror,11.46
+S04-014,4,2002,SF,9.38
+S04-015,4,2002,Cute,12.5
+S04-016,4,2002,Animal,8.33
+S04-017,4,2002,Artist [Inoue Santa],4.16
+S04-018,4,2002,Artist [KAWS Companion],1.04
+S04-019,4,2002,Secret [VIP],0.52
+S05-001,5,2002,Basic [B],1.62
+S05-002,5,2002,Basic [E],1.62
+S05-003,5,2002,Basic [@],1.62
+S05-004,5,2002,Basic [R],1.62
+S05-005,5,2002,Basic [b],1.62
+S05-006,5,2002,Basic [R(2)],1.62
+S05-007,5,2002,Basic [I],1.62
+S05-008,5,2002,Basic [C],1.62
+S05-009,5,2002,Basic [K],1.62
+S05-010,5,2002,Thermo,13.54
+S05-011,5,2002,Pattern,13.54
+S05-012,5,2002,Flag,8.33
+S05-013,5,2002,Horror,9.38
+S05-014,5,2002,SF,11.46
+S05-015,5,2002,Cute,13.54
+S05-016,5,2002,Animal,8.33
+S05-017,5,2002,Artist [Futura],4.16
+S05-018,5,2002,Artist [Tokoro-san],1.04
+S05-019,5,2002,Secret [Nike],0.52
+S06-001,6,2003,Basic [B],1.62
+S06-002,6,2003,Basic [E],1.62
+S06-003,6,2003,Basic [@],1.62
+S06-004,6,2003,Basic [R],1.62
+S06-005,6,2003,Basic [b],1.62
+S06-006,6,2003,Basic [R(2)],1.62
+S06-007,6,2003,Basic [I],1.62
+S06-008,6,2003,Basic [C],1.62
+S06-009,6,2003,Basic [K],1.62
+S06-010,6,2003,Thermo,9.38
+S06-011,6,2003,Pattern,9.38
+S06-012,6,2003,Flag,8.33
+S06-013,6,2003,Horror,13.54
+S06-014,6,2003,SF,12.5
+S06-015,6,2003,Cute,14.58
+S06-016,6,2003,Animal,10.42
+S06-017,6,2003,Artist [Kozik],4.16
+S06-018,6,2003,Artist [Hitomi],1.04
+S06-019,6,2003,Secret [Pattern Unkle],0.52
+S06-020,6,2003,Secret [Stussy],0.52
+S07-001,7,2003,Basic [B],1.62
+S07-002,7,2003,Basic [E],1.62
+S07-003,7,2003,Basic [@],1.62
+S07-004,7,2003,Basic [R],1.62
+S07-005,7,2003,Basic [b],1.62
+S07-006,7,2003,Basic [R(2)],1.62
+S07-007,7,2003,Basic [I],1.62
+S07-008,7,2003,Basic [C],1.62
+S07-009,7,2003,Basic [K],1.62
+S07-010,7,2003,Jellybean,12.5
+S07-011,7,2003,Pattern,12.5
+S07-012,7,2003,Flag,13.54
+S07-013,7,2003,Horror,13.54
+S07-014,7,2003,SF,8.33
+S07-015,7,2003,Cute,7.29
+S07-016,7,2003,Animal,9.38
+S07-017,7,2003,Artist [7stars],4.16
+S07-018,7,2003,Artist [Lily Franky],1.04
+S07-019,7,2003,Secret [Horror],1.04
+S07-020,7,2003,Secret [Bounty Hunter],0.52
+S08-001,8,2004,Basic [B],1.62
+S08-002,8,2004,Basic [E],1.62
+S08-003,8,2004,Basic [@],1.62
+S08-004,8,2004,Basic [R],1.62
+S08-005,8,2004,Basic [b],1.62
+S08-006,8,2004,Basic [R(2)],1.62
+S08-007,8,2004,Basic [I],1.62
+S08-008,8,2004,Basic [C],1.62
+S08-009,8,2004,Basic [K],1.62
+S08-010,8,2004,Jellybean,10.42
+S08-011,8,2004,Pattern,11.46
+S08-012,8,2004,Flag,13.54
+S08-013,8,2004,Horror,8.33
+S08-014,8,2004,SF,9.38
+S08-015,8,2004,Cute,7.29
+S08-016,8,2004,Animal,12.5
+S08-017,8,2004,Artist [H8GRAPHIX],4.16
+S08-018,8,2004,Artist [Chika Umino],1.04
+S08-019,8,2004,Secret [Animal Skull Batta],1.04
+S08-020,8,2004,Secret [Nitrow],0.52
+S09-001,9,2004,Basic [B],1.62
+S09-002,9,2004,Basic [E],1.62
+S09-003,9,2004,Basic [@],1.62
+S09-004,9,2004,Basic [R],1.62
+S09-005,9,2004,Basic [b],1.62
+S09-006,9,2004,Basic [R(2)],1.62
+S09-007,9,2004,Basic [I],1.62
+S09-008,9,2004,Basic [C],1.62
+S09-009,9,2004,Basic [K],1.62
+S09-010,9,2004,Jellybean,10.42
+S09-011,9,2004,Pattern,13.54
+S09-012,9,2004,Flag,11.46
+S09-013,9,2004,Horror,8.33
+S09-014,9,2004,SF,10.42
+S09-015,9,2004,Cute,12.5
+S09-016,9,2004,Animal,7.29
+S09-017,9,2004,Artist [Mastermind Japan],4.16
+S09-018,9,2004,Artist [Toru Yamazaki],1.04
+S09-019,9,2004,Secret [Pattern Red],1.04
+S09-020,9,2004,Secret [Amos King Ken],0.52
+S10-001,10,2005,Basic [B],1.62
+S10-002,10,2005,Basic [E],1.62
+S10-003,10,2005,Basic [@],1.62
+S10-004,10,2005,Basic [R],1.62
+S10-005,10,2005,Basic [b],1.62
+S10-006,10,2005,Basic [R(2)],1.62
+S10-007,10,2005,Basic [I],1.62
+S10-008,10,2005,Basic [C],1.62
+S10-009,10,2005,Basic [K],1.62
+S10-010,10,2005,Jellybean,11.46
+S10-011,10,2005,Pattern,7.29
+S10-012,10,2005,Flag,9.38
+S10-013,10,2005,Horror,9.38
+S10-014,10,2005,Cute,12.5
+S10-015,10,2005,SF,9.38
+S10-016,10,2005,Animal,11.46
+S10-017,10,2005,Artist [Modern Pets],4.16
+S10-018,10,2005,Artist [First Class],1.04
+S10-019,10,2005,Secret [Modern Pets Green & Blue],1.04
+S10-020,10,2005,Secret [Gallery 1950],0.52
+S11-001,11,2005,Basic [B],1.62
+S11-002,11,2005,Basic [E],1.62
+S11-003,11,2005,Basic [@],1.62
+S11-004,11,2005,Basic [R],1.62
+S11-005,11,2005,Basic [b],1.62
+S11-006,11,2005,Basic [R(2)],1.62
+S11-007,11,2005,Basic [I],1.62
+S11-008,11,2005,Basic [C],1.62
+S11-009,11,2005,Basic [K],1.62
+S11-010,11,2005,Jellybean,11.46
+S11-011,11,2005,Pattern,11.46
+S11-012,11,2005,Flag,9.38
+S11-013,11,2005,Horror,9.38
+S11-014,11,2005,SF,10.42
+S11-015,11,2005,Cute,13.54
+S11-016,11,2005,Animal,8.33
+S11-017,11,2005,Artist [Taro Shooten],4.16
+S11-018,11,2005,Artist [Naoki Urasawa],1.04
+S11-019,11,2005,Secret [Mist],1.04
+S12-001,12,2006,Basic [B],1.62
+S12-002,12,2006,Basic [E],1.62
+S12-003,12,2006,Basic [@],1.62
+S12-004,12,2006,Basic [R],1.62
+S12-005,12,2006,Basic [b],1.62
+S12-006,12,2006,Basic [R(2)],1.62
+S12-007,12,2006,Basic [I],1.62
+S12-008,12,2006,Basic [C],1.62
+S12-009,12,2006,Basic [K],1.62
+S12-010,12,2006,Jellybean,11.46
+S12-011,12,2006,Pattern,11.46
+S12-012,12,2006,Flag,9.38
+S12-013,12,2006,Horror,9.38
+S12-014,12,2006,SF,10.42
+S12-015,12,2006,Cute,13.54
+S12-016,12,2006,Animal,8.33
+S12-017,12,2006,Artist [Moyoco Anno],4.16
+S12-018,12,2006,Artist [Roen],1.04
+S12-019,12,2006,Secret [Joga Bonito],0.52
+S12-020,12,2006,Secret [Undefeated],0.52
+S13-001,13,2006,Basic [B],1.62
+S13-002,13,2006,Basic [E],1.62
+S13-003,13,2006,Basic [@],1.62
+S13-004,13,2006,Basic [R],1.62
+S13-005,13,2006,Basic [b],1.62
+S13-006,13,2006,Basic [R(2)],1.62
+S13-007,13,2006,Basic [I],1.62
+S13-008,13,2006,Basic [C],1.62
+S13-009,13,2006,Basic [K],1.62
+S13-010,13,2006,Jellybean,11.46
+S13-011,13,2006,Pattern,11.46
+S13-012,13,2006,Flag,9.38
+S13-013,13,2006,Horror,9.38
+S13-014,13,2006,SF,10.42
+S13-015,13,2006,Cute,13.54
+S13-016,13,2006,Animal,8.33
+S13-017,13,2006,Artist [Hoshi Yoriko],4.16
+S13-018,13,2006,Artist [Skull],1.04
+S13-019,13,2006,Secret [SF Asuka Langley Soryu],4.16
+S14-001,14,2007,Basic [B],1.62
+S14-002,14,2007,Basic [E],1.62
+S14-003,14,2007,Basic [@],1.62
+S14-004,14,2007,Basic [R],1.62
+S14-005,14,2007,Basic [b],1.62
+S14-006,14,2007,Basic [R(2)],1.62
+S14-007,14,2007,Basic [I],1.62
+S14-008,14,2007,Basic [C],1.62
+S14-009,14,2007,Basic [K],1.62
+S14-010,14,2007,Jellybean,9.38
+S14-011,14,2007,Pattern,11.46
+S14-012,14,2007,Flag,8.33
+S14-013,14,2007,Horror,9.38
+S14-014,14,2007,SF,10.42
+S14-015,14,2007,Cute,13.54
+S14-016,14,2007,Animal,11.46
+S14-017,14,2007,Artist [Conrad Leach],4.16
+S14-018,14,2007,Artist [Uotake Poetry],1.04
+S14-019,14,2007,Secret [Unbreakable],0.52
+S15-001,15,2007,Basic [B],1.62
+S15-002,15,2007,Basic [E],1.62
+S15-003,15,2007,Basic [@],1.62
+S15-004,15,2007,Basic [R],1.62
+S15-005,15,2007,Basic [b],1.62
+S15-006,15,2007,Basic [R(2)],1.62
+S15-007,15,2007,Basic [I],1.62
+S15-008,15,2007,Basic [C],1.62
+S15-009,15,2007,Basic [K],1.62
+S15-010,15,2007,Jellybean,8.33
+S15-011,15,2007,Pattern,11.46
+S15-012,15,2007,Flag,9.38
+S15-013,15,2007,Horror,7.29
+S15-014,15,2007,SF,11.46
+S15-015,15,2007,Cute,9.38
+S15-016,15,2007,Animal,12.5
+S15-017,15,2007,Artist [Hara Tetsuo],4.16
+S15-018,15,2007,Artist [Andy Warhol],1.04
+S15-019,15,2007,Secret [Animal White],2.08
+S15-020,15,2007,Secret [Animal Black],1.04
+S15-021,15,2007,Secret [SF],2.08
+S16-001,16,2008,Basic [B],1.62
+S16-002,16,2008,Basic [E],1.62
+S16-003,16,2008,Basic [@],1.62
+S16-004,16,2008,Basic [R],1.62
+S16-005,16,2008,Basic [b],1.62
+S16-006,16,2008,Basic [R(2)],1.62
+S16-007,16,2008,Basic [I],1.62
+S16-008,16,2008,Basic [C],1.62
+S16-009,16,2008,Basic [K],1.62
+S16-010,16,2008,Jellybean,8.33
+S16-011,16,2008,Pattern,8.33
+S16-012,16,2008,Flag,7.29
+S16-013,16,2008,Horror,12.5
+S16-014,16,2008,SF,9.38
+S16-015,16,2008,Cute,13.54
+S16-016,16,2008,Animal,11.46
+S16-017,16,2008,Artist [Frogman],4.16
+S16-018,16,2008,Artist [DJ Ozma],1.04
+S16-019,16,2008,Secret [Horror DMC],1.04
+S16-020,16,2008,Secret [Cute Mukku],2.08
+S17-001,17,2008,Basic [B],1.62
+S17-002,17,2008,Basic [E],1.62
+S17-003,17,2008,Basic [@],1.62
+S17-004,17,2008,Basic [R],1.62
+S17-005,17,2008,Basic [b],1.62
+S17-006,17,2008,Basic [R(2)],1.62
+S17-007,17,2008,Basic [I],1.62
+S17-008,17,2008,Basic [C],1.62
+S17-009,17,2008,Basic [K],1.62
+S17-010,17,2008,Pattern,7.29
+S17-011,17,2008,Flag,8.33
+S17-012,17,2008,Horror,12.5
+S17-013,17,2008,SF,13.54
+S17-014,17,2008,Cute,9.38
+S17-015,17,2008,Animal,12.5
+S17-016,17,2008,Artist [The World of Golden Eggs],4.16
+S17-017,17,2008,Artist [Alexander Girard],1.04
+S17-018,17,2008,Secret [Animal Mickey],2.08
+S17-019,17,2008,Secret [Kubrick],2.08
+S18-001,18,2009,Basic [B],1.62
+S18-002,18,2009,Basic [E],1.62
+S18-003,18,2009,Basic [@],1.62
+S18-004,18,2009,Basic [R],1.62
+S18-005,18,2009,Basic [b],1.62
+S18-006,18,2009,Basic [R(2)],1.62
+S18-007,18,2009,Basic [I],1.62
+S18-008,18,2009,Basic [C],1.62
+S18-009,18,2009,Basic [K],1.62
+S18-010,18,2009,Pattern,9.37
+S18-011,18,2009,Flag,7.29
+S18-012,18,2009,Horror,7.29
+S18-013,18,2009,SF,10.42
+S18-014,18,2009,Cute,11.46
+S18-015,18,2009,Animal,11.46
+S18-016,18,2009,Jellybean,8.33
+S18-017,18,2009,Artist [Tokidoki],4.16
+S18-018,18,2009,Artist [Moichi Kuwahara],1.04
+S18-019,18,2009,Secret [Horror Ren],7.29
+S18-020,18,2009,Secret [Cute SpongeBob],2.08
+S18-021,18,2009,Secret [Animal Hello Kitty],2.08
+S19-001,19,2009,Basic [B],1.62
+S19-002,19,2009,Basic [E],1.62
+S19-003,19,2009,Basic [@],1.62
+S19-004,19,2009,Basic [R],1.62
+S19-005,19,2009,Basic [b],1.62
+S19-006,19,2009,Basic [R(2)],1.62
+S19-007,19,2009,Basic [I],1.62
+S19-008,19,2009,Basic [C],1.62
+S19-009,19,2009,Basic [K],1.62
+S19-010,19,2009,Jellybean,8.33
+S19-011,19,2009,Pattern,11.46
+S19-012,19,2009,Flag,8.33
+S19-013,19,2009,Horror,9.38
+S19-014,19,2009,SF,12.5
+S19-015,19,2009,Cute,13.54
+S19-016,19,2009,Animal,9.38
+S19-017,19,2009,Artist [KZK],4.16
+S19-018,19,2009,Artist [Bad Robot],1.04
+S19-019,19,2009,Secret [SF Kamen Rider Den-O],4.16
+S20-001,20,2010,Basic [B],1.62
+S20-002,20,2010,Basic [E],1.62
+S20-003,20,2010,Basic [@],1.62
+S20-004,20,2010,Basic [R],1.62
+S20-005,20,2010,Basic [b],1.62
+S20-006,20,2010,Basic [R(2)],1.62
+S20-007,20,2010,Basic [I],1.62
+S20-008,20,2010,Basic [C],1.62
+S20-009,20,2010,Basic [K],1.62
+S20-010,20,2010,Jellybean,7.29
+S20-011,20,2010,Pattern,8.33
+S20-012,20,2010,Flag,7.29
+S20-013,20,2010,Horror,8.33
+S20-014,20,2010,SF,8.33
+S20-015,20,2010,Cute,10.42
+S20-016,20,2010,Animal,8.33
+S20-017,20,2010,Artist [fragment design],2.08
+S20-018,20,2010,Artist [Krooked],6.25
+S20-019,20,2010,Secret [SF War Machine],7.29
+S20-020,20,2010,Secret [Animal Gremlins Stripe],3.13
+S21-001,21,2010,Basic [B],1.04
+S21-002,21,2010,Basic [E],1.04
+S21-003,21,2010,Basic [@],1.04
+S21-004,21,2010,Basic [R],1.04
+S21-005,21,2010,Basic [b],1.04
+S21-006,21,2010,Basic [R(2)],1.04
+S21-007,21,2010,Basic [I],1.04
+S21-008,21,2010,Basic [C],1.04
+S21-009,21,2010,Basic [K],1.04
+S21-010,21,2010,Jellybean,9.38
+S21-011,21,2010,Pattern,9.38
+S21-012,21,2010,Flag,7.29
+S21-013,21,2010,Horror,8.33
+S21-014,21,2010,SF #1,6.25
+S21-015,21,2010,SF #2,6.25
+S21-016,21,2010,Cute,7.29
+S21-017,21,2010,Animal,9.38
+S21-018,21,2010,Hero,7.29
+S21-019,21,2010,Artist [holiday],1.04
+S21-020,21,2010,Artist [Haze],6.25
+S21-021,21,2010,Secret [Horror Twin Peaks],2.08
+S21-022,21,2010,Secret [Cute Barbie],2.08
+S21-023,21,2010,Secret [Animal Cotty],4.16
+S21-024,21,2010,Secret [Hero Superman],2.08
+S22-001,22,2011,Basic [B],1.62
+S22-002,22,2011,Basic [E],1.62
+S22-003,22,2011,Basic [@],1.62
+S22-004,22,2011,Basic [R],1.62
+S22-005,22,2011,Basic [b],1.62
+S22-006,22,2011,Basic [R(2)],1.62
+S22-007,22,2011,Basic [I],1.62
+S22-008,22,2011,Basic [C],1.62
+S22-009,22,2011,Basic [K],1.62
+S22-010,22,2011,Jellybean,10.42
+S22-011,22,2011,Pattern,9.38
+S22-012,22,2011,Flag,9.38
+S22-013,22,2011,Horror,11.45
+S22-014,22,2011,SF,6.25
+S22-015,22,2011,Cute,7.29
+S22-016,22,2011,Animal,9.38
+S22-017,22,2011,Hero,7.29
+S22-018,22,2011,Artist [Sasquatchfabrix],1.04
+S22-019,22,2011,Artist [House of Pain],6.25
+S22-020,22,2011,Secret [Pattern UNO],4.16
+S22-021,22,2011,Secret [Medicom Toy 15th Anniversary],1.04
+S23-001,23,2011,Basic [B],1.62
+S23-002,23,2011,Basic [E],1.62
+S23-003,23,2011,Basic [@],1.62
+S23-004,23,2011,Basic [R],1.62
+S23-005,23,2011,Basic [b],1.62
+S23-006,23,2011,Basic [R(2)],1.62
+S23-007,23,2011,Basic [I],1.62
+S23-008,23,2011,Basic [C],1.62
+S23-009,23,2011,Basic [K],1.62
+S23-010,23,2011,Jellybean,9.38
+S23-011,23,2011,Pattern,9.38
+S23-012,23,2011,Flag,7.29
+S23-013,23,2011,SF #1,10.42
+S23-014,23,2011,SF #2,6.25
+S23-015,23,2011,Cute #1,6.25
+S23-016,23,2011,Cute #2,6.25
+S23-017,23,2011,Hero,5.21
+S23-018,23,2011,Animal,7.29
+S23-019,23,2011,Artist [Muveil],4.16
+S23-020,23,2011,Artist [Mishka],1.04
+S23-021,23,2011,Secret [Animal Rune],4.16
+S23-022,23,2011,Secret [Mawaru Penguindrum],2.08
+S23-023,23,2011,Secret [SF Real Steel Zeus],2.08
+S24-001,24,2012,Basic [B],1.62
+S24-002,24,2012,Basic [E],1.62
+S24-003,24,2012,Basic [@],1.62
+S24-004,24,2012,Basic [R],1.62
+S24-005,24,2012,Basic [b],1.62
+S24-006,24,2012,Basic [R(2)],1.62
+S24-007,24,2012,Basic [I],1.62
+S24-008,24,2012,Basic [C],1.62
+S24-009,24,2012,Basic [K],1.62
+S24-010,24,2012,Jellybean,9.38
+S24-011,24,2012,Pattern,7.29
+S24-012,24,2012,Flag,7.29
+S24-013,24,2012,Horror,8.33
+S24-014,24,2012,Cute,10.42
+S24-015,24,2012,Animal,7.29
+S24-016,24,2012,Hero,8.33
+S24-017,24,2012,Artist [Kyary Pamyu Pamyu],6.25
+S24-018,24,2012,Artist [tarout],4.16
+S24-019,24,2012,Artist [Neighborhood],4.16
+S24-020,24,2012,Secret [Horror Gekidan Inu Curry],2.08
+S24-021,24,2012,Secret [Cute Fueki],2.08
+S24-022,24,2012,Secret [Hero Catwoman],5.21
+S25-001,25,2012,Basic [B],1.04
+S25-002,25,2012,Basic [E],1.04
+S25-003,25,2012,Basic [@],1.04
+S25-004,25,2012,Basic [R],1.04
+S25-005,25,2012,Basic [b],1.04
+S25-006,25,2012,Basic [R(2)],1.04
+S25-007,25,2012,Basic [I],1.04
+S25-008,25,2012,Basic [C],1.04
+S25-009,25,2012,Basic [K],1.04
+S25-010,25,2012,Jellybean,9.38
+S25-011,25,2012,Pattern,6.25
+S25-012,25,2012,Flag,9.38
+S25-013,25,2012,Horror,6.25
+S25-014,25,2012,SF,10.42
+S25-015,25,2012,Cute,4.16
+S25-016,25,2012,Animal,7.29
+S25-017,25,2012,Hero,8.33
+S25-018,25,2012,Artist [Yoshimoto Kogyo],5.21
+S25-019,25,2012,Artist [Sebastian Masuda],4.16
+S25-020,25,2012,Artist [Giza],1.04
+S25-021,25,2012,Secret [SF Evangelion 3.0],4.16
+S25-022,25,2012,Secret [Hero Accel World],3.13
+S26-001,26,2013,Basic [B],1.62
+S26-002,26,2013,Basic [E],1.62
+S26-003,26,2013,Basic [@],1.62
+S26-004,26,2013,Basic [R],1.62
+S26-005,26,2013,Basic [b],1.62
+S26-006,26,2013,Basic [R(2)],1.62
+S26-007,26,2013,Basic [I],1.62
+S26-008,26,2013,Basic [C],1.62
+S26-009,26,2013,Basic [K],1.62
+S26-010,26,2013,Jellybean,9.38
+S26-011,26,2013,Pattern,7.29
+S26-012,26,2013,Flag,9.38
+S26-013,26,2013,Horror,8.33
+S26-014,26,2013,SF,10.42
+S26-015,26,2013,Cute,7.29
+S26-016,26,2013,Animal,8.33
+S26-017,26,2013,Hero,8.33
+S26-018,26,2013,Artist [Muveil],2.08
+S26-019,26,2013,Artist [Yoshimoto Kogyo - Shingo Fujimori],4.16
+S26-020,26,2013,Artist [Yoshimoto Kogyo - Atsuhiko Nakata],4.16
+S26-021,26,2013,Secret [Hero Kick-Ass 2],3.13
+S26-022,26,2013,Secret [Stussy],0.52
+S27-001,27,2013,Basic [B],1.62
+S27-002,27,2013,Basic [E],1.62
+S27-003,27,2013,Basic [@],1.62
+S27-004,27,2013,Basic [R],1.62
+S27-005,27,2013,Basic [b],1.62
+S27-006,27,2013,Basic [R(2)],1.62
+S27-007,27,2013,Basic [I],1.62
+S27-008,27,2013,Basic [C],1.62
+S27-009,27,2013,Basic [K],1.62
+S27-010,27,2013,Jellybean,9.37
+S27-011,27,2013,Pattern,7.29
+S27-012,27,2013,Flag,9.37
+S27-013,27,2013,Horror,9.37
+S27-014,27,2013,SF,8.33
+S27-015,27,2013,Cute,6.25
+S27-016,27,2013,Animal,8.33
+S27-017,27,2013,Hero,7.29
+S27-018,27,2013,Artist [Kiyoshiro Imawano],6.25
+S27-019,27,2013,Artist [D*Face],2.08
+S27-020,27,2013,Secret [Artist Kiyoshiro Imawano],4.16
+S27-021,27,2013,Secret [Cute Nuigurumaa Z],3.16
+S27-022,27,2013,Secret [Hero Lion Man],2.08
+S28-001,28,2014,Basic [B],1.62
+S28-002,28,2014,Basic [E],1.62
+S28-003,28,2014,Basic [@],1.62
+S28-004,28,2014,Basic [R],1.62
+S28-005,28,2014,Basic [b],1.62
+S28-006,28,2014,Basic [R(2)],1.62
+S28-007,28,2014,Basic [I],1.62
+S28-008,28,2014,Basic [C],1.62
+S28-009,28,2014,Basic [K],1.62
+S28-010,28,2014,Jellybean,8.33
+S28-011,28,2014,Pattern,7.29
+S28-012,28,2014,Flag,9.38
+S28-013,28,2014,Horror,9.38
+S28-014,28,2014,SF,9.38
+S28-015,28,2014,Cute,8.33
+S28-016,28,2014,Animal,8.33
+S28-017,28,2014,Hero,9.38
+S28-018,28,2014,Artist [Oshikiri Hasukai],4.16
+S28-019,28,2014,Artist [CLOT],2.08
+S28-020,28,2014,Secret [Hero Halo],4.16
+S28-021,28,2014,Secret [Artist CLOT],2.6
+S28-022,28,2014,Secret [Pushead],0.52
+S28-023,28,2014,Secret [Cosmos Project],0.52
+S28-024,28,2014,Secret [Getter Robo],0.52
+S28-025,28,2014,Secret [My Sweet Monster],0.52
+S28-026,28,2014,Secret [Hazure],0.52
+S29-001,29,2014,Basic [B],1.62
+S29-002,29,2014,Basic [E],1.62
+S29-003,29,2014,Basic [@],1.62
+S29-004,29,2014,Basic [R],1.62
+S29-005,29,2014,Basic [b],1.62
+S29-006,29,2014,Basic [R(2)],1.62
+S29-007,29,2014,Basic [I],1.62
+S29-008,29,2014,Basic [C],1.62
+S29-009,29,2014,Basic [K],1.62
+S29-010,29,2014,Jellybean,8.33
+S29-011,29,2014,Pattern,7.29
+S29-012,29,2014,Flag,9.38
+S29-013,29,2014,Horror,2.08
+S29-014,29,2014,Cute,8.33
+S29-015,29,2014,Animal,8.33
+S29-016,29,2014,Hero,9.38
+S29-017,29,2014,Artist [Sex Pistols],4.16
+S29-018,29,2014,Artist [Grateful Dead],9.38
+S29-019,29,2014,Secret [Marvel],9.38
+S29-020,29,2014,Secret [Artist Grateful Dead],4.16
+S29-021,29,2014,Secret [Artist Sex Pistols],2.6
+S29-022,29,2014,Secret [Great Mazinger],0.52
+S29-023,29,2014,Secret [Yohkan-san],0.52
+S29-024,29,2014,Secret [Chinese Greeting],0.52
+S29-025,29,2014,Secret [Porter],0.52
+S29-026,29,2014,Secret [Haniwa],0.52
+S30-001,30,2015,Basic [B],1.62
+S30-002,30,2015,Basic [E],1.62
+S30-003,30,2015,Basic [@],1.62
+S30-004,30,2015,Basic [R],1.62
+S30-005,30,2015,Basic [b],1.62
+S30-006,30,2015,Basic [R(2)],1.62
+S30-007,30,2015,Basic [I],1.62
+S30-008,30,2015,Basic [C],1.62
+S30-009,30,2015,Basic [K],1.62
+S30-010,30,2015,Jellybean,8.33
+S30-011,30,2015,Pattern,7.29
+S30-012,30,2015,Flag,9.38
+S30-013,30,2015,Horror,8.33
+S30-014,30,2015,SF,8.33
+S30-015,30,2015,Cute,8.33
+S30-016,30,2015,Animal,9.38
+S30-017,30,2015,Artist [Gakki-kun],9.38
+S30-018,30,2015,Artist [Nyaromeron],3.12
+S30-019,30,2015,Artist [Ao Oni],4.16
+S30-020,30,2015,Secret [30th Series],0.52
+S30-021,30,2015,Secret [Oakley],0.52
+S30-022,30,2015,Secret [Grendizer],0.52
+S30-023,30,2015,Secret [R@bbrick],0.52
+S30-024,30,2015,Secret [Kyoko Shimbun],0.52
+S30-025,30,2015,Secret [Artist Gakki-kun],2.08
+S30-026,30,2015,Secret [Pattern],4.16
+S30-027,30,2015,Secret [The Hideout],0.52
+S31-001,31,2015,Basic [B],1.62
+S31-002,31,2015,Basic [E],1.62
+S31-003,31,2015,Basic [@],1.62
+S31-004,31,2015,Basic [R],1.62
+S31-005,31,2015,Basic [b],1.62
+S31-006,31,2015,Basic [R(2)],1.62
+S31-007,31,2015,Basic [I],1.62
+S31-008,31,2015,Basic [C],1.62
+S31-009,31,2015,Basic [K],1.62
+S31-010,31,2015,Jellybean,8.33
+S31-011,31,2015,Pattern,8.33
+S31-012,31,2015,Flag,7.29
+S31-013,31,2015,Horror,8.33
+S31-014,31,2015,SF,9.38
+S31-015,31,2015,Cute,9.38
+S31-016,31,2015,Animal,7.29
+S31-017,31,2015,Hero,8.33
+S31-018,31,2015,Artist [Yusuke Hanai],2.08
+S31-019,31,2015,Artist [Yokai Mames],6.25
+S31-020,31,2015,Secret [Kaiju Negora],0.52
+S31-021,31,2015,Secret [TMT 15th Anniversary],0.52
+S31-022,31,2015,Secret [Tanuki no Pokopon],0.52
+S31-023,31,2015,Secret [Ponkotsu Quest],0.52
+S31-024,31,2015,Secret [Kotetsu Jeeg],1.04
+S31-025,31,2015,Secret [Horror Warrior Alien],2.08
+S31-026,31,2015,Secret [Hero Wonder Woman],2.08
+S31-027,31,2015,Secret [Artist Yokai Mames],3.13
+S32-001,32,2016,Basic [B],1.62
+S32-002,32,2016,Basic [E],1.62
+S32-003,32,2016,Basic [@],1.62
+S32-004,32,2016,Basic [R],1.62
+S32-005,32,2016,Basic [b],1.62
+S32-006,32,2016,Basic [R(2)],1.62
+S32-007,32,2016,Basic [I],1.62
+S32-008,32,2016,Basic [C],1.62
+S32-009,32,2016,Basic [K],1.62
+S32-010,32,2016,Jellybean,8.33
+S32-011,32,2016,Pattern,8.33
+S32-012,32,2016,Flag,7.29
+S32-013,32,2016,Villain,8.33
+S32-014,32,2016,SF,8.33
+S32-015,32,2016,Cute,7.29
+S32-016,32,2016,Animal,6.25
+S32-017,32,2016,Hero,6.25
+S32-018,32,2016,Artist [Shoko Nakazawa],3.13
+S32-019,32,2016,Artist [Osamu Tezuka x Fujio Akatsuka],6.25
+S32-020,32,2016,Artist [Tomohito Yamada],1.04
+S32-021,32,2016,Secret [LONG x Mishka],0.52
+S32-022,32,2016,Secret [NAGNAGNAG],0.52
+S32-023,32,2016,Secret [Ny@brick],0.52
+S32-024,32,2016,Secret [Gaiking],0.52
+S32-025,32,2016,Secret [NAGNAGNAG Ver.2],0.52
+S32-026,32,2016,Secret [Be@rbrick 15th Anniversary],0.52
+S32-027,32,2016,Secret [Cute Cookie Monster],4.16
+S32-028,32,2016,Secret [Artist Osamu Tezuka x Fujio Akatsuka],3.13
+S32-029,32,2016,Secret [Hero Genos],2.08
+S32-030,32,2016,Secret [Villain Harley Quinn],2.08
+S33-001,33,2016,Basic [B],1.62
+S33-002,33,2016,Basic [E],1.62
+S33-003,33,2016,Basic [@],1.62
+S33-004,33,2016,Basic [R],1.62
+S33-005,33,2016,Basic [b],1.62
+S33-006,33,2016,Basic [R(2)],1.62
+S33-007,33,2016,Basic [I],1.62
+S33-008,33,2016,Basic [C],1.62
+S33-009,33,2016,Basic [K],1.62
+S33-010,33,2016,Jellybean,8.33
+S33-011,33,2016,Pattern,8.33
+S33-012,33,2016,Flag,7.29
+S33-013,33,2016,SF,9.38
+S33-014,33,2016,Cute,9.38
+S33-015,33,2016,Animal,8.33
+S33-016,33,2016,Hero,6.25
+S33-017,33,2016,Artist [DAN],6.25
+S33-018,33,2016,Artist [Poptepipic],1.04
+S33-019,33,2016,Artist [Mecha Elvis],4.16
+S33-020,33,2016,Secret [SF Ghostbusters],
+S33-021,33,2016,Secret [Cute Astro Boy],
+S33-022,33,2016,Secret [Animal Maneki Neko],
+S33-023,33,2016,Secret [Hero Tonkatsu DJ Agetarou],
+S33-024,33,2016,Secret [Punk Drunkers],
+S33-025,33,2016,Secret [Redman],
+S33-026,33,2016,Secret [True Mazinger],
+S33-027,33,2016,Secret [Loopwheeler],
+S33-028,33,2016,Secret [Jackpot Fever],
+S34-001,34,2017,Basic [B],1.62
+S34-002,34,2017,Basic [E],1.62
+S34-003,34,2017,Basic [@],1.62
+S34-004,34,2017,Basic [R],1.62
+S34-005,34,2017,Basic [b],1.62
+S34-006,34,2017,Basic [R(2)],1.62
+S34-007,34,2017,Basic [I],1.62
+S34-008,34,2017,Basic [C],1.62
+S34-009,34,2017,Basic [K],1.62
+S34-010,34,2017,Jellybean,8.33
+S34-011,34,2017,Pattern,6.25
+S34-012,34,2017,Flag,7.29
+S34-013,34,2017,Horror,6.25
+S34-014,34,2017,SF,9.38
+S34-015,34,2017,Animal #1,6.25
+S34-016,34,2017,Animal #2,6.25
+S34-017,34,2017,Cute,8.33
+S34-018,34,2017,Hero,6.25
+S34-019,34,2017,Artist [Nagano],4.16
+S34-020,34,2017,Artist [Tiger Mask],2.08
+S34-021,34,2017,Artist [Inu-Harigon],2.08
+S34-022,34,2017,Secret [SF Despicable Me 3],
+S34-023,34,2017,Secret [Cute Fuchico on the Cup],
+S34-024,34,2017,Secret [Artist Nagano],
+S34-025,34,2017,Secret [Artist Tiger Mask],
+S34-026,34,2017,Secret [The IT Bear],
+S34-027,34,2017,Secret [UFO Warrior Dai Apolon],
+S34-028,34,2017,Secret [Pug - Brown],
+S34-029,34,2017,Secret [Pug - Grey],
+S34-030,34,2017,Secret [SSUR],
+S35-001,35,2017,Basic [B],1.62
+S35-002,35,2017,Basic [E],1.62
+S35-003,35,2017,Basic [@],1.62
+S35-004,35,2017,Basic [R],1.62
+S35-005,35,2017,Basic [b],1.62
+S35-006,35,2017,Basic [R(2)],1.62
+S35-007,35,2017,Basic [I],1.62
+S35-008,35,2017,Basic [C],1.62
+S35-009,35,2017,Basic [K],1.62
+S35-010,35,2017,Jellybean,6.25
+S35-011,35,2017,Pattern,8.33
+S35-012,35,2017,Flag,7.29
+S35-013,35,2017,SF,9.38
+S35-014,35,2017,Cute,8.33
+S35-015,35,2017,Animal,6.25
+S35-016,35,2017,Hero,6.25
+S35-017,35,2017,Artist [Warui-chan],2.08
+S35-018,35,2017,Artist [Tokyo Tribe Waru],4.16
+S35-019,35,2017,Artist [New Rote'ka],2.08
+S35-020,35,2017,Artist [Dolphin-kun],6.25
+S35-021,35,2017,Secret [SF Armored Trooper VOTOMS],4.16
+S35-022,35,2017,Secret [Cute Pokopang],6.25
+S35-023,35,2017,Secret [Artist Warui-chan],1.52
+S35-024,35,2017,Secret [Artist Tokyo Tribe Waru],2.08
+S35-025,35,2017,Secret [Artist Dolphin-kun],2.08
+S35-026,35,2017,Secret [Rikidizer 3 - Ver. 1],0.52
+S35-027,35,2017,Secret [Rikidizer 3 - Ver. 2],0.52
+S35-028,35,2017,Secret [God of Wealth],0.52
+S35-029,35,2017,Secret [Red Oni Shinobu],0.52
+S35-030,35,2017,Secret [Kyne],0.52
+S36-001,36,2018,Basic [B],1.62
+S36-002,36,2018,Basic [E],1.62
+S36-003,36,2018,Basic [@],1.62
+S36-004,36,2018,Basic [R],1.62
+S36-005,36,2018,Basic [b],1.62
+S36-006,36,2018,Basic [R(2)],1.62
+S36-007,36,2018,Basic [I],1.62
+S36-008,36,2018,Basic [C],1.62
+S36-009,36,2018,Basic [K],1.62
+S36-010,36,2018,Jellybean,6.25
+S36-011,36,2018,Pattern,8.33
+S36-012,36,2018,Flag,7.29
+S36-013,36,2018,Horror,6.25
+S36-014,36,2018,SF,9.38
+S36-015,36,2018,Cute,8.33
+S36-016,36,2018,Animal,6.25
+S36-017,36,2018,Hero,6.25
+S36-018,36,2018,Artist [Masumi Hara],4.16
+S36-019,36,2018,Artist [Coiss],2.08
+S36-020,36,2018,Artist [Morris The Cat with Antlers],2.08
+S36-021,36,2018,Secret [Horror It],4.16
+S36-022,36,2018,Secret [Hero Kingsman: The Secret Service],6.25
+S36-023,36,2018,Secret [Artist Morris The Cat with Antlers],2.08
+S36-024,36,2018,Secret [Irasutoya],1.56
+S36-025,36,2018,Secret [JAM HOME MADE],0.52
+S36-026,36,2018,Secret [PostPet],0.52
+S36-027,36,2018,Secret [God Selection XXX - White],0.52
+S36-028,36,2018,Secret [God Selection XXX - Black],0.52
+S36-029,36,2018,Secret [Mirrorman],0.52
+S36-030,36,2018,Secret [CLOT],2.08
+S37-001,37,2018,Basic [B],1.62
+S37-002,37,2018,Basic [E],1.62
+S37-003,37,2018,Basic [@],1.62
+S37-004,37,2018,Basic [R],1.62
+S37-005,37,2018,Basic [b],1.62
+S37-006,37,2018,Basic [R(2)],1.62
+S37-007,37,2018,Basic [I],1.62
+S37-008,37,2018,Basic [C],1.62
+S37-009,37,2018,Basic [K],1.62
+S37-010,37,2018,Jellybean,6.25
+S37-011,37,2018,Pattern,8.33
+S37-012,37,2018,Flag,7.29
+S37-013,37,2018,Horror,4.16
+S37-014,37,2018,SF,4.16
+S37-015,37,2018,Cute,8.33
+S37-016,37,2018,Animal,6.25
+S37-017,37,2018,Hero,6.25
+S37-018,37,2018,Artist [Kenny Omega],4.16
+S37-019,37,2018,Artist [hermippe],2.08
+S37-020,37,2018,Artist [Noodle],2.08
+S37-021,37,2018,Artist [Otter Chi-tan],8.33
+S37-022,37,2018,Artist [Cat Eyed Boy],6.25
+S37-023,37,2018,Secret [Horror One Cut of the Dead],
+S37-024,37,2018,Secret [SF Jason and the Argonauts],
+S37-025,37,2018,Secret [Artist New Japan Pro-Wrestling],
+S37-026,37,2018,Secret [Artist Cat Eyed Boy],
+S37-027,37,2018,Secret [SOPH.20],
+S37-028,37,2018,Secret [GEO],
+S37-029,37,2018,Secret [Kiaidakun],
+S37-030,37,2018,Secret [Aliens Park],
+S38-001,38,2019,Basic [B],1.62
+S38-002,38,2019,Basic [E],1.62
+S38-003,38,2019,Basic [@],1.62
+S38-004,38,2019,Basic [R],1.62
+S38-005,38,2019,Basic [b],1.62
+S38-006,38,2019,Basic [R(2)],1.62
+S38-007,38,2019,Basic [I],1.62
+S38-008,38,2019,Basic [C],1.62
+S38-009,38,2019,Basic [K],1.62
+S38-010,38,2019,Jellybean,6.25
+S38-011,38,2019,Pattern,8.33
+S38-012,38,2019,Flag,7.29
+S38-013,38,2019,Villain,4.16
+S38-014,38,2019,SF,5.21
+S38-015,38,2019,Cute,8.33
+S38-016,38,2019,Animal,6.25
+S38-017,38,2019,Hero,6.25
+S38-018,38,2019,Artist [Hiroshi Tanahashi],4.16
+S38-019,38,2019,Artist [Anti Social Social Club],4.16
+S38-020,38,2019,Artist [Ookami-kun],8.33
+S38-021,38,2019,Artist [Lauren Tsai],2.08
+S38-022,38,2019,Artist [Makoto-chan],6.25
+S38-023,38,2019,Secret [Hero Men in Black],4.16
+S38-024,38,2019,Secret [Artist Makoto-chan],2.08
+S38-025,38,2019,Secret [Bullmark],0.52
+S38-026,38,2019,Secret [Mame Moyashi],0.52
+S38-027,38,2019,Secret [A&P],0.52
+S38-028,38,2019,Secret [Botanize],0.52
+S39-001,39,2019,Basic [B],1.62
+S39-002,39,2019,Basic [E],1.62
+S39-003,39,2019,Basic [@],1.62
+S39-004,39,2019,Basic [R],1.62
+S39-005,39,2019,Basic [b],1.62
+S39-006,39,2019,Basic [R(2)],1.62
+S39-007,39,2019,Basic [I],1.62
+S39-008,39,2019,Basic [C],1.62
+S39-009,39,2019,Basic [K],1.62
+S39-010,39,2019,Jellybean,6.25
+S39-011,39,2019,Pattern,8.33
+S39-012,39,2019,Flag,5.21
+S39-013,39,2019,Villain,4.16
+S39-014,39,2019,SF,7.29
+S39-015,39,2019,Cute #1,4.16
+S39-016,39,2019,Cute #2,4.16
+S39-017,39,2019,Animal,6.25
+S39-018,39,2019,Hero,6.25
+S39-019,39,2019,Artist [PiL],8.33
+S39-020,39,2019,Artist [Have A Good Time],2.08
+S39-021,39,2019,Artist [Ed Paschke],8.33
+S39-022,39,2019,Artist [A Bear Cub Ice],4.16
+S39-023,39,2019,Artist [Brigsby Bear],6.25
+S39-024,39,2019,Secret [Villain Harley Quinn],2.08
+S39-025,39,2019,Secret [Jun Inagawa],0.52
+S39-026,39,2019,Secret [READYMADE x F.C. Real Bristol],0.52
+S39-027,39,2019,Secret [Seirogan],1.04
+S40-001,40,2020,Basic [B],1.62
+S40-002,40,2020,Basic [E],1.62
+S40-003,40,2020,Basic [@],1.62
+S40-004,40,2020,Basic [R],1.62
+S40-005,40,2020,Basic [b],1.62
+S40-006,40,2020,Basic [R(2)],1.62
+S40-007,40,2020,Basic [I],1.62
+S40-008,40,2020,Basic [C],1.62
+S40-009,40,2020,Basic [K],1.62
+S40-010,40,2020,Jellybean,8.33
+S40-011,40,2020,Pattern,8.33
+S40-012,40,2020,Flag,5.21
+S40-013,40,2020,Horror,6.25
+S40-014,40,2020,SF,6.25
+S40-015,40,2020,Cute,6.25
+S40-016,40,2020,Animal,8.33
+S40-017,40,2020,Hero,7.29
+S40-018,40,2020,Artist [Denshitako No.3],5.21
+S40-019,40,2020,Artist [Kae Tanaka],5.21
+S40-020,40,2020,Artist [ADER],2.08
+S40-021,40,2020,Artist [Miles],4.16
+S40-022,40,2020,Secret [SF Robi],
+S40-023,40,2020,Secret [Cute Peanuts],
+S40-024,40,2020,Secret [F.C. Real Bristol x Coca-Cola],
+S40-025,40,2020,Secret [Toyota],
+S40-026,40,2020,Secret [Hazure],
+S40-027,40,2020,Secret [Snarkitecture x BLACkRAINBOW],
+S40-028,40,2020,Secret [Coin Parking Delivery],
+S41-001,41,2020,Basic [B],1.62
+S41-002,41,2020,Basic [E],1.62
+S41-003,41,2020,Basic [@],1.62
+S41-004,41,2020,Basic [R],1.62
+S41-005,41,2020,Basic [b],1.62
+S41-006,41,2020,Basic [R(2)],1.62
+S41-007,41,2020,Basic [I],1.62
+S41-008,41,2020,Basic [C],1.62
+S41-009,41,2020,Basic [K],1.62
+S41-010,41,2020,Jellybean,8.33
+S41-011,41,2020,Pattern,9.38
+S41-012,41,2020,Flag,5.21
+S41-013,41,2020,Horror,6.25
+S41-014,41,2020,SF,8.33
+S41-015,41,2020,Cute,7.29
+S41-016,41,2020,Animal #1,5.21
+S41-017,41,2020,Animal #2,5.21
+S41-018,41,2020,Artist [Yoshiharu Tsuge],4.16
+S41-019,41,2020,Artist [Mutant Vinyl Hardcore],2.08
+S41-020,41,2020,Artist [Billionaire Boys Club],2.08
+S41-021,41,2020,Artist [It's 8:16! Yunomi de Coffee],4.16
+S41-022,41,2020,Artist [Moyoco Anno #1],4.16
+S41-023,41,2020,Artist [Moyoco Anno #2],4.16
+S41-024,41,2020,Secret [SF The Boys],4.16
+S41-025,41,2020,Secret [Cute Momoko Sakura],2.08
+S41-026,41,2020,Secret [1st Model - White Chrome],1.04
+S41-027,41,2020,Secret [mesm Tokyo],0.52
+S41-028,41,2020,Secret [Brandalism],1.04
+S41-029,41,2020,Secret [Danganronpa],0.52
+S42-001,42,2021,Basic [B],1.62
+S42-002,42,2021,Basic [E],1.62
+S42-003,42,2021,Basic [@],1.62
+S42-004,42,2021,Basic [R],1.62
+S42-005,42,2021,Basic [b],1.62
+S42-006,42,2021,Basic [R(2)],1.62
+S42-007,42,2021,Basic [I],1.62
+S42-008,42,2021,Basic [C],1.62
+S42-009,42,2021,Basic [K],1.62
+S42-010,42,2021,Jellybean,8.33
+S42-011,42,2021,Pattern,5.2
+S42-012,42,2021,Flag,5.2
+S42-013,42,2021,Horror,6.25
+S42-014,42,2021,SF,8.33
+S42-015,42,2021,Cute,7.29
+S42-016,42,2021,Animal,7.29
+S42-017,42,2021,Hero #1,2.6
+S42-018,42,2021,Hero #2,2.6
+S42-019,42,2021,Artist [Andy Warhol x Jean-Michel Basquiat],4.17
+S42-020,42,2021,Artist [EXIT],4.17
+S42-021,42,2021,Artist [A Girl: Kaiju Icey's Owner],2.08
+S42-022,42,2021,Artist [PHANTOM],2.08
+S42-023,42,2021,Artist [mintdesigns],4.17
+S42-024,42,2021,Secret [Horror Dracula],
+S42-025,42,2021,Secret [Cute Minions: The Rise of Gru],
+S42-026,42,2021,Secret [Maneki Neko],
+S42-027,42,2021,Secret [atmos],
+S42-028,42,2021,Secret [Medicom Toy 25th Anniversary],
+S42-029,42,2021,Secret [Be@rbrick 20th Anniversary],
+S43-001,43,2022,Basic [B],1.62
+S43-002,43,2022,Basic [E],1.62
+S43-003,43,2022,Basic [@],1.62
+S43-004,43,2022,Basic [R],1.62
+S43-005,43,2022,Basic [b],1.62
+S43-006,43,2022,Basic [R(2)],1.62
+S43-007,43,2022,Basic [I],1.62
+S43-008,43,2022,Basic [C],1.62
+S43-009,43,2022,Basic [K],1.62
+S43-010,43,2022,Jellybean,7.29
+S43-011,43,2022,Pattern,5.2
+S43-012,43,2022,Flag [Macau] ,4.16
+S43-013,43,2022,Horror [Alfred Hitchcock] ,6.25
+S43-014,43,2022,SF [Terminator 2] — 8.33%,
+S43-015,43,2022,Spike Gremlins 2,
+S43-016,43,2022,Gizmo Gremlins 2,
+S43-017,43,2022,Animal [Care Bears Best Friend Bear],8.33
+S43-018,43,2022,Secret Care Bear,
+S43-019,43,2022,Hero [Batman Hush] ,5.2
+S43-020,43,2022,Robin the Cat,
+S43-021,43,2022,Gelato Pique – Green White Striped,
+S43-022,43,2022,Gelato Pique – Brownish,
+S43-023,43,2022,Black Outfit Cobra Kai,
+S43-024,43,2022,Artist [Cobra Kai] ,7.29
+S43-025,43,2022,Artist [Keith Haring Andy Mouse] ,4.16
+S43-026,43,2022,Crazy Cat Rabbit,
+S43-027,43,2022,Netflix,
+S43-028,43,2022,NFT,
+S44-001,44,2022,Basic [B],1.62
+S44-002,44,2022,Basic [E],1.62
+S44-003,44,2022,Basic [@],1.62
+S44-004,44,2022,Basic [R],1.62
+S44-005,44,2022,Basic [b],1.62
+S44-006,44,2022,Basic [R(2)],1.62
+S44-007,44,2022,Basic [I],1.62
+S44-008,44,2022,Basic [C],1.62
+S44-009,44,2022,Basic [K],1.62
+S44-010,44,2022,Artist [Pushead] ,
+S44-011,44,2022,Coffee Bean,
+S44-012,44,2022,Flag [South Korea] ,
+S44-013,44,2022,Horror [Squid Game] ,
+S44-014,44,2022,SF [Stranger Things] ,
+S44-015,44,2022,Artist [007 James Bond] ,
+S44-016,44,2022,Green Guy,
+S44-017,44,2022,Basquiat Dino,
+S44-018,44,2022,Shin Ultraman,
+S44-019,44,2022,Artist [007 James Bond] ,4.16
+S44-020,44,2022,Artist,
+S44-021,44,2022,Artist [Junk Head] ,4.16
+S44-022,44,2022,Artist [Czar Face],4.16
+S45-001,45,2022,Basic [B],1.62
+S45-002,45,2022,Basic [E],1.62
+S45-003,45,2022,Basic [@],1.62
+S45-004,45,2022,Basic [R],1.62
+S45-005,45,2022,Basic [b],1.62
+S45-006,45,2022,Basic [R(2)],1.62
+S45-007,45,2022,Basic [I],1.62
+S45-008,45,2022,Basic [C],1.62
+S45-009,45,2022,Basic [K],1.62
+S45-010,45,2022,Red & Blue Person,
+S45-011,45,2022,Jellybean,8.33
+S45-012,45,2022,Pattern [Jungle],8.33
+S45-013,45,2022,Flag [Scotland],4.16
+S45-014,45,2022,Horror [Emily the Strange],6.25
+S45-015,45,2022,Czarface,
+S45-016,45,2022,Cute [Rilakkuma],7.29
+S45-017,45,2022,Animal [Baby Puss],7.29
+S45-018,45,2022,Hero [Black Adam],8.33
+S45-019,45,2022,Artist [Dynamite Kid],4.16
+S46-001,46,2022,Basic [B],1.62
+S46-002,46,2022,Basic [E],1.62
+S46-003,46,2022,Basic [@],1.62
+S46-004,46,2022,Basic [R],1.62
+S46-005,46,2022,Basic [b],1.62
+S46-006,46,2022,Basic [R(2)],1.62
+S46-007,46,2022,Basic [I],1.62
+S46-008,46,2022,Basic [C],1.62
+S46-009,46,2022,Basic [K],1.62
+S46-010,46,2023,Inu no Kagayaki,14.58
+S46-011,46,2023,Rice,5.2
+S46-012,46,2023,Pattern [Jon Burgerman],11.45
+S46-013,46,2023,Flag [Ukraine] ,9.37
+S46-014,46,2023,Hero [Luke],7.29
+S46-015,46,2023,Hero [Ultraman] ,7.29
+S46-016,46,2023,Cute [Sonic the Hedgehog] ,13.54
+S46-017,46,2023,Cute [Pickles the Frog],13.54
+S46-018,46,2023,Artist [Masked Kamen Rider #1],4.16
+S46-019,46,2023,Artist [The Great MUTA Wrestler] ,4.16
+S46-020,46,2023,Artist [Saint Mxxxxxx] ,4.16
+S46-021,46,2023,Artist [INU] ,4.16
+S47-001,47,2022,Basic [B],1.62
+S47-002,47,2022,Basic [E],1.62
+S47-003,47,2022,Basic [@],1.62
+S47-004,47,2022,Basic [R],1.62
+S47-005,47,2022,Basic [b],1.62
+S47-006,47,2022,Basic [R(2)],1.62
+S47-007,47,2022,Basic [I],1.62
+S47-008,47,2022,Basic [C],1.62
+S47-009,47,2022,Basic [K],1.62
+S47-010,47,2023,Museo Del Prado,14.58
+S47-011,47,2023,Off-White Tote Bag,8.33
+S47-012,47,2023,Konpeitou Candy,5.2
+S47-013,47,2023,Edokko,4.16
+S47-014,47,2023,Flag [Austria],4.16
+S47-015,47,2023,Horror [M3GAN],7.29
+S47-016,47,2023,SF [Motoko Kusanagi],7.29
+S47-017,47,2023,Cute [Willy Wonka],7.29
+S47-018,47,2023,Animal [Psycho Teddy Bear],5.2
+S47-019,47,2023,Hero [The Flash],
+S47-020,47,2023,Artist [Foot Patrol],
+S47-021,47,2023,Artist [Land],
+S47-022,47,2023,Artist [Kenshiro] ,
+S48-001,48,2024,Basic [B],1.82
+S48-002,48,2024,Basic [E],1.82
+S48-003,48,2024,Basic [@],1.82
+S48-004,48,2024,Basic [R],1.82
+S48-005,48,2024,Basic [b],1.82
+S48-006,48,2024,Basic [R(2)],1.82
+S48-007,48,2024,Basic [I],1.82
+S48-008,48,2024,Basic [C],1.82
+S48-009,48,2024,Basic [K],1.82
+S48-010,48,2024,Jellybean,13.54
+S48-011,48,2024,Pattern,11.46
+S48-012,48,2024,Flag,9.38
+S48-013,48,2024,Horror,12.5
+S48-014,48,2024,SF,12.5
+S48-015,48,2024,Cute,14.58
+S48-016,48,2024,Animal,8.33
+S48-017,48,2024,Artist [The Rock],
+S48-018,48,2024,Artist [Peanuts-kun],4.16
+S48-019,48,2024,Artist [Pink House],1.04
+S48-020,48,2024,Artist [Swimer],4.16
+S48-021,48,2024,Artist [Toshihiko Tahara],1.04
+S48-022,48,2024,Secret [PlayStation],
+S48-023,48,2024,Secret [Five Nights at Freddy's],
+S48-024,48,2024,Secret [Black Manta],
+S48-025,48,2024,Secret [John Cena],
+S48-026,48,2024,Secret [Swimer],
+S48-027,48,2024,Secret [Will Sweeney],
+S48-028,48,2024,Secret [404 Not Found],0.52
+S49-001,49,2025,Basic [B],1.82
+S49-002,49,2025,Basic [E],1.82
+S49-003,49,2025,Basic [@],1.82
+S49-004,49,2025,Basic [R],1.82
+S49-005,49,2025,Basic [b],1.82
+S49-006,49,2025,Basic [R(2)],1.82
+S49-007,49,2025,Basic [I],1.82
+S49-008,49,2025,Basic [C],1.82
+S49-009,49,2025,Basic [K],1.82
+S49-010,49,2025,Jellybean,5.2
+S49-011,49,2025,Pattern,6.25
+S49-012,49,2025,Flag [Philippines],3.12
+S49-013,49,2025,Horror [Beetlejuice],5.2
+S49-014,49,2025,SF [Bang Brave Bang],6.25
+S49-015,49,2025,Cute [Smurfs],5.2
+S49-016,49,2025,Animal [Airou],6.25
+S49-017,49,2025,Hero [The Boys: Soldier Boy],4.16
+S49-018,49,2025,Artist [The Electric State],3.12
+S49-019,49,2025,Artist [Toromi-kun],2.08
+S49-020,49,2025,Artist [Monopoly],8.33
+S49-021,49,2025,Artist [Gold Ship],6.25
+S49-022,49,2025,Artist [Skater John],4.16
+S49-023,49,2025,Artist [Gold Ship],4.16
+S49-024,49,2025,Artist [Sean Wotherspoon],2.08
+S49-025,49,2025,Secret [1],0.52
+S49-026,49,2025,Secret [2],0.52
+S49-027,49,2025,Secret [3],0.52
+S49-028,49,2025,Secret [4],0.52
+S49-029,49,2025,Secret [Cute],0.52
+S49-030,49,2025,Secret [4],0.52
+S50-001,50,2025,Basic [B],1.82
+S50-002,50,2025,Basic [E],1.82
+S50-003,50,2025,Basic [@],1.82
+S50-004,50,2025,Basic [R],1.82
+S50-005,50,2025,Basic [b],1.82
+S50-006,50,2025,Basic [R(2)],1.82
+S50-007,50,2025,Basic [I],1.82
+S50-008,50,2025,Basic [C],1.82
+S50-009,50,2025,Basic [K],1.82
+S50-010,50,2025,Jellybean,5.2
+S50-011,50,2025,Pattern,6.25
+S50-012,50,2025,Flag,4.16
+S50-013,50,2025,Horror [Megan 2.0],5.2
+S50-014,50,2025,SF [Death Stranding 2],5.2
+S50-015,50,2025,Cute [Jack],3.12
+S50-016,50,2025,Animal [Monchichi],6.25
+S50-017,50,2025,Hero [Powerpuff Girl Blossom],4.16
+S50-018,50,2025,Artist [AMOK],2.08
+S50-019,50,2025,Artist [HIDE],4.16
+S50-020,50,2025,Artist [Furby],6.25
+S50-021,50,2025,Artist [Young-Hee],4.16
+S50-022,50,2025,Artist [Bring me the Horizon],3.12
+S50-023,50,2025,Secret [Awesome T-Shirt Shop],0.52
+S50-024,50,2025,Secret [Biwako kun],0.52
+S50-025,50,2025,Secret [David Guetta],0.52
+S50-026,50,2025,Secret [Subware],0.52
+S50-027,50,2025,Secret [Team Ikuzawa],0.52
+S50-028,50,2025,Secret [SF],0.52
+S50-029,50,2025,Secret [Cute],0.52
+S50-030,50,2025,Secret [Animal],0.52
+S50-031,50,2025,Secret [Aritst: Chul-Su],0.52
+S50-032,50,2025,Secret [Hero #1],0.52
+S50-033,50,2025,Secret [Hero #2],0.52

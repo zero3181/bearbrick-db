@@ -1,7 +1,4 @@
 import { NextApiRequest, NextApiResponse } from 'next'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from "@/lib/auth"
-import { UserRole } from '@prisma/client'
 import { handleUpload, type HandleUploadBody } from '@vercel/blob/client'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -9,15 +6,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const session = await getServerSession(req, res, authOptions)
-
-  if (!session || !session.user) {
+  // Simple password check
+  const password = req.headers.authorization?.replace('Bearer ', '')
+  if (password !== '4321') {
     return res.status(401).json({ error: 'Unauthorized' })
-  }
-
-  // Check if user has admin or owner privileges
-  if (session.user.role !== UserRole.ADMIN && session.user.role !== UserRole.OWNER) {
-    return res.status(403).json({ error: 'Insufficient permissions' })
   }
 
   try {
@@ -26,20 +18,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const jsonResponse = await handleUpload({
       body,
       request: req,
-      onBeforeGenerateToken: async (pathname) => {
-        // Generate unique filename
-        const timestamp = Date.now()
-        const ext = pathname.split('.').pop() || 'jpg'
-        const filename = `bearbrick-${timestamp}.${ext}`
-
+      onBeforeGenerateToken: async () => {
         return {
           allowedContentTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
           tokenPayload: JSON.stringify({
-            uploadedById: session.user.id,
+            uploadedAt: Date.now(),
           }),
         }
       },
-      onUploadCompleted: async ({ blob, tokenPayload }) => {
+      onUploadCompleted: async ({ blob }) => {
         try {
           console.log('Blob upload completed:', blob.url)
           // Additional processing can be done here

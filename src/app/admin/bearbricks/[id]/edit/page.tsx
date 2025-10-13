@@ -106,6 +106,7 @@ export default function EditBearbrickPage() {
       const blob = await upload(filename, file, {
         access: 'public',
         handleUploadUrl: '/api/upload/presigned',
+        clientPayload: JSON.stringify({ authorization: '4321' }),
         onUploadProgress: (progress) => {
           setUploadProgress(Math.round((progress.loaded / progress.total) * 100))
         },

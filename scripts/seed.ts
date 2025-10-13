@@ -65,7 +65,7 @@ async function main() {
 
   try {
     // Read CSV file
-    const csvPath = '/Users/a60157225/Library/CloudStorage/OneDrive-개인/Documents/bearbrick_series_full.csv'
+    const csvPath = join(process.cwd(), 'data', 'bearbrick_series_full.csv')
     const csvContent = readFileSync(csvPath, 'utf-8')
     const lines = csvContent.split('\n').slice(1) // Skip header
     
@@ -119,12 +119,12 @@ async function main() {
     console.log(`🏷️ Creating ${categories.length} categories...`)
     
     for (const category of categories) {
-      const existing = await prisma.category.findFirst({
+      const existing = await prisma.categories.findFirst({
         where: { name: category.name }
       })
-      
+
       if (!existing) {
-        await prisma.category.create({
+        await prisma.categories.create({
           data: category
         })
       }
@@ -144,21 +144,21 @@ async function main() {
     console.log(`🤝 Creating ${collaborations.length} collaborations...`)
     
     for (const collaboration of collaborations) {
-      const existing = await prisma.collaboration.findFirst({
+      const existing = await prisma.collaborations.findFirst({
         where: { brandName: collaboration.brandName }
       })
-      
+
       if (!existing) {
-        await prisma.collaboration.create({
+        await prisma.collaborations.create({
           data: collaboration
         })
       }
     }
 
     // Get a default user for createdBy (use first user or create one)
-    let defaultUser = await prisma.user.findFirst()
+    let defaultUser = await prisma.users.findFirst()
     if (!defaultUser) {
-      defaultUser = await prisma.user.create({
+      defaultUser = await prisma.users.create({
         data: {
           email: 'system@bearbrickdb.com',
           name: 'System User',
@@ -176,9 +176,9 @@ async function main() {
     for (const item of bearbrickData) {
       try {
         const categoryName = CATEGORY_MAPPING[getCategory(item.figure) as keyof typeof CATEGORY_MAPPING] || 'Special'
-        const category = await prisma.category.findUnique({ where: { name: categoryName } })
+        const category = await prisma.categories.findUnique({ where: { name: categoryName } })
         const series = await prisma.series.findUnique({ where: { number: item.series } })
-        
+
         if (!category || !series) {
           console.log(`⚠️ Skipping ${item.id}: Missing category or series`)
           skipped++
@@ -186,8 +186,8 @@ async function main() {
         }
 
         const collaborationName = extractCollaboration(item.figure)
-        const collaboration = collaborationName 
-          ? await prisma.collaboration.findFirst({ where: { brandName: collaborationName } })
+        const collaboration = collaborationName
+          ? await prisma.collaborations.findFirst({ where: { brandName: collaborationName } })
           : null
 
         await prisma.bearbrick.upsert({
