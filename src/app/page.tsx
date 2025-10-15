@@ -32,32 +32,43 @@ export default function HomePage() {
   const [password, setPassword] = useState('')
 
   useEffect(() => {
-    fetchSeries()
-    const adminStatus = localStorage.getItem('isAdmin') === 'true'
-    setIsAdmin(adminStatus)
-  }, [])
+    const loadInitialData = async () => {
+      const adminStatus = localStorage.getItem('isAdmin') === 'true'
+      setIsAdmin(adminStatus)
 
-  useEffect(() => {
-    if (allSeries.length > 0 && selectedSeries === 'all') {
-      // Auto-select the latest series (first in the list)
-      const latestSeries = allSeries[0]?.name
-      if (latestSeries) {
+      // Fetch series first
+      const seriesData = await fetchSeries()
+
+      // Auto-select the latest series
+      if (seriesData && seriesData.length > 0) {
+        const latestSeries = seriesData[0].name
         setSelectedSeries(latestSeries)
         fetchBearbricks(latestSeries)
       }
-    } else if (selectedSeries !== 'all') {
-      fetchBearbricks(selectedSeries)
     }
-  }, [selectedSeries, allSeries])
+
+    loadInitialData()
+  }, [])
+
+  useEffect(() => {
+    if (selectedSeries && selectedSeries !== 'all') {
+      fetchBearbricks(selectedSeries)
+    } else if (selectedSeries === 'all') {
+      fetchBearbricks()
+    }
+  }, [selectedSeries])
 
   const fetchSeries = async () => {
     try {
       const res = await fetch('/api/series')
       const data = await res.json()
-      setAllSeries(Array.isArray(data) ? data : [])
+      const seriesArray = Array.isArray(data) ? data : []
+      setAllSeries(seriesArray)
+      return seriesArray
     } catch (error) {
       console.error('Failed to fetch series:', error)
       setAllSeries([])
+      return []
     }
   }
 
@@ -112,11 +123,11 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-white dark:bg-gray-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Bearbrick DB</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Bearbrick DB</h1>
           <div>
             {isAdmin ? (
               <div className="flex gap-3">
@@ -149,13 +160,13 @@ export default function HomePage() {
       <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Series Filter */}
         <div className="mb-6 flex items-center justify-between gap-4">
-          <h2 className="text-3xl font-bold">베어브릭 컬렉션</h2>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">베어브릭 컬렉션</h2>
           <div className="flex items-center gap-2">
-            <label className="text-sm font-semibold text-gray-700">시리즈:</label>
+            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">시리즈:</label>
             <select
               value={selectedSeries}
               onChange={(e) => handleSeriesChange(e.target.value)}
-              className="px-4 py-2 border rounded bg-white text-gray-700 hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 border rounded bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600"
             >
               <option value="all">전체</option>
               {allSeries.map((series) => (
@@ -170,7 +181,7 @@ export default function HomePage() {
 
         {bearbricks.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500">등록된 베어브릭이 없습니다</p>
+            <p className="text-gray-500 dark:text-gray-400">등록된 베어브릭이 없습니다</p>
             {isAdmin && (
               <Link
                 href="/admin/manage"
@@ -186,9 +197,9 @@ export default function HomePage() {
               <Link
                 key={bearbrick.id}
                 href={`/bearbricks/${bearbrick.id}`}
-                className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow overflow-hidden"
+                className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow overflow-hidden"
               >
-                <div className="aspect-square bg-gray-100 flex items-center justify-center">
+                <div className="aspect-square bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
                   <img
                     src={getPrimaryImage(bearbrick)}
                     alt={bearbrick.name}
@@ -196,8 +207,8 @@ export default function HomePage() {
                   />
                 </div>
                 <div className="p-2 md:p-4">
-                  <h3 className="font-semibold text-xs md:text-lg mb-1 line-clamp-2">{bearbrick.name}</h3>
-                  <p className="text-xs md:text-sm text-gray-600">
+                  <h3 className="font-semibold text-xs md:text-lg mb-1 line-clamp-2 text-gray-900 dark:text-white">{bearbrick.name}</h3>
+                  <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
                     {bearbrick.series && `${bearbrick.series} · `}
                     {bearbrick.size}%
                   </p>
@@ -211,15 +222,15 @@ export default function HomePage() {
       {/* Password Modal */}
       {showPasswordModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-xl font-bold mb-4">관리자 로그인</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">관리자 로그인</h3>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleAdminLogin()}
               placeholder="비밀번호 입력"
-              className="w-full px-4 py-2 border rounded mb-4"
+              className="w-full px-4 py-2 border dark:border-gray-600 rounded mb-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               autoFocus
             />
             <div className="flex gap-3">
