@@ -179,7 +179,11 @@ export default function HomePage() {
           </div>
         </div>
 
-        {bearbricks.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500 dark:text-gray-400">불러오는 중...</p>
+          </div>
+        ) : bearbricks.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-500 dark:text-gray-400">등록된 베어브릭이 없습니다</p>
             {isAdmin && (
