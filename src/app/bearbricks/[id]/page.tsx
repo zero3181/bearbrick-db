@@ -57,6 +57,9 @@ export default function BearbrickDetailPage() {
     try {
       const res = await fetch(`/api/admin/bearbricks/${params.id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': 'Bearer 4321',
+        },
       })
 
       if (res.ok) {
