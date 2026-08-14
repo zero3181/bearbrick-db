@@ -18,6 +18,7 @@ export async function GET(
         },
         series: {
           select: {
+            id: true,
             name: true,
           },
         },
@@ -35,7 +36,7 @@ export async function GET(
     const mapped = {
       id: bearbrick.id,
       name: bearbrick.name,
-      series: bearbrick.series?.name || null,
+      series: bearbrick.series || null,
       size: bearbrick.sizePercentage,
       releaseDate: bearbrick.releaseDate,
       description: bearbrick.description,

@@ -8,7 +8,10 @@ import { upload } from '@vercel/blob/client'
 interface Bearbrick {
   id: string
   name: string
-  series: string | null
+  series: {
+    id: string
+    name: string
+  } | null
   size: number
   releaseDate: string | null
   description: string | null
@@ -19,13 +22,20 @@ interface Bearbrick {
   }[]
 }
 
+interface Series {
+  id: string
+  name: string
+  number: number
+}
+
 export default function EditBearbrickPage() {
   const params = useParams()
   const router = useRouter()
   const [bearbrick, setBearbrick] = useState<Bearbrick | null>(null)
+  const [seriesList, setSeriesList] = useState<Series[]>([])
   const [formData, setFormData] = useState({
     name: '',
-    series: '',
+    seriesId: '',
     size: '100',
     releaseDate: '',
     description: '',
@@ -39,8 +49,21 @@ export default function EditBearbrickPage() {
       router.push('/')
       return
     }
+    fetchSeriesList()
     fetchBearbrick()
   }, [params.id])
+
+  const fetchSeriesList = async () => {
+    try {
+      const res = await fetch('/api/series')
+      if (res.ok) {
+        const data = await res.json()
+        setSeriesList(data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch series:', error)
+    }
+  }
 
   const fetchBearbrick = async () => {
     try {
@@ -50,7 +73,7 @@ export default function EditBearbrickPage() {
         setBearbrick(data)
         setFormData({
           name: data.name,
-          series: data.series || '',
+          seriesId: data.series?.id || '',
           size: data.size.toString(),
           releaseDate: data.releaseDate ? data.releaseDate.split('T')[0] : '',
           description: data.description || '',
@@ -221,12 +244,18 @@ export default function EditBearbrickPage() {
             </div>
             <div>
               <label className="block font-semibold mb-1">시리즈</label>
-              <input
-                type="text"
-                value={formData.series}
-                onChange={(e) => setFormData({ ...formData, series: e.target.value })}
+              <select
+                value={formData.seriesId}
+                onChange={(e) => setFormData({ ...formData, seriesId: e.target.value })}
                 className="w-full px-4 py-2 border rounded"
-              />
+              >
+                <option value="">시리즈 없음</option>
+                {seriesList.map((series) => (
+                  <option key={series.id} value={series.id}>
+                    {series.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block font-semibold mb-1">사이즈 *</label>

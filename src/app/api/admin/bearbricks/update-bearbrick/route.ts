@@ -14,7 +14,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { id, name, series, size, releaseDate, description } = body
+    const { id, name, seriesId, size, releaseDate, description } = body
 
     if (!id || !name) {
       return NextResponse.json(
@@ -23,24 +23,13 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    // Find or create series
-    let seriesId = null
-    if (series) {
-      const seriesRecord = await prisma.series.upsert({
-        where: { name: series },
-        update: {},
-        create: { name: series },
-      })
-      seriesId = seriesRecord.id
-    }
-
     // Update bearbrick
     const bearbrick = await prisma.bearbrick.update({
       where: { id },
       data: {
         name,
-        seriesId,
-        size: parseInt(size),
+        seriesId: seriesId || null,
+        sizePercentage: parseInt(size),
         releaseDate: releaseDate ? new Date(releaseDate) : null,
         description,
       },
