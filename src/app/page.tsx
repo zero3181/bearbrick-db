@@ -212,7 +212,7 @@ export default function HomePage() {
                 <div className="p-2 md:p-4">
                   <h3 className="font-semibold text-xs md:text-lg mb-1 line-clamp-2 text-gray-900 dark:text-white">{bearbrick.name}</h3>
                   <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
-                    {bearbrick.series && `${bearbrick.series} · `}
+                    {bearbrick.series && `${bearbrick.series.name} · `}
                     {bearbrick.size}%
                   </p>
                 </div>
