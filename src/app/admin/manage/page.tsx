@@ -7,7 +7,10 @@ import Link from 'next/link'
 interface Bearbrick {
   id: string
   name: string
-  series: string | null
+  series: {
+    id: string
+    name: string
+  } | null
   size: number
   images: { url: string; isPrimary: boolean }[]
 }
@@ -185,7 +188,7 @@ export default function AdminManagePage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 font-medium">{bearbrick.name}</td>
-                    <td className="px-6 py-4 text-gray-600">{bearbrick.series || '-'}</td>
+                    <td className="px-6 py-4 text-gray-600">{bearbrick.series?.name || '-'}</td>
                     <td className="px-6 py-4 text-gray-600">{bearbrick.size}%</td>
                     <td className="px-6 py-4">
                       <Link
