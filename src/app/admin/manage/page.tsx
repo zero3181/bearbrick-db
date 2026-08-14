@@ -253,6 +253,7 @@ export default function AdminManagePage() {
           </div>
         )}
 
+        {!showAddForm && (
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <table className="w-full">
             <thead className="bg-gray-50">
@@ -295,6 +296,7 @@ export default function AdminManagePage() {
             </tbody>
           </table>
         </div>
+        )}
       </main>
     </div>
   )
