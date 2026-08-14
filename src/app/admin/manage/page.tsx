@@ -33,8 +33,6 @@ export default function AdminManagePage() {
     releaseDate: '',
     description: '',
   })
-  const [newSeriesSeason, setNewSeriesSeason] = useState('')
-  const [newSeriesYear, setNewSeriesYear] = useState(new Date().getFullYear().toString())
   const [creatingSeries, setCreatingSeries] = useState(false)
 
   useEffect(() => {
@@ -105,24 +103,25 @@ export default function AdminManagePage() {
     }
   }
 
-  const handleSeriesSelect = (value: string) => {
-    if (value === '__new__') {
-      setNewSeriesYear(new Date().getFullYear().toString())
-      setNewSeriesSeason('')
-    }
-    setFormData({ ...formData, seriesId: value })
+  const getCurrentSeason = () => {
+    const month = new Date().getMonth() + 1
+    if (month >= 3 && month <= 5) return 'Spring'
+    if (month >= 6 && month <= 8) return 'Summer'
+    if (month >= 9 && month <= 11) return 'Fall'
+    return 'Winter'
   }
 
-  const handleCreateSeries = async () => {
-    if (!newSeriesSeason) {
-      alert('시즌을 입력해주세요')
+  const nextSeriesNumber = seriesList.length > 0
+    ? Math.max(...seriesList.map((s) => s.number)) + 1
+    : 1
+
+  const handleSeriesSelect = async (value: string) => {
+    if (value !== '__new__') {
+      setFormData({ ...formData, seriesId: value })
       return
     }
 
-    const nextNumber = seriesList.length > 0
-      ? Math.max(...seriesList.map((s) => s.number)) + 1
-      : 1
-
+    setFormData((prev) => ({ ...prev, seriesId: '__new__' }))
     setCreatingSeries(true)
     try {
       const res = await fetch('/api/series', {
@@ -132,10 +131,10 @@ export default function AdminManagePage() {
           'Authorization': 'Bearer 4321',
         },
         body: JSON.stringify({
-          number: nextNumber,
-          name: `Series ${nextNumber}`,
-          season: newSeriesSeason,
-          releaseYear: parseInt(newSeriesYear),
+          number: nextSeriesNumber,
+          name: `Series ${nextSeriesNumber}`,
+          season: getCurrentSeason(),
+          releaseYear: new Date().getFullYear(),
         }),
       })
 
@@ -196,48 +195,19 @@ export default function AdminManagePage() {
                   value={formData.seriesId}
                   onChange={(e) => handleSeriesSelect(e.target.value)}
                   className="w-full px-4 py-2 border rounded"
+                  disabled={creatingSeries}
                   required
                 >
                   <option value="">시리즈 선택</option>
+                  <option value="__new__">
+                    {creatingSeries ? '생성 중...' : `+ 새 시리즈 (Series ${nextSeriesNumber})`}
+                  </option>
                   {seriesList.map((series) => (
                     <option key={series.id} value={series.id}>
                       {series.name}
                     </option>
                   ))}
-                  <option value="__new__">+ 새 시리즈 추가</option>
                 </select>
-                {formData.seriesId === '__new__' && (
-                  <div className="mt-2 p-3 bg-gray-50 border rounded space-y-2">
-                    <p className="text-sm text-gray-600">
-                      다음 시리즈 번호로 자동 생성됩니다: Series{' '}
-                      {seriesList.length > 0 ? Math.max(...seriesList.map((s) => s.number)) + 1 : 1}
-                    </p>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={newSeriesSeason}
-                        onChange={(e) => setNewSeriesSeason(e.target.value)}
-                        placeholder="시즌 (예: Summer)"
-                        className="flex-1 px-3 py-2 border rounded text-sm"
-                      />
-                      <input
-                        type="number"
-                        value={newSeriesYear}
-                        onChange={(e) => setNewSeriesYear(e.target.value)}
-                        placeholder="출시 연도"
-                        className="w-28 px-3 py-2 border rounded text-sm"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleCreateSeries}
-                        disabled={creatingSeries}
-                        className="px-4 py-2 bg-gray-700 text-white rounded text-sm hover:bg-gray-800 disabled:opacity-50"
-                      >
-                        {creatingSeries ? '생성 중...' : '생성'}
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
               <div>
                 <label className="block font-semibold mb-1">사이즈 *</label>
