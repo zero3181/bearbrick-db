@@ -33,14 +33,9 @@ export default function AdminManagePage() {
     releaseDate: '',
     description: '',
   })
-  const [showAddSeriesForm, setShowAddSeriesForm] = useState(false)
-  const [seriesFormData, setSeriesFormData] = useState({
-    number: '',
-    name: '',
-    season: '',
-    releaseYear: new Date().getFullYear().toString(),
-    theme: '',
-  })
+  const [newSeriesSeason, setNewSeriesSeason] = useState('')
+  const [newSeriesYear, setNewSeriesYear] = useState(new Date().getFullYear().toString())
+  const [creatingSeries, setCreatingSeries] = useState(false)
 
   useEffect(() => {
     const isAdmin = localStorage.getItem('isAdmin') === 'true'
@@ -77,6 +72,11 @@ export default function AdminManagePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    if (formData.seriesId === '__new__') {
+      alert('새 시리즈를 먼저 생성해주세요')
+      return
+    }
+
     try {
       const res = await fetch('/api/admin/bearbricks', {
         method: 'POST',
@@ -105,9 +105,25 @@ export default function AdminManagePage() {
     }
   }
 
-  const handleSeriesSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSeriesSelect = (value: string) => {
+    if (value === '__new__') {
+      setNewSeriesYear(new Date().getFullYear().toString())
+      setNewSeriesSeason('')
+    }
+    setFormData({ ...formData, seriesId: value })
+  }
 
+  const handleCreateSeries = async () => {
+    if (!newSeriesSeason) {
+      alert('시즌을 입력해주세요')
+      return
+    }
+
+    const nextNumber = seriesList.length > 0
+      ? Math.max(...seriesList.map((s) => s.number)) + 1
+      : 1
+
+    setCreatingSeries(true)
     try {
       const res = await fetch('/api/series', {
         method: 'POST',
@@ -116,25 +132,27 @@ export default function AdminManagePage() {
           'Authorization': 'Bearer 4321',
         },
         body: JSON.stringify({
-          ...seriesFormData,
-          number: parseInt(seriesFormData.number),
-          releaseYear: parseInt(seriesFormData.releaseYear),
+          number: nextNumber,
+          name: `Series ${nextNumber}`,
+          season: newSeriesSeason,
+          releaseYear: parseInt(newSeriesYear),
         }),
       })
 
       if (res.ok) {
         const newSeries = await res.json()
-        alert('시리즈가 추가되었습니다')
-        setShowAddSeriesForm(false)
-        setSeriesFormData({ number: '', name: '', season: '', releaseYear: new Date().getFullYear().toString(), theme: '' })
         await fetchSeriesList()
         setFormData((prev) => ({ ...prev, seriesId: newSeries.id }))
       } else {
         alert('시리즈 추가 실패')
+        setFormData((prev) => ({ ...prev, seriesId: '' }))
       }
     } catch (error) {
       console.error('Failed to add series:', error)
       alert('시리즈 추가 실패')
+      setFormData((prev) => ({ ...prev, seriesId: '' }))
+    } finally {
+      setCreatingSeries(false)
     }
   }
 
@@ -148,12 +166,6 @@ export default function AdminManagePage() {
               홈으로
             </Link>
             <button
-              onClick={() => setShowAddSeriesForm(!showAddSeriesForm)}
-              className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800"
-            >
-              {showAddSeriesForm ? '취소' : '+ 시리즈 추가'}
-            </button>
-            <button
               onClick={() => setShowAddForm(!showAddForm)}
               className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
             >
@@ -164,72 +176,6 @@ export default function AdminManagePage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
-        {showAddSeriesForm && (
-          <div className="bg-white rounded-lg shadow p-6 mb-8">
-            <h2 className="text-xl font-bold mb-4">새 시리즈 추가</h2>
-            <form onSubmit={handleSeriesSubmit} className="space-y-4">
-              <div>
-                <label className="block font-semibold mb-1">시리즈 번호 *</label>
-                <input
-                  type="number"
-                  value={seriesFormData.number}
-                  onChange={(e) => setSeriesFormData({ ...seriesFormData, number: e.target.value })}
-                  className="w-full px-4 py-2 border rounded"
-                  placeholder="예: 51"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">이름 *</label>
-                <input
-                  type="text"
-                  value={seriesFormData.name}
-                  onChange={(e) => setSeriesFormData({ ...seriesFormData, name: e.target.value })}
-                  className="w-full px-4 py-2 border rounded"
-                  placeholder="예: Series 51"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">시즌 *</label>
-                <input
-                  type="text"
-                  value={seriesFormData.season}
-                  onChange={(e) => setSeriesFormData({ ...seriesFormData, season: e.target.value })}
-                  className="w-full px-4 py-2 border rounded"
-                  placeholder="예: Spring, Summer, Fall, Winter"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">출시 연도 *</label>
-                <input
-                  type="number"
-                  value={seriesFormData.releaseYear}
-                  onChange={(e) => setSeriesFormData({ ...seriesFormData, releaseYear: e.target.value })}
-                  className="w-full px-4 py-2 border rounded"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">테마</label>
-                <input
-                  type="text"
-                  value={seriesFormData.theme}
-                  onChange={(e) => setSeriesFormData({ ...seriesFormData, theme: e.target.value })}
-                  className="w-full px-4 py-2 border rounded"
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800"
-              >
-                시리즈 추가하기
-              </button>
-            </form>
-          </div>
-        )}
-
         {showAddForm && (
           <div className="bg-white rounded-lg shadow p-6 mb-8">
             <h2 className="text-xl font-bold mb-4">새 베어브릭 추가</h2>
@@ -248,7 +194,7 @@ export default function AdminManagePage() {
                 <label className="block font-semibold mb-1">시리즈 *</label>
                 <select
                   value={formData.seriesId}
-                  onChange={(e) => setFormData({ ...formData, seriesId: e.target.value })}
+                  onChange={(e) => handleSeriesSelect(e.target.value)}
                   className="w-full px-4 py-2 border rounded"
                   required
                 >
@@ -258,7 +204,40 @@ export default function AdminManagePage() {
                       {series.name}
                     </option>
                   ))}
+                  <option value="__new__">+ 새 시리즈 추가</option>
                 </select>
+                {formData.seriesId === '__new__' && (
+                  <div className="mt-2 p-3 bg-gray-50 border rounded space-y-2">
+                    <p className="text-sm text-gray-600">
+                      다음 시리즈 번호로 자동 생성됩니다: Series{' '}
+                      {seriesList.length > 0 ? Math.max(...seriesList.map((s) => s.number)) + 1 : 1}
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={newSeriesSeason}
+                        onChange={(e) => setNewSeriesSeason(e.target.value)}
+                        placeholder="시즌 (예: Summer)"
+                        className="flex-1 px-3 py-2 border rounded text-sm"
+                      />
+                      <input
+                        type="number"
+                        value={newSeriesYear}
+                        onChange={(e) => setNewSeriesYear(e.target.value)}
+                        placeholder="출시 연도"
+                        className="w-28 px-3 py-2 border rounded text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleCreateSeries}
+                        disabled={creatingSeries}
+                        className="px-4 py-2 bg-gray-700 text-white rounded text-sm hover:bg-gray-800 disabled:opacity-50"
+                      >
+                        {creatingSeries ? '생성 중...' : '생성'}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block font-semibold mb-1">사이즈 *</label>
