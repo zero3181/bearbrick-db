@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { upload } from '@vercel/blob/client'
 
 interface Bearbrick {
   id: string
@@ -34,6 +35,10 @@ export default function AdminManagePage() {
     description: '',
   })
   const [creatingSeries, setCreatingSeries] = useState(false)
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string>('')
+  const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
 
   useEffect(() => {
     const isAdmin = localStorage.getItem('isAdmin') === 'true'
@@ -89,18 +94,63 @@ export default function AdminManagePage() {
         }),
       })
 
-      if (res.ok) {
-        alert('추가되었습니다')
-        setShowAddForm(false)
-        setFormData({ name: '', seriesId: '', size: '100', releaseDate: '', description: '' })
-        fetchBearbricks()
-      } else {
+      if (!res.ok) {
         alert('추가 실패')
+        return
       }
+
+      const created = await res.json()
+
+      if (imageFile) {
+        setUploading(true)
+        setUploadProgress(0)
+        try {
+          const ext = imageFile.name.split('.').pop() || 'jpg'
+          const filename = `bearbrick-${created.id}-${Date.now()}.${ext}`
+
+          const blob = await upload(filename, imageFile, {
+            access: 'public',
+            handleUploadUrl: '/api/upload/presigned',
+            clientPayload: JSON.stringify({ authorization: '4321' }),
+            onUploadProgress: (progress) => {
+              setUploadProgress(Math.round((progress.loaded / progress.total) * 100))
+            },
+          })
+
+          await fetch(`/api/admin/bearbricks/${created.id}/upload-image`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer 4321',
+            },
+            body: JSON.stringify({ imageUrl: blob.url, isPrimary: true }),
+          })
+        } catch (error) {
+          console.error('Failed to upload image:', error)
+          alert('베어브릭은 추가되었지만 이미지 업로드에 실패했습니다')
+        } finally {
+          setUploading(false)
+          setUploadProgress(0)
+        }
+      }
+
+      alert('추가되었습니다')
+      setShowAddForm(false)
+      setFormData({ name: '', seriesId: '', size: '100', releaseDate: '', description: '' })
+      setImageFile(null)
+      setImagePreview('')
+      fetchBearbricks()
     } catch (error) {
       console.error('Failed to add:', error)
       alert('추가 실패')
     }
+  }
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImageFile(file)
+    setImagePreview(URL.createObjectURL(file))
   }
 
   const getCurrentSeason = () => {
@@ -180,6 +230,40 @@ export default function AdminManagePage() {
             <h2 className="text-xl font-bold mb-4">새 베어브릭 추가</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
+                <label className="block font-semibold mb-1">이미지</label>
+                <label className="block w-full px-4 py-6 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 text-center">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageSelect}
+                    className="hidden"
+                  />
+                  {imagePreview ? (
+                    <img
+                      src={imagePreview}
+                      alt=""
+                      className="w-24 h-24 object-cover rounded mx-auto"
+                    />
+                  ) : (
+                    <div>
+                      <p className="text-gray-600">클릭하여 이미지 선택</p>
+                      <p className="text-sm text-gray-400 mt-1">비워두면 기본 이미지가 표시됩니다</p>
+                    </div>
+                  )}
+                </label>
+                {uploading && (
+                  <div className="mt-2">
+                    <p className="text-sm text-blue-600 mb-1">이미지 업로드 중... {uploadProgress}%</p>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-blue-600 h-2 rounded-full transition-all"
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div>
                 <label className="block font-semibold mb-1">이름 *</label>
                 <input
                   type="text"
@@ -245,9 +329,10 @@ export default function AdminManagePage() {
               </div>
               <button
                 type="submit"
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                disabled={uploading}
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
               >
-                추가하기
+                {uploading ? '업로드 중...' : '추가하기'}
               </button>
             </form>
           </div>
