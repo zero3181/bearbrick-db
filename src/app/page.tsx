@@ -28,7 +28,7 @@ interface Series {
 export default function HomePage() {
   const [bearbricks, setBearbricks] = useState<Bearbrick[]>([])
   const [allSeries, setAllSeries] = useState<Series[]>([])
-  const [selectedSeries, setSelectedSeries] = useState<string>('all')
+  const [selectedSeries, setSelectedSeries] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
   const [showPasswordModal, setShowPasswordModal] = useState(false)
@@ -39,25 +39,21 @@ export default function HomePage() {
       const adminStatus = localStorage.getItem('isAdmin') === 'true'
       setIsAdmin(adminStatus)
 
-      // Fetch series first
+      // Fetch series first, then default the view to the latest one
+      // instead of loading every bearbrick across all series
       const seriesData = await fetchSeries()
-
-      // Auto-select the latest series
-      if (seriesData && seriesData.length > 0) {
-        const latestSeries = seriesData[0].name
-        setSelectedSeries(latestSeries)
-        fetchBearbricks(latestSeries)
-      }
+      setSelectedSeries(seriesData && seriesData.length > 0 ? seriesData[0].name : 'all')
     }
 
     loadInitialData()
   }, [])
 
   useEffect(() => {
-    if (selectedSeries && selectedSeries !== 'all') {
-      fetchBearbricks(selectedSeries)
-    } else if (selectedSeries === 'all') {
+    if (!selectedSeries) return
+    if (selectedSeries === 'all') {
       fetchBearbricks()
+    } else {
+      fetchBearbricks(selectedSeries)
     }
   }, [selectedSeries])
 
