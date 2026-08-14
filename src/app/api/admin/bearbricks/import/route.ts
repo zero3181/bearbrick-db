@@ -17,7 +17,7 @@ type ClassifiedRow =
   | { kind: 'error'; rowNum: number; reason: string }
   | { kind: 'unchanged'; rowNum: number }
   | { kind: 'update'; rowNum: number; id: string; name: string; seriesId: string; size: number; releaseDate: Date | null; description: string | null }
-  | { kind: 'create'; rowNum: number; name: string; seriesId: string; size: number; releaseDate: Date | null; description: string | null }
+  | { kind: 'create'; rowNum: number; id: string | null; name: string; seriesId: string; size: number; releaseDate: Date | null; description: string | null }
 
 function parseDate(value: unknown): { ok: true; date: Date | null } | { ok: false } {
   if (value === '' || value === null || value === undefined) return { ok: true, date: null }
@@ -62,7 +62,12 @@ function classifyRow(
 
   if (id) {
     const current = existingById.get(id)
-    if (!current) return { kind: 'error', rowNum, reason: `ID "${id}"에 해당하는 베어브릭을 찾을 수 없습니다` }
+    if (!current) {
+      // Not an existing ID - treat as a new row using this as its ID
+      // (this app's original data uses human-readable IDs like "S50-033",
+      // not auto-generated ones, so a typed-in ID for a new row is expected)
+      return { kind: 'create', rowNum, id, name, seriesId, size, releaseDate: dateResult.date, description }
+    }
 
     const unchanged =
       current.name === name &&
@@ -76,7 +81,7 @@ function classifyRow(
     return { kind: 'update', rowNum, id, name, seriesId, size, releaseDate: dateResult.date, description }
   }
 
-  return { kind: 'create', rowNum, name, seriesId, size, releaseDate: dateResult.date, description }
+  return { kind: 'create', rowNum, id: null, name, seriesId, size, releaseDate: dateResult.date, description }
 }
 
 async function readRows(file: File) {
@@ -131,13 +136,22 @@ export async function POST(request: NextRequest) {
     let createCount = 0
     let unchangedCount = 0
     const errors: { rowNum: number; reason: string }[] = []
+    const seenNewIds = new Set<string>()
 
     rawRows.forEach((row, index) => {
       const classified = classifyRow(row, index + 2, seriesByName, existingById)
-      if (classified.kind === 'error') errors.push({ rowNum: classified.rowNum, reason: classified.reason })
-      else if (classified.kind === 'unchanged') unchangedCount += 1
-      else if (classified.kind === 'update') updateCount += 1
-      else createCount += 1
+      if (classified.kind === 'error') {
+        errors.push({ rowNum: classified.rowNum, reason: classified.reason })
+      } else if (classified.kind === 'unchanged') {
+        unchangedCount += 1
+      } else if (classified.kind === 'update') {
+        updateCount += 1
+      } else if (classified.kind === 'create' && classified.id && seenNewIds.has(classified.id)) {
+        errors.push({ rowNum: classified.rowNum, reason: `ID "${classified.id}"가 파일 안에서 중복됩니다` })
+      } else {
+        if (classified.id) seenNewIds.add(classified.id)
+        createCount += 1
+      }
     })
 
     return NextResponse.json({
@@ -164,8 +178,20 @@ export async function POST(request: NextRequest) {
 
   const classified = sliceRows.map((row, i) => classifyRow(row, offset + i + 2, seriesByName, existingById))
   const updates = classified.filter((c): c is Extract<ClassifiedRow, { kind: 'update' }> => c.kind === 'update')
-  const creates = classified.filter((c): c is Extract<ClassifiedRow, { kind: 'create' }> => c.kind === 'create')
+  const rawCreates = classified.filter((c): c is Extract<ClassifiedRow, { kind: 'create' }> => c.kind === 'create')
   const batchErrors = classified.filter((c): c is Extract<ClassifiedRow, { kind: 'error' }> => c.kind === 'error')
+
+  // Guard against two new rows in the same batch reusing the same typed-in ID
+  const seenIds = new Set<string>()
+  const creates: typeof rawCreates = []
+  for (const c of rawCreates) {
+    if (c.id && seenIds.has(c.id)) {
+      batchErrors.push({ kind: 'error', rowNum: c.rowNum, reason: `ID "${c.id}"가 파일 안에서 중복됩니다` })
+      continue
+    }
+    if (c.id) seenIds.add(c.id)
+    creates.push(c)
+  }
 
   if (updates.length > 0 || creates.length > 0) {
     const [defaultCategory, systemUser] = await Promise.all([
@@ -177,33 +203,42 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '기본 카테고리 또는 시스템 사용자를 찾을 수 없습니다' }, { status: 500 })
     }
 
-    await prisma.$transaction([
-      ...updates.map((u) =>
-        prisma.bearbrick.update({
-          where: { id: u.id },
-          data: {
-            name: u.name,
-            seriesId: u.seriesId,
-            sizePercentage: u.size,
-            releaseDate: u.releaseDate,
-            description: u.description,
-          },
-        })
-      ),
-      ...creates.map((c) =>
-        prisma.bearbrick.create({
-          data: {
-            name: c.name,
-            seriesId: c.seriesId,
-            sizePercentage: c.size,
-            releaseDate: c.releaseDate,
-            description: c.description,
-            categoryId: defaultCategory.id,
-            createdById: systemUser.id,
-          },
-        })
-      ),
-    ])
+    try {
+      await prisma.$transaction([
+        ...updates.map((u) =>
+          prisma.bearbrick.update({
+            where: { id: u.id },
+            data: {
+              name: u.name,
+              seriesId: u.seriesId,
+              sizePercentage: u.size,
+              releaseDate: u.releaseDate,
+              description: u.description,
+            },
+          })
+        ),
+        ...creates.map((c) =>
+          prisma.bearbrick.create({
+            data: {
+              ...(c.id ? { id: c.id } : {}),
+              name: c.name,
+              seriesId: c.seriesId,
+              sizePercentage: c.size,
+              releaseDate: c.releaseDate,
+              description: c.description,
+              categoryId: defaultCategory.id,
+              createdById: systemUser.id,
+            },
+          })
+        ),
+      ])
+    } catch (error) {
+      console.error('Import batch failed:', error)
+      return NextResponse.json(
+        { error: `${offset + 2}~${offset + sliceRows.length + 1}행 처리 중 오류가 발생했습니다 (예: 중복된 ID)` },
+        { status: 500 }
+      )
+    }
   }
 
   const processed = offset + sliceRows.length
