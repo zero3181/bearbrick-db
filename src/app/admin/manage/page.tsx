@@ -230,40 +230,6 @@ export default function AdminManagePage() {
             <h2 className="text-xl font-bold mb-4">새 베어브릭 추가</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block font-semibold mb-1">이미지</label>
-                <label className="block w-full px-4 py-6 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 text-center">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageSelect}
-                    className="hidden"
-                  />
-                  {imagePreview ? (
-                    <img
-                      src={imagePreview}
-                      alt=""
-                      className="w-24 h-24 object-cover rounded mx-auto"
-                    />
-                  ) : (
-                    <div>
-                      <p className="text-gray-600">클릭하여 이미지 선택</p>
-                      <p className="text-sm text-gray-400 mt-1">비워두면 기본 이미지가 표시됩니다</p>
-                    </div>
-                  )}
-                </label>
-                {uploading && (
-                  <div className="mt-2">
-                    <p className="text-sm text-blue-600 mb-1">이미지 업로드 중... {uploadProgress}%</p>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-blue-600 h-2 rounded-full transition-all"
-                        style={{ width: `${uploadProgress}%` }}
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-              <div>
                 <label className="block font-semibold mb-1">이름 *</label>
                 <input
                   type="text"
@@ -326,6 +292,40 @@ export default function AdminManagePage() {
                   className="w-full px-4 py-2 border rounded"
                   rows={4}
                 />
+              </div>
+              <div>
+                <label className="block font-semibold mb-1">이미지</label>
+                <label className="block w-full px-4 py-6 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 text-center">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageSelect}
+                    className="hidden"
+                  />
+                  {imagePreview ? (
+                    <img
+                      src={imagePreview}
+                      alt=""
+                      className="w-24 h-24 object-cover rounded mx-auto"
+                    />
+                  ) : (
+                    <div>
+                      <p className="text-gray-600">클릭하여 이미지 선택</p>
+                      <p className="text-sm text-gray-400 mt-1">비워두면 기본 이미지가 표시됩니다</p>
+                    </div>
+                  )}
+                </label>
+                {uploading && (
+                  <div className="mt-2">
+                    <p className="text-sm text-blue-600 mb-1">이미지 업로드 중... {uploadProgress}%</p>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-blue-600 h-2 rounded-full transition-all"
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
               <button
                 type="submit"
