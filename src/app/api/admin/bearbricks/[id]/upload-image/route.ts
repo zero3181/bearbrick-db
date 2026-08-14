@@ -23,12 +23,21 @@ export async function POST(
       return NextResponse.json({ error: 'Image URL is required' }, { status: 400 })
     }
 
+    const uploadedBy = await prisma.users.findFirst({
+      where: { email: 'system@bearbrickdb.com' },
+    })
+
+    if (!uploadedBy) {
+      return NextResponse.json({ error: 'Missing system user' }, { status: 500 })
+    }
+
     // Create the image
-    const image = await prisma.image.create({
+    const image = await prisma.bearbrickImage.create({
       data: {
         url: imageUrl,
         isPrimary: isPrimary || false,
         bearbrickId: params.id,
+        uploadedById: uploadedBy.id,
       },
     })
 
