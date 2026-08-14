@@ -33,6 +33,46 @@ function sameDate(a: Date | null, b: Date | null) {
   return a.toISOString().split('T')[0] === b.toISOString().split('T')[0]
 }
 
+function getCurrentSeason() {
+  const month = new Date().getMonth() + 1
+  if (month >= 3 && month <= 5) return 'Spring'
+  if (month >= 6 && month <= 8) return 'Summer'
+  if (month >= 9 && month <= 11) return 'Fall'
+  return 'Winter'
+}
+
+function seriesNamesIn(rows: Record<string, unknown>[]) {
+  return [...new Set(rows.map((row) => String(row['시리즈'] ?? '').trim()).filter((n) => n.length > 0))]
+}
+
+// Creates any series referenced in `names` that don't exist yet, numbering
+// them sequentially after the current highest series number, and adds the
+// new id to `seriesByName` so row classification can resolve them.
+async function ensureSeriesExist(names: string[], seriesByName: Map<string, string>) {
+  const missing = names.filter((n) => !seriesByName.has(n))
+  if (missing.length === 0) return 0
+
+  const highest = await prisma.series.aggregate({ _max: { number: true } })
+  let nextNumber = (highest._max.number ?? 0) + 1
+
+  for (const name of missing) {
+    const created = await prisma.series.create({
+      data: {
+        id: crypto.randomUUID(),
+        number: nextNumber,
+        name,
+        season: getCurrentSeason(),
+        releaseYear: new Date().getFullYear(),
+        updatedAt: new Date(),
+      },
+    })
+    seriesByName.set(name, created.id)
+    nextNumber += 1
+  }
+
+  return missing.length
+}
+
 function classifyRow(
   row: Record<string, unknown>,
   rowNum: number,
@@ -132,6 +172,13 @@ export async function POST(request: NextRequest) {
       .filter((id) => id.length > 0)
     const existingById = await fetchExistingByIds(ids)
 
+    // Don't actually create series during a preview - just note which
+    // names would need to be, and let classification treat them as valid
+    // so the counts reflect what apply will actually do.
+    const newSeriesNames = seriesNamesIn(rawRows).filter((n) => !seriesByName.has(n))
+    const previewSeriesByName = new Map(seriesByName)
+    newSeriesNames.forEach((n) => previewSeriesByName.set(n, '__PENDING__'))
+
     let updateCount = 0
     let createCount = 0
     let unchangedCount = 0
@@ -139,7 +186,7 @@ export async function POST(request: NextRequest) {
     const seenNewIds = new Set<string>()
 
     rawRows.forEach((row, index) => {
-      const classified = classifyRow(row, index + 2, seriesByName, existingById)
+      const classified = classifyRow(row, index + 2, previewSeriesByName, existingById)
       if (classified.kind === 'error') {
         errors.push({ rowNum: classified.rowNum, reason: classified.reason })
       } else if (classified.kind === 'unchanged') {
@@ -159,6 +206,7 @@ export async function POST(request: NextRequest) {
       createCount,
       unchangedCount,
       errors,
+      newSeriesNames,
       batchSize: BATCH_SIZE,
       totalBatches: Math.ceil(rawRows.length / BATCH_SIZE) || 0,
     })
@@ -175,6 +223,8 @@ export async function POST(request: NextRequest) {
     .map((row) => String(row['ID'] ?? '').trim())
     .filter((id) => id.length > 0)
   const existingById = await fetchExistingByIds(sliceIds)
+
+  const newSeriesCreated = await ensureSeriesExist(seriesNamesIn(sliceRows), seriesByName)
 
   const classified = sliceRows.map((row, i) => classifyRow(row, offset + i + 2, seriesByName, existingById))
   const updates = classified.filter((c): c is Extract<ClassifiedRow, { kind: 'update' }> => c.kind === 'update')
@@ -249,6 +299,7 @@ export async function POST(request: NextRequest) {
     batchCreated: creates.length,
     batchSkipped: batchErrors.length,
     batchErrors: batchErrors.map((e) => ({ rowNum: e.rowNum, reason: e.reason })),
+    newSeriesCreated,
     processed,
     total,
     done,

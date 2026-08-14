@@ -41,7 +41,7 @@ export default function AdminManagePage() {
   const [uploadProgress, setUploadProgress] = useState(0)
   const [exporting, setExporting] = useState(false)
   const [importFile, setImportFile] = useState<File | null>(null)
-  const [importPreview, setImportPreview] = useState<{ updateCount: number; createCount: number; unchangedCount: number; errors: { rowNum: number; reason: string }[] } | null>(null)
+  const [importPreview, setImportPreview] = useState<{ updateCount: number; createCount: number; unchangedCount: number; errors: { rowNum: number; reason: string }[]; newSeriesNames: string[] } | null>(null)
   const [importing, setImporting] = useState(false)
   const [importResult, setImportResult] = useState<{ updated: number; created: number; skipped: number } | null>(null)
   const [importProgress, setImportProgress] = useState<{ processed: number; total: number; etaSeconds: number | null } | null>(null)
@@ -388,6 +388,11 @@ export default function AdminManagePage() {
             {importPreview.unchangedCount > 0 && (
               <p className="mb-2 text-sm text-gray-500">
                 변경사항 없어 건너뜀: {importPreview.unchangedCount}개
+              </p>
+            )}
+            {importPreview.newSeriesNames.length > 0 && (
+              <p className="mb-2 text-sm text-gray-700">
+                새로 만들어질 시리즈: {importPreview.newSeriesNames.join(', ')}
               </p>
             )}
             {importPreview.errors.length > 0 && (
