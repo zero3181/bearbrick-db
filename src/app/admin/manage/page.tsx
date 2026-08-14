@@ -39,6 +39,11 @@ export default function AdminManagePage() {
   const [imagePreview, setImagePreview] = useState<string>('')
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
+  const [exporting, setExporting] = useState(false)
+  const [importFile, setImportFile] = useState<File | null>(null)
+  const [importPreview, setImportPreview] = useState<{ updateCount: number; createCount: number; errors: { rowNum: number; reason: string }[] } | null>(null)
+  const [importing, setImporting] = useState(false)
+  const [importResult, setImportResult] = useState<{ updated: number; created: number; skipped: number } | null>(null)
 
   useEffect(() => {
     const isAdmin = localStorage.getItem('isAdmin') === 'true'
@@ -205,6 +210,100 @@ export default function AdminManagePage() {
     }
   }
 
+  const handleExport = async () => {
+    setExporting(true)
+    try {
+      const res = await fetch('/api/admin/bearbricks/export', {
+        headers: { 'Authorization': 'Bearer 4321' },
+      })
+      if (!res.ok) {
+        alert('내보내기 실패')
+        return
+      }
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `bearbricks-${new Date().toISOString().split('T')[0]}.xlsx`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Failed to export:', error)
+      alert('내보내기 실패')
+    } finally {
+      setExporting(false)
+    }
+  }
+
+  const handleImportFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+
+    setImportFile(file)
+    setImportResult(null)
+    setImportPreview(null)
+    setImporting(true)
+    try {
+      const body = new FormData()
+      body.append('file', file)
+      body.append('mode', 'preview')
+      const res = await fetch('/api/admin/bearbricks/import', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer 4321' },
+        body,
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        alert(data.error || '파일을 읽을 수 없습니다')
+        setImportFile(null)
+        return
+      }
+      setImportPreview(data)
+    } catch (error) {
+      console.error('Failed to preview import:', error)
+      alert('파일을 읽을 수 없습니다')
+      setImportFile(null)
+    } finally {
+      setImporting(false)
+    }
+  }
+
+  const handleImportConfirm = async () => {
+    if (!importFile) return
+
+    setImporting(true)
+    try {
+      const body = new FormData()
+      body.append('file', importFile)
+      body.append('mode', 'apply')
+      const res = await fetch('/api/admin/bearbricks/import', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer 4321' },
+        body,
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        alert(data.error || '적용 실패')
+        return
+      }
+      setImportResult(data)
+      setImportPreview(null)
+      setImportFile(null)
+      fetchBearbricks()
+    } catch (error) {
+      console.error('Failed to apply import:', error)
+      alert('적용 실패')
+    } finally {
+      setImporting(false)
+    }
+  }
+
+  const handleImportCancel = () => {
+    setImportFile(null)
+    setImportPreview(null)
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
@@ -214,6 +313,22 @@ export default function AdminManagePage() {
             <Link href="/" className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
               홈으로
             </Link>
+            <button
+              onClick={handleExport}
+              disabled={exporting}
+              className="px-4 py-2 bg-green-700 text-white rounded hover:bg-green-800 disabled:opacity-50"
+            >
+              {exporting ? '내보내는 중...' : '엑셀 내보내기'}
+            </button>
+            <label className="px-4 py-2 bg-green-700 text-white rounded hover:bg-green-800 cursor-pointer">
+              엑셀 가져오기
+              <input
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={handleImportFileSelect}
+                className="hidden"
+              />
+            </label>
             <button
               onClick={() => setShowAddForm(!showAddForm)}
               className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -225,6 +340,60 @@ export default function AdminManagePage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
+        {importPreview && (
+          <div className="bg-white rounded-lg shadow p-6 mb-8">
+            <h2 className="text-xl font-bold mb-4">엑셀 가져오기 미리보기</h2>
+            <p className="mb-2">
+              <span className="font-semibold text-blue-600">{importPreview.updateCount}개</span> 수정,{' '}
+              <span className="font-semibold text-green-600">{importPreview.createCount}개</span> 추가
+              {importPreview.errors.length > 0 && (
+                <>, <span className="font-semibold text-red-600">{importPreview.errors.length}개</span> 건너뜀</>
+              )}
+            </p>
+            {importPreview.errors.length > 0 && (
+              <div className="mb-4 max-h-48 overflow-y-auto bg-red-50 border border-red-200 rounded p-3 text-sm">
+                {importPreview.errors.map((err, i) => (
+                  <p key={i} className="text-red-700">
+                    행 {err.rowNum}: {err.reason}
+                  </p>
+                ))}
+              </div>
+            )}
+            <div className="flex gap-3">
+              <button
+                onClick={handleImportConfirm}
+                disabled={importing || (importPreview.updateCount === 0 && importPreview.createCount === 0)}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+              >
+                {importing ? '적용 중...' : '적용하기'}
+              </button>
+              <button
+                onClick={handleImportCancel}
+                disabled={importing}
+                className="flex-1 px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+              >
+                취소
+              </button>
+            </div>
+          </div>
+        )}
+
+        {importResult && (
+          <div className="bg-white rounded-lg shadow p-6 mb-8">
+            <h2 className="text-xl font-bold mb-2">가져오기 완료</h2>
+            <p>
+              {importResult.updated}개 수정, {importResult.created}개 추가
+              {importResult.skipped > 0 && `, ${importResult.skipped}개 건너뜀`}
+            </p>
+            <button
+              onClick={() => setImportResult(null)}
+              className="mt-4 px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+            >
+              닫기
+            </button>
+          </div>
+        )}
+
         {showAddForm && (
           <div className="bg-white rounded-lg shadow p-6 mb-8">
             <h2 className="text-xl font-bold mb-4">새 베어브릭 추가</h2>
