@@ -2,20 +2,22 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import * as XLSX from 'xlsx'
 
-interface ParsedRow {
-  rowNum: number
+const BATCH_SIZE = 50
+
+interface ExistingBearbrick {
   id: string
   name: string
   seriesId: string
-  size: number
+  sizePercentage: number
   releaseDate: Date | null
   description: string | null
 }
 
-interface RowError {
-  rowNum: number
-  reason: string
-}
+type ClassifiedRow =
+  | { kind: 'error'; rowNum: number; reason: string }
+  | { kind: 'unchanged'; rowNum: number }
+  | { kind: 'update'; rowNum: number; id: string; name: string; seriesId: string; size: number; releaseDate: Date | null; description: string | null }
+  | { kind: 'create'; rowNum: number; name: string; seriesId: string; size: number; releaseDate: Date | null; description: string | null }
 
 function parseDate(value: unknown): { ok: true; date: Date | null } | { ok: false } {
   if (value === '' || value === null || value === undefined) return { ok: true, date: null }
@@ -23,6 +25,74 @@ function parseDate(value: unknown): { ok: true; date: Date | null } | { ok: fals
   const parsed = new Date(String(value))
   if (isNaN(parsed.getTime())) return { ok: false }
   return { ok: true, date: parsed }
+}
+
+function sameDate(a: Date | null, b: Date | null) {
+  if (a === null && b === null) return true
+  if (a === null || b === null) return false
+  return a.toISOString().split('T')[0] === b.toISOString().split('T')[0]
+}
+
+function classifyRow(
+  row: Record<string, unknown>,
+  rowNum: number,
+  seriesByName: Map<string, string>,
+  existingById: Map<string, ExistingBearbrick>
+): ClassifiedRow {
+  const id = String(row['ID'] ?? '').trim()
+  const name = String(row['이름'] ?? '').trim()
+  const seriesName = String(row['시리즈'] ?? '').trim()
+  const sizeRaw = row['사이즈']
+  const description = String(row['설명'] ?? '').trim() || null
+
+  if (!name) return { kind: 'error', rowNum, reason: '이름이 비어있습니다' }
+
+  const seriesId = seriesByName.get(seriesName)
+  if (!seriesId) return { kind: 'error', rowNum, reason: `시리즈 "${seriesName}"를 찾을 수 없습니다` }
+
+  const size = parseInt(String(sizeRaw), 10)
+  if (isNaN(size) || size <= 0) {
+    return { kind: 'error', rowNum, reason: `사이즈 값이 올바르지 않습니다: "${sizeRaw}"` }
+  }
+
+  const dateResult = parseDate(row['출시일'])
+  if (!dateResult.ok) {
+    return { kind: 'error', rowNum, reason: `출시일 형식이 올바르지 않습니다: "${row['출시일']}"` }
+  }
+
+  if (id) {
+    const current = existingById.get(id)
+    if (!current) return { kind: 'error', rowNum, reason: `ID "${id}"에 해당하는 베어브릭을 찾을 수 없습니다` }
+
+    const unchanged =
+      current.name === name &&
+      current.seriesId === seriesId &&
+      current.sizePercentage === size &&
+      sameDate(current.releaseDate, dateResult.date) &&
+      (current.description || null) === description
+
+    if (unchanged) return { kind: 'unchanged', rowNum }
+
+    return { kind: 'update', rowNum, id, name, seriesId, size, releaseDate: dateResult.date, description }
+  }
+
+  return { kind: 'create', rowNum, name, seriesId, size, releaseDate: dateResult.date, description }
+}
+
+async function readRows(file: File) {
+  const buffer = Buffer.from(await file.arrayBuffer())
+  const workbook = XLSX.read(buffer, { type: 'buffer', cellDates: true })
+  const sheet = workbook.Sheets[workbook.SheetNames[0]]
+  return XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: '' })
+}
+
+async function fetchExistingByIds(ids: string[]) {
+  if (ids.length === 0) return new Map<string, ExistingBearbrick>()
+  const rows = await prisma.bearbrick.findMany({
+    where: { id: { in: ids } },
+    select: { id: true, name: true, seriesId: true, sizePercentage: true, releaseDate: true, description: true },
+  })
+  return new Map(rows.map((r) => [r.id, r]))
 }
 
 export async function POST(request: NextRequest) {
@@ -47,112 +117,106 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid mode' }, { status: 400 })
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer())
-  const workbook = XLSX.read(buffer, { type: 'buffer', cellDates: true })
-  const sheet = workbook.Sheets[workbook.SheetNames[0]]
-  const rawRows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: '' })
-
-  const [seriesList, existingBearbricks, defaultCategory, systemUser] = await Promise.all([
-    prisma.series.findMany({ select: { id: true, name: true } }),
-    prisma.bearbrick.findMany({ select: { id: true } }),
-    prisma.categories.findFirst({ orderBy: { name: 'asc' } }),
-    prisma.users.findFirst({ where: { email: 'system@bearbrickdb.com' } }),
-  ])
-
+  const rawRows = await readRows(file)
+  const seriesList = await prisma.series.findMany({ select: { id: true, name: true } })
   const seriesByName = new Map(seriesList.map((s) => [s.name, s.id]))
-  const existingIds = new Set(existingBearbricks.map((b) => b.id))
-
-  const updates: ParsedRow[] = []
-  const creates: ParsedRow[] = []
-  const errors: RowError[] = []
-
-  rawRows.forEach((row, index) => {
-    const rowNum = index + 2 // header is row 1
-    const id = String(row['ID'] ?? '').trim()
-    const name = String(row['이름'] ?? '').trim()
-    const seriesName = String(row['시리즈'] ?? '').trim()
-    const sizeRaw = row['사이즈']
-    const description = String(row['설명'] ?? '').trim() || null
-
-    if (!name) {
-      errors.push({ rowNum, reason: '이름이 비어있습니다' })
-      return
-    }
-
-    const seriesId = seriesByName.get(seriesName)
-    if (!seriesId) {
-      errors.push({ rowNum, reason: `시리즈 "${seriesName}"를 찾을 수 없습니다` })
-      return
-    }
-
-    const size = parseInt(String(sizeRaw), 10)
-    if (isNaN(size) || size <= 0) {
-      errors.push({ rowNum, reason: `사이즈 값이 올바르지 않습니다: "${sizeRaw}"` })
-      return
-    }
-
-    const dateResult = parseDate(row['출시일'])
-    if (!dateResult.ok) {
-      errors.push({ rowNum, reason: `출시일 형식이 올바르지 않습니다: "${row['출시일']}"` })
-      return
-    }
-
-    if (id) {
-      if (!existingIds.has(id)) {
-        errors.push({ rowNum, reason: `ID "${id}"에 해당하는 베어브릭을 찾을 수 없습니다` })
-        return
-      }
-      updates.push({ rowNum, id, name, seriesId, size, releaseDate: dateResult.date, description })
-    } else {
-      creates.push({ rowNum, id: '', name, seriesId, size, releaseDate: dateResult.date, description })
-    }
-  })
 
   if (mode === 'preview') {
+    const ids = rawRows
+      .map((row) => String(row['ID'] ?? '').trim())
+      .filter((id) => id.length > 0)
+    const existingById = await fetchExistingByIds(ids)
+
+    let updateCount = 0
+    let createCount = 0
+    let unchangedCount = 0
+    const errors: { rowNum: number; reason: string }[] = []
+
+    rawRows.forEach((row, index) => {
+      const classified = classifyRow(row, index + 2, seriesByName, existingById)
+      if (classified.kind === 'error') errors.push({ rowNum: classified.rowNum, reason: classified.reason })
+      else if (classified.kind === 'unchanged') unchangedCount += 1
+      else if (classified.kind === 'update') updateCount += 1
+      else createCount += 1
+    })
+
     return NextResponse.json({
-      updateCount: updates.length,
-      createCount: creates.length,
+      updateCount,
+      createCount,
+      unchangedCount,
       errors,
+      batchSize: BATCH_SIZE,
+      totalBatches: Math.ceil(rawRows.length / BATCH_SIZE) || 0,
     })
   }
 
-  // mode === 'apply'
-  if (!defaultCategory || !systemUser) {
-    return NextResponse.json({ error: '기본 카테고리 또는 시스템 사용자를 찾을 수 없습니다' }, { status: 500 })
+  // mode === 'apply' - paginate over the ORIGINAL row list (not the filtered
+  // update/create list) so offsets stay valid even after earlier batches
+  // in this same run have already written some of the rows.
+  const offset = parseInt(String(formData.get('offset') ?? '0'), 10) || 0
+  const total = rawRows.length
+  const sliceRows = rawRows.slice(offset, offset + BATCH_SIZE)
+
+  const sliceIds = sliceRows
+    .map((row) => String(row['ID'] ?? '').trim())
+    .filter((id) => id.length > 0)
+  const existingById = await fetchExistingByIds(sliceIds)
+
+  const classified = sliceRows.map((row, i) => classifyRow(row, offset + i + 2, seriesByName, existingById))
+  const updates = classified.filter((c): c is Extract<ClassifiedRow, { kind: 'update' }> => c.kind === 'update')
+  const creates = classified.filter((c): c is Extract<ClassifiedRow, { kind: 'create' }> => c.kind === 'create')
+  const batchErrors = classified.filter((c): c is Extract<ClassifiedRow, { kind: 'error' }> => c.kind === 'error')
+
+  if (updates.length > 0 || creates.length > 0) {
+    const [defaultCategory, systemUser] = await Promise.all([
+      prisma.categories.findFirst({ orderBy: { name: 'asc' } }),
+      prisma.users.findFirst({ where: { email: 'system@bearbrickdb.com' } }),
+    ])
+
+    if (!defaultCategory || !systemUser) {
+      return NextResponse.json({ error: '기본 카테고리 또는 시스템 사용자를 찾을 수 없습니다' }, { status: 500 })
+    }
+
+    await prisma.$transaction([
+      ...updates.map((u) =>
+        prisma.bearbrick.update({
+          where: { id: u.id },
+          data: {
+            name: u.name,
+            seriesId: u.seriesId,
+            sizePercentage: u.size,
+            releaseDate: u.releaseDate,
+            description: u.description,
+          },
+        })
+      ),
+      ...creates.map((c) =>
+        prisma.bearbrick.create({
+          data: {
+            name: c.name,
+            seriesId: c.seriesId,
+            sizePercentage: c.size,
+            releaseDate: c.releaseDate,
+            description: c.description,
+            categoryId: defaultCategory.id,
+            createdById: systemUser.id,
+          },
+        })
+      ),
+    ])
   }
 
-  await prisma.$transaction([
-    ...updates.map((u) =>
-      prisma.bearbrick.update({
-        where: { id: u.id },
-        data: {
-          name: u.name,
-          seriesId: u.seriesId,
-          sizePercentage: u.size,
-          releaseDate: u.releaseDate,
-          description: u.description,
-        },
-      })
-    ),
-    ...creates.map((c) =>
-      prisma.bearbrick.create({
-        data: {
-          name: c.name,
-          seriesId: c.seriesId,
-          sizePercentage: c.size,
-          releaseDate: c.releaseDate,
-          description: c.description,
-          categoryId: defaultCategory.id,
-          createdById: systemUser.id,
-        },
-      })
-    ),
-  ])
+  const processed = offset + sliceRows.length
+  const done = processed >= total
 
   return NextResponse.json({
-    updated: updates.length,
-    created: creates.length,
-    skipped: errors.length,
-    errors,
+    batchUpdated: updates.length,
+    batchCreated: creates.length,
+    batchSkipped: batchErrors.length,
+    batchErrors: batchErrors.map((e) => ({ rowNum: e.rowNum, reason: e.reason })),
+    processed,
+    total,
+    done,
+    nextOffset: processed,
   })
 }

@@ -41,9 +41,10 @@ export default function AdminManagePage() {
   const [uploadProgress, setUploadProgress] = useState(0)
   const [exporting, setExporting] = useState(false)
   const [importFile, setImportFile] = useState<File | null>(null)
-  const [importPreview, setImportPreview] = useState<{ updateCount: number; createCount: number; errors: { rowNum: number; reason: string }[] } | null>(null)
+  const [importPreview, setImportPreview] = useState<{ updateCount: number; createCount: number; unchangedCount: number; errors: { rowNum: number; reason: string }[] } | null>(null)
   const [importing, setImporting] = useState(false)
   const [importResult, setImportResult] = useState<{ updated: number; created: number; skipped: number } | null>(null)
+  const [importProgress, setImportProgress] = useState<{ processed: number; total: number; etaSeconds: number | null } | null>(null)
 
   useEffect(() => {
     const isAdmin = localStorage.getItem('isAdmin') === 'true'
@@ -272,22 +273,55 @@ export default function AdminManagePage() {
   const handleImportConfirm = async () => {
     if (!importFile) return
 
+    const estimatedTotal = importPreview
+      ? importPreview.updateCount + importPreview.createCount + importPreview.unchangedCount + importPreview.errors.length
+      : 0
+
     setImporting(true)
+    const startTime = Date.now()
+    setImportProgress({ processed: 0, total: estimatedTotal, etaSeconds: null })
+
     try {
-      const body = new FormData()
-      body.append('file', importFile)
-      body.append('mode', 'apply')
-      const res = await fetch('/api/admin/bearbricks/import', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer 4321' },
-        body,
-      })
-      const data = await res.json()
-      if (!res.ok) {
-        alert(data.error || '적용 실패')
-        return
+      let offset = 0
+      let done = false
+      let totalUpdated = 0
+      let totalCreated = 0
+      let totalSkipped = 0
+
+      while (!done) {
+        const body = new FormData()
+        body.append('file', importFile)
+        body.append('mode', 'apply')
+        body.append('offset', String(offset))
+
+        const res = await fetch('/api/admin/bearbricks/import', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer 4321' },
+          body,
+        })
+        const data = await res.json()
+        if (!res.ok) {
+          alert(data.error || '적용 실패')
+          return
+        }
+
+        offset = data.nextOffset
+        done = data.done
+        totalUpdated += data.batchUpdated
+        totalCreated += data.batchCreated
+        totalSkipped += data.batchSkipped
+
+        const elapsedSeconds = (Date.now() - startTime) / 1000
+        const remaining = data.total - data.processed
+        const etaSeconds = data.processed > 0 ? Math.round((elapsedSeconds / data.processed) * remaining) : null
+        setImportProgress({ processed: data.processed, total: data.total, etaSeconds })
       }
-      setImportResult(data)
+
+      setImportResult({
+        updated: totalUpdated,
+        created: totalCreated,
+        skipped: totalSkipped,
+      })
       setImportPreview(null)
       setImportFile(null)
       fetchBearbricks()
@@ -296,6 +330,7 @@ export default function AdminManagePage() {
       alert('적용 실패')
     } finally {
       setImporting(false)
+      setImportProgress(null)
     }
   }
 
@@ -347,9 +382,14 @@ export default function AdminManagePage() {
               <span className="font-semibold text-blue-600">{importPreview.updateCount}개</span> 수정,{' '}
               <span className="font-semibold text-green-600">{importPreview.createCount}개</span> 추가
               {importPreview.errors.length > 0 && (
-                <>, <span className="font-semibold text-red-600">{importPreview.errors.length}개</span> 건너뜀</>
+                <>, <span className="font-semibold text-red-600">{importPreview.errors.length}개</span> 오류</>
               )}
             </p>
+            {importPreview.unchangedCount > 0 && (
+              <p className="mb-2 text-sm text-gray-500">
+                변경사항 없어 건너뜀: {importPreview.unchangedCount}개
+              </p>
+            )}
             {importPreview.errors.length > 0 && (
               <div className="mb-4 max-h-48 overflow-y-auto bg-red-50 border border-red-200 rounded p-3 text-sm">
                 {importPreview.errors.map((err, i) => (
@@ -359,6 +399,26 @@ export default function AdminManagePage() {
                 ))}
               </div>
             )}
+
+            {importing && importProgress && (
+              <div className="mb-4">
+                <p className="text-sm text-blue-600 mb-1">
+                  적용 중... {importProgress.processed} / {importProgress.total}
+                  {importProgress.etaSeconds !== null && importProgress.etaSeconds > 0 && (
+                    <> (약 {importProgress.etaSeconds}초 남음)</>
+                  )}
+                </p>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-blue-600 h-2 rounded-full transition-all"
+                    style={{
+                      width: `${importProgress.total > 0 ? Math.round((importProgress.processed / importProgress.total) * 100) : 100}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="flex gap-3">
               <button
                 onClick={handleImportConfirm}
