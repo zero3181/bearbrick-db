@@ -10,7 +10,7 @@ export async function GET() {
           select: { bearbricks: true }
         }
       },
-      orderBy: { name: 'asc' }
+      orderBy: { number: 'desc' }
     })
 
     console.log(`[API] Found ${series.length} series`)

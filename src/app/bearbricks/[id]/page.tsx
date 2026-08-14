@@ -7,7 +7,10 @@ import Link from 'next/link'
 interface Bearbrick {
   id: string
   name: string
-  series: string | null
+  series: {
+    id: string
+    name: string
+  } | null
   size: number
   releaseDate: string | null
   description: string | null
@@ -142,7 +145,7 @@ export default function BearbrickDetailPage() {
                 {bearbrick.series && (
                   <div className="flex">
                     <span className="font-semibold w-24">시리즈:</span>
-                    <span>{bearbrick.series}</span>
+                    <span>{bearbrick.series.name}</span>
                   </div>
                 )}
                 <div className="flex">

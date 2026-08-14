@@ -6,7 +6,10 @@ import Link from 'next/link'
 interface Bearbrick {
   id: string
   name: string
-  series: string | null
+  series: {
+    id: string
+    name: string
+  } | null
   size: number
   images: {
     url: string
