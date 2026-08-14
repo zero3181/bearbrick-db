@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
         },
         series: {
           select: {
+            id: true,
             name: true,
           },
         },
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
     const mapped = bearbricks.map((b) => ({
       id: b.id,
       name: b.name,
-      series: b.series?.name || null,
+      series: b.series || null,
       size: b.sizePercentage,
       images: b.images,
     }))
