@@ -15,13 +15,20 @@ interface Bearbrick {
   images: { url: string; isPrimary: boolean }[]
 }
 
+interface Series {
+  id: string
+  name: string
+  number: number
+}
+
 export default function AdminManagePage() {
   const router = useRouter()
   const [bearbricks, setBearbricks] = useState<Bearbrick[]>([])
+  const [seriesList, setSeriesList] = useState<Series[]>([])
   const [showAddForm, setShowAddForm] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
-    series: '',
+    seriesId: '',
     size: '100',
     releaseDate: '',
     description: '',
@@ -34,6 +41,7 @@ export default function AdminManagePage() {
       return
     }
     fetchBearbricks()
+    fetchSeriesList()
   }, [])
 
   const fetchBearbricks = async () => {
@@ -46,13 +54,28 @@ export default function AdminManagePage() {
     }
   }
 
+  const fetchSeriesList = async () => {
+    try {
+      const res = await fetch('/api/series')
+      if (res.ok) {
+        const data = await res.json()
+        setSeriesList(data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch series:', error)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     try {
       const res = await fetch('/api/admin/bearbricks', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer 4321',
+        },
         body: JSON.stringify({
           ...formData,
           size: parseInt(formData.size),
@@ -63,7 +86,7 @@ export default function AdminManagePage() {
       if (res.ok) {
         alert('추가되었습니다')
         setShowAddForm(false)
-        setFormData({ name: '', series: '', size: '100', releaseDate: '', description: '' })
+        setFormData({ name: '', seriesId: '', size: '100', releaseDate: '', description: '' })
         fetchBearbricks()
       } else {
         alert('추가 실패')
@@ -109,14 +132,20 @@ export default function AdminManagePage() {
                 />
               </div>
               <div>
-                <label className="block font-semibold mb-1">시리즈</label>
-                <input
-                  type="text"
-                  value={formData.series}
-                  onChange={(e) => setFormData({ ...formData, series: e.target.value })}
+                <label className="block font-semibold mb-1">시리즈 *</label>
+                <select
+                  value={formData.seriesId}
+                  onChange={(e) => setFormData({ ...formData, seriesId: e.target.value })}
                   className="w-full px-4 py-2 border rounded"
-                  placeholder="예: Series 50"
-                />
+                  required
+                >
+                  <option value="">시리즈 선택</option>
+                  {seriesList.map((series) => (
+                    <option key={series.id} value={series.id}>
+                      {series.name}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block font-semibold mb-1">사이즈 *</label>
