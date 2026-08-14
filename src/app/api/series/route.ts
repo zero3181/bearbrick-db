@@ -1,5 +1,50 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+
+export async function POST(request: NextRequest) {
+  try {
+    const authHeader = request.headers.get('authorization')
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const token = authHeader.substring(7)
+    if (token !== '4321') {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { number, name, season, releaseYear, theme, description } = body
+
+    if (!number || !name || !season || !releaseYear) {
+      return NextResponse.json(
+        { error: 'Number, name, season, and release year are required' },
+        { status: 400 }
+      )
+    }
+
+    const series = await prisma.series.create({
+      data: {
+        id: crypto.randomUUID(),
+        number: parseInt(number),
+        name,
+        season,
+        releaseYear: parseInt(releaseYear),
+        theme: theme || null,
+        description: description || null,
+        updatedAt: new Date(),
+      },
+    })
+
+    return NextResponse.json(series)
+  } catch (error) {
+    console.error('Error creating series:', error)
+    return NextResponse.json(
+      { error: 'Failed to create series' },
+      { status: 500 }
+    )
+  }
+}
 
 export async function GET() {
   try {

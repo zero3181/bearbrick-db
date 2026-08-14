@@ -33,6 +33,14 @@ export default function AdminManagePage() {
     releaseDate: '',
     description: '',
   })
+  const [showAddSeriesForm, setShowAddSeriesForm] = useState(false)
+  const [seriesFormData, setSeriesFormData] = useState({
+    number: '',
+    name: '',
+    season: '',
+    releaseYear: new Date().getFullYear().toString(),
+    theme: '',
+  })
 
   useEffect(() => {
     const isAdmin = localStorage.getItem('isAdmin') === 'true'
@@ -97,6 +105,39 @@ export default function AdminManagePage() {
     }
   }
 
+  const handleSeriesSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    try {
+      const res = await fetch('/api/series', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer 4321',
+        },
+        body: JSON.stringify({
+          ...seriesFormData,
+          number: parseInt(seriesFormData.number),
+          releaseYear: parseInt(seriesFormData.releaseYear),
+        }),
+      })
+
+      if (res.ok) {
+        const newSeries = await res.json()
+        alert('시리즈가 추가되었습니다')
+        setShowAddSeriesForm(false)
+        setSeriesFormData({ number: '', name: '', season: '', releaseYear: new Date().getFullYear().toString(), theme: '' })
+        await fetchSeriesList()
+        setFormData((prev) => ({ ...prev, seriesId: newSeries.id }))
+      } else {
+        alert('시리즈 추가 실패')
+      }
+    } catch (error) {
+      console.error('Failed to add series:', error)
+      alert('시리즈 추가 실패')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
@@ -106,6 +147,12 @@ export default function AdminManagePage() {
             <Link href="/" className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
               홈으로
             </Link>
+            <button
+              onClick={() => setShowAddSeriesForm(!showAddSeriesForm)}
+              className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800"
+            >
+              {showAddSeriesForm ? '취소' : '+ 시리즈 추가'}
+            </button>
             <button
               onClick={() => setShowAddForm(!showAddForm)}
               className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -117,6 +164,72 @@ export default function AdminManagePage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
+        {showAddSeriesForm && (
+          <div className="bg-white rounded-lg shadow p-6 mb-8">
+            <h2 className="text-xl font-bold mb-4">새 시리즈 추가</h2>
+            <form onSubmit={handleSeriesSubmit} className="space-y-4">
+              <div>
+                <label className="block font-semibold mb-1">시리즈 번호 *</label>
+                <input
+                  type="number"
+                  value={seriesFormData.number}
+                  onChange={(e) => setSeriesFormData({ ...seriesFormData, number: e.target.value })}
+                  className="w-full px-4 py-2 border rounded"
+                  placeholder="예: 51"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block font-semibold mb-1">이름 *</label>
+                <input
+                  type="text"
+                  value={seriesFormData.name}
+                  onChange={(e) => setSeriesFormData({ ...seriesFormData, name: e.target.value })}
+                  className="w-full px-4 py-2 border rounded"
+                  placeholder="예: Series 51"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block font-semibold mb-1">시즌 *</label>
+                <input
+                  type="text"
+                  value={seriesFormData.season}
+                  onChange={(e) => setSeriesFormData({ ...seriesFormData, season: e.target.value })}
+                  className="w-full px-4 py-2 border rounded"
+                  placeholder="예: Spring, Summer, Fall, Winter"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block font-semibold mb-1">출시 연도 *</label>
+                <input
+                  type="number"
+                  value={seriesFormData.releaseYear}
+                  onChange={(e) => setSeriesFormData({ ...seriesFormData, releaseYear: e.target.value })}
+                  className="w-full px-4 py-2 border rounded"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block font-semibold mb-1">테마</label>
+                <input
+                  type="text"
+                  value={seriesFormData.theme}
+                  onChange={(e) => setSeriesFormData({ ...seriesFormData, theme: e.target.value })}
+                  className="w-full px-4 py-2 border rounded"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800"
+              >
+                시리즈 추가하기
+              </button>
+            </form>
+          </div>
+        )}
+
         {showAddForm && (
           <div className="bg-white rounded-lg shadow p-6 mb-8">
             <h2 className="text-xl font-bold mb-4">새 베어브릭 추가</h2>
