@@ -1,19 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { requireAdmin } from '@/lib/serverAuth'
 
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    const session = await requireAdmin()
+    if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const token = authHeader.substring(7)
-    if (token !== '4321') {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
     const body = await request.json()
@@ -23,21 +19,13 @@ export async function POST(
       return NextResponse.json({ error: 'Image URL is required' }, { status: 400 })
     }
 
-    const uploadedBy = await prisma.users.findFirst({
-      where: { email: 'system@bearbrickdb.com' },
-    })
-
-    if (!uploadedBy) {
-      return NextResponse.json({ error: 'Missing system user' }, { status: 500 })
-    }
-
     // Create the image
     const image = await prisma.bearbrickImage.create({
       data: {
         url: imageUrl,
         isPrimary: isPrimary || false,
         bearbrickId: params.id,
-        uploadedById: uploadedBy.id,
+        uploadedById: session.user.id,
       },
     })
 

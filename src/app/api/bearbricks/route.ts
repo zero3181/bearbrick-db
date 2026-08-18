@@ -26,6 +26,12 @@ export async function GET(request: NextRequest) {
             name: true,
           },
         },
+        categories: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
@@ -37,7 +43,9 @@ export async function GET(request: NextRequest) {
       id: b.id,
       name: b.name,
       series: b.series || null,
+      category: b.categories || null,
       size: b.sizePercentage,
+      isSecret: b.isSecret,
       images: b.images,
     }))
 

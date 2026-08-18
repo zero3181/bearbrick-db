@@ -1,20 +1,19 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { requireAdmin } from '@/lib/serverAuth'
 import * as XLSX from 'xlsx'
 
-export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get('authorization')
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+export async function GET() {
+  const session = await requireAdmin()
+  if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const token = authHeader.substring(7)
-  if (token !== '4321') {
-    return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-  }
-
   const bearbricks = await prisma.bearbrick.findMany({
-    include: { series: { select: { name: true } } },
+    include: {
+      series: { select: { name: true } },
+      categories: { select: { name: true } },
+    },
     orderBy: { createdAt: 'desc' },
   })
 
@@ -22,7 +21,8 @@ export async function GET(request: NextRequest) {
     ID: b.id,
     이름: b.name,
     시리즈: b.series?.name || '',
-    사이즈: b.sizePercentage,
+    카테고리: b.categories?.name || '',
+    Secret: b.isSecret ? 'Y' : 'N',
     출시일: b.releaseDate ? b.releaseDate.toISOString().split('T')[0] : '',
     설명: b.description || '',
   }))
@@ -32,7 +32,8 @@ export async function GET(request: NextRequest) {
     { wch: 26 }, // ID
     { wch: 30 }, // 이름
     { wch: 14 }, // 시리즈
-    { wch: 8 },  // 사이즈
+    { wch: 12 }, // 카테고리
+    { wch: 8 },  // Secret
     { wch: 12 }, // 출시일
     { wch: 40 }, // 설명
   ]

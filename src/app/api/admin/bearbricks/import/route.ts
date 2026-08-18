@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { requireAdmin } from '@/lib/serverAuth'
 import * as XLSX from 'xlsx'
 
 const BATCH_SIZE = 50
@@ -8,16 +9,22 @@ interface ExistingBearbrick {
   id: string
   name: string
   seriesId: string
-  sizePercentage: number
+  categoryId: string | null
   releaseDate: Date | null
   description: string | null
+  isSecret: boolean
 }
 
 type ClassifiedRow =
   | { kind: 'error'; rowNum: number; reason: string }
   | { kind: 'unchanged'; rowNum: number }
-  | { kind: 'update'; rowNum: number; id: string; name: string; seriesId: string; size: number; releaseDate: Date | null; description: string | null }
-  | { kind: 'create'; rowNum: number; id: string | null; name: string; seriesId: string; size: number; releaseDate: Date | null; description: string | null }
+  | { kind: 'update'; rowNum: number; id: string; name: string; seriesId: string; categoryId: string | null; releaseDate: Date | null; description: string | null; isSecret: boolean }
+  | { kind: 'create'; rowNum: number; id: string | null; name: string; seriesId: string; categoryId: string | null; releaseDate: Date | null; description: string | null; isSecret: boolean }
+
+function parseSecret(value: unknown): boolean {
+  const normalized = String(value ?? '').trim().toUpperCase()
+  return ['Y', 'YES', 'TRUE', '1', '예', 'O'].includes(normalized)
+}
 
 function parseDate(value: unknown): { ok: true; date: Date | null } | { ok: false } {
   if (value === '' || value === null || value === undefined) return { ok: true, date: null }
@@ -77,22 +84,26 @@ function classifyRow(
   row: Record<string, unknown>,
   rowNum: number,
   seriesByName: Map<string, string>,
+  categoryByName: Map<string, string>,
   existingById: Map<string, ExistingBearbrick>
 ): ClassifiedRow {
   const id = String(row['ID'] ?? '').trim()
   const name = String(row['이름'] ?? '').trim()
   const seriesName = String(row['시리즈'] ?? '').trim()
-  const sizeRaw = row['사이즈']
+  const categoryName = String(row['카테고리'] ?? '').trim()
   const description = String(row['설명'] ?? '').trim() || null
+  const isSecret = parseSecret(row['Secret'])
 
   if (!name) return { kind: 'error', rowNum, reason: '이름이 비어있습니다' }
 
   const seriesId = seriesByName.get(seriesName)
   if (!seriesId) return { kind: 'error', rowNum, reason: `시리즈 "${seriesName}"를 찾을 수 없습니다` }
 
-  const size = parseInt(String(sizeRaw), 10)
-  if (isNaN(size) || size <= 0) {
-    return { kind: 'error', rowNum, reason: `사이즈 값이 올바르지 않습니다: "${sizeRaw}"` }
+  let categoryId: string | null = null
+  if (categoryName) {
+    const found = categoryByName.get(categoryName)
+    if (!found) return { kind: 'error', rowNum, reason: `카테고리 "${categoryName}"를 찾을 수 없습니다` }
+    categoryId = found
   }
 
   const dateResult = parseDate(row['출시일'])
@@ -106,22 +117,23 @@ function classifyRow(
       // Not an existing ID - treat as a new row using this as its ID
       // (this app's original data uses human-readable IDs like "S50-033",
       // not auto-generated ones, so a typed-in ID for a new row is expected)
-      return { kind: 'create', rowNum, id, name, seriesId, size, releaseDate: dateResult.date, description }
+      return { kind: 'create', rowNum, id, name, seriesId, categoryId, releaseDate: dateResult.date, description, isSecret }
     }
 
     const unchanged =
       current.name === name &&
       current.seriesId === seriesId &&
-      current.sizePercentage === size &&
+      current.categoryId === categoryId &&
       sameDate(current.releaseDate, dateResult.date) &&
-      (current.description || null) === description
+      (current.description || null) === description &&
+      current.isSecret === isSecret
 
     if (unchanged) return { kind: 'unchanged', rowNum }
 
-    return { kind: 'update', rowNum, id, name, seriesId, size, releaseDate: dateResult.date, description }
+    return { kind: 'update', rowNum, id, name, seriesId, categoryId, releaseDate: dateResult.date, description, isSecret }
   }
 
-  return { kind: 'create', rowNum, id: null, name, seriesId, size, releaseDate: dateResult.date, description }
+  return { kind: 'create', rowNum, id: null, name, seriesId, categoryId, releaseDate: dateResult.date, description, isSecret }
 }
 
 async function readRows(file: File) {
@@ -135,20 +147,15 @@ async function fetchExistingByIds(ids: string[]) {
   if (ids.length === 0) return new Map<string, ExistingBearbrick>()
   const rows = await prisma.bearbrick.findMany({
     where: { id: { in: ids } },
-    select: { id: true, name: true, seriesId: true, sizePercentage: true, releaseDate: true, description: true },
+    select: { id: true, name: true, seriesId: true, categoryId: true, releaseDate: true, description: true, isSecret: true },
   })
   return new Map(rows.map((r) => [r.id, r]))
 }
 
 export async function POST(request: NextRequest) {
-  const authHeader = request.headers.get('authorization')
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  const session = await requireAdmin()
+  if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const token = authHeader.substring(7)
-  if (token !== '4321') {
-    return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
   }
 
   const formData = await request.formData()
@@ -165,6 +172,8 @@ export async function POST(request: NextRequest) {
   const rawRows = await readRows(file)
   const seriesList = await prisma.series.findMany({ select: { id: true, name: true } })
   const seriesByName = new Map(seriesList.map((s) => [s.name, s.id]))
+  const categoryList = await prisma.categories.findMany({ select: { id: true, name: true } })
+  const categoryByName = new Map(categoryList.map((c) => [c.name, c.id]))
 
   if (mode === 'preview') {
     const ids = rawRows
@@ -186,7 +195,7 @@ export async function POST(request: NextRequest) {
     const seenNewIds = new Set<string>()
 
     rawRows.forEach((row, index) => {
-      const classified = classifyRow(row, index + 2, previewSeriesByName, existingById)
+      const classified = classifyRow(row, index + 2, previewSeriesByName, categoryByName, existingById)
       if (classified.kind === 'error') {
         errors.push({ rowNum: classified.rowNum, reason: classified.reason })
       } else if (classified.kind === 'unchanged') {
@@ -226,7 +235,7 @@ export async function POST(request: NextRequest) {
 
   const newSeriesCreated = await ensureSeriesExist(seriesNamesIn(sliceRows), seriesByName)
 
-  const classified = sliceRows.map((row, i) => classifyRow(row, offset + i + 2, seriesByName, existingById))
+  const classified = sliceRows.map((row, i) => classifyRow(row, offset + i + 2, seriesByName, categoryByName, existingById))
   const updates = classified.filter((c): c is Extract<ClassifiedRow, { kind: 'update' }> => c.kind === 'update')
   const rawCreates = classified.filter((c): c is Extract<ClassifiedRow, { kind: 'create' }> => c.kind === 'create')
   const batchErrors = classified.filter((c): c is Extract<ClassifiedRow, { kind: 'error' }> => c.kind === 'error')
@@ -244,15 +253,6 @@ export async function POST(request: NextRequest) {
   }
 
   if (updates.length > 0 || creates.length > 0) {
-    const [defaultCategory, systemUser] = await Promise.all([
-      prisma.categories.findFirst({ orderBy: { name: 'asc' } }),
-      prisma.users.findFirst({ where: { email: 'system@bearbrickdb.com' } }),
-    ])
-
-    if (!defaultCategory || !systemUser) {
-      return NextResponse.json({ error: '기본 카테고리 또는 시스템 사용자를 찾을 수 없습니다' }, { status: 500 })
-    }
-
     try {
       await prisma.$transaction([
         ...updates.map((u) =>
@@ -261,9 +261,10 @@ export async function POST(request: NextRequest) {
             data: {
               name: u.name,
               seriesId: u.seriesId,
-              sizePercentage: u.size,
+              categoryId: u.categoryId,
               releaseDate: u.releaseDate,
               description: u.description,
+              isSecret: u.isSecret,
             },
           })
         ),
@@ -273,11 +274,12 @@ export async function POST(request: NextRequest) {
               ...(c.id ? { id: c.id } : {}),
               name: c.name,
               seriesId: c.seriesId,
-              sizePercentage: c.size,
+              categoryId: c.categoryId,
+              sizePercentage: 100,
               releaseDate: c.releaseDate,
               description: c.description,
-              categoryId: defaultCategory.id,
-              createdById: systemUser.id,
+              isSecret: c.isSecret,
+              createdById: session.user.id,
             },
           })
         ),

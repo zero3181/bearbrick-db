@@ -1,7 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { useSession } from 'next-auth/react'
+import TopMenu from '@/components/TopMenu'
+import { sortBearbricks } from '@/lib/sortBearbricks'
 
 interface Bearbrick {
   id: string
@@ -10,7 +13,12 @@ interface Bearbrick {
     id: string
     name: string
   } | null
+  category: {
+    id: string
+    name: string
+  } | null
   size: number
+  isSecret: boolean
   images: {
     url: string
     isPrimary: boolean
@@ -26,19 +34,17 @@ interface Series {
 }
 
 export default function HomePage() {
+  const { data: session } = useSession()
+  const isAdmin = session?.user?.role === 'ADMIN' || session?.user?.role === 'OWNER'
   const [bearbricks, setBearbricks] = useState<Bearbrick[]>([])
   const [allSeries, setAllSeries] = useState<Series[]>([])
   const [selectedSeries, setSelectedSeries] = useState<string>('')
   const [loading, setLoading] = useState(true)
-  const [isAdmin, setIsAdmin] = useState(false)
-  const [showPasswordModal, setShowPasswordModal] = useState(false)
-  const [password, setPassword] = useState('')
+  const [seriesMenuOpen, setSeriesMenuOpen] = useState(false)
+  const seriesMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const loadInitialData = async () => {
-      const adminStatus = localStorage.getItem('isAdmin') === 'true'
-      setIsAdmin(adminStatus)
-
       // Fetch series first, then default the view to the latest one
       // instead of loading every bearbrick across all series
       const seriesData = await fetchSeries()
@@ -56,6 +62,16 @@ export default function HomePage() {
       fetchBearbricks(selectedSeries)
     }
   }, [selectedSeries])
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (seriesMenuRef.current && !seriesMenuRef.current.contains(e.target as Node)) {
+        setSeriesMenuOpen(false)
+      }
+    }
+    if (seriesMenuOpen) document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [seriesMenuOpen])
 
   const fetchSeries = async () => {
     try {
@@ -89,23 +105,7 @@ export default function HomePage() {
 
   const handleSeriesChange = (series: string) => {
     setSelectedSeries(series)
-  }
-
-  const handleAdminLogin = () => {
-    if (password === '4321') {
-      localStorage.setItem('isAdmin', 'true')
-      setIsAdmin(true)
-      setShowPasswordModal(false)
-      setPassword('')
-    } else {
-      alert('잘못된 비밀번호입니다')
-      setPassword('')
-    }
-  }
-
-  const handleLogout = () => {
-    localStorage.removeItem('isAdmin')
-    setIsAdmin(false)
+    setSeriesMenuOpen(false)
   }
 
   const getPrimaryImage = (bearbrick: Bearbrick) => {
@@ -113,149 +113,104 @@ export default function HomePage() {
     return primary?.url || bearbrick.images[0]?.url || '/bearbrick-placeholder.svg'
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl">Loading...</div>
-      </div>
-    )
-  }
+  const sortedBearbricks = sortBearbricks(bearbricks)
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm">
+      <header className="border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Bearbrick DB</h1>
-          <div>
-            {isAdmin ? (
-              <div className="flex gap-3">
-                <Link
-                  href="/admin/manage"
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  관리
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-                >
-                  로그아웃
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => setShowPasswordModal(true)}
-                className="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-900"
-              >
-                Admin
-              </button>
-            )}
-          </div>
+          <span className="text-lg font-bold text-gray-900 tracking-tight">GomBrick</span>
+          <TopMenu />
         </div>
       </header>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* Series Filter */}
-        <div className="mb-6 flex items-center justify-between gap-4">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">베어브릭 컬렉션</h2>
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">시리즈:</label>
-            <select
-              value={selectedSeries}
-              onChange={(e) => handleSeriesChange(e.target.value)}
-              className="px-4 py-2 border rounded bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600"
-            >
-              <option value="all">전체</option>
+        {/* Series title / selector */}
+        <div className="mb-8 relative inline-block" ref={seriesMenuRef}>
+          <button
+            onClick={() => setSeriesMenuOpen((v) => !v)}
+            className="flex items-center gap-2 text-3xl md:text-4xl font-bold text-gray-900 hover:text-gray-500 transition-colors"
+          >
+            {selectedSeries === 'all' ? '전체' : selectedSeries}
+            <svg width="22" height="22" viewBox="0 0 20 20" fill="none" className="mt-1 text-gray-400">
+              <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+
+          {seriesMenuOpen && (
+            <div className="absolute left-0 mt-2 w-72 max-h-96 overflow-y-auto bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-40">
+              <button
+                onClick={() => handleSeriesChange('all')}
+                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === 'all' ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
+              >
+                전체
+              </button>
               {allSeries.map((series) => (
-                <option key={series.id} value={series.name}>
+                <button
+                  key={series.id}
+                  onClick={() => handleSeriesChange(series.name)}
+                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === series.name ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
+                >
                   {series.name}
-                  {series._count && ` (${series._count.bearbricks})`}
-                </option>
+                  {series._count && <span className="text-gray-400"> ({series._count.bearbricks})</span>}
+                </button>
               ))}
-            </select>
-          </div>
+            </div>
+          )}
         </div>
 
         {loading ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 dark:text-gray-400">불러오는 중...</p>
+          <div className="text-center py-24">
+            <p className="text-gray-400">불러오는 중...</p>
           </div>
-        ) : bearbricks.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 dark:text-gray-400">등록된 베어브릭이 없습니다</p>
+        ) : sortedBearbricks.length === 0 ? (
+          <div className="text-center py-24">
+            <p className="text-gray-400">등록된 베어브릭이 없습니다</p>
             {isAdmin && (
               <Link
                 href="/admin/manage"
-                className="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                className="mt-4 inline-block px-4 py-2 bg-gray-900 text-white rounded-full hover:bg-gray-700"
               >
                 베어브릭 추가하기
               </Link>
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
-            {bearbricks.map((bearbrick) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+            {sortedBearbricks.map((bearbrick) => (
               <Link
                 key={bearbrick.id}
                 href={`/bearbricks/${bearbrick.id}`}
-                className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow overflow-hidden"
+                className="group"
               >
-                <div className="aspect-square bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                <div className="relative aspect-square bg-gray-50 rounded-2xl overflow-hidden">
+                  {bearbrick.isSecret && (
+                    <span className="absolute top-2 left-2 px-2 py-1 text-[10px] md:text-xs font-semibold bg-blue-600 text-white rounded-full z-10">
+                      Secret
+                    </span>
+                  )}
                   <img
                     src={getPrimaryImage(bearbrick)}
                     alt={bearbrick.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                 </div>
-                <div className="p-2 md:p-4">
-                  <h3 className="font-semibold text-xs md:text-lg mb-1 line-clamp-2 text-gray-900 dark:text-white">{bearbrick.name}</h3>
-                  <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
-                    {bearbrick.series && `${bearbrick.series.name} · `}
-                    {bearbrick.size}%
-                  </p>
+                <div className="pt-2 px-1">
+                  <h3 className="font-medium text-xs md:text-sm line-clamp-2 text-gray-900">
+                    {bearbrick.category && <span className="text-gray-400">[{bearbrick.category.name}] </span>}
+                    {bearbrick.name}
+                  </h3>
+                  {bearbrick.series && (
+                    <p className="text-xs text-gray-400 mt-0.5">{bearbrick.series.name}</p>
+                  )}
                 </div>
               </Link>
             ))}
           </div>
         )}
       </main>
-
-      {/* Password Modal */}
-      {showPasswordModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">관리자 로그인</h3>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleAdminLogin()}
-              placeholder="비밀번호 입력"
-              className="w-full px-4 py-2 border dark:border-gray-600 rounded mb-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              autoFocus
-            />
-            <div className="flex gap-3">
-              <button
-                onClick={handleAdminLogin}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                확인
-              </button>
-              <button
-                onClick={() => {
-                  setShowPasswordModal(false)
-                  setPassword('')
-                }}
-                className="flex-1 px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-              >
-                취소
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

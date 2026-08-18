@@ -1,5 +1,6 @@
 import { handleUpload, type HandleUploadBody } from '@vercel/blob/client'
 import { NextResponse } from 'next/server'
+import { requireUser } from '@/lib/serverAuth'
 
 export async function POST(request: Request): Promise<NextResponse> {
   const body = (await request.json()) as HandleUploadBody
@@ -8,17 +9,9 @@ export async function POST(request: Request): Promise<NextResponse> {
     const jsonResponse = await handleUpload({
       body,
       request,
-      onBeforeGenerateToken: async (pathname, clientPayload) => {
-        let authorized = false
-        if (clientPayload) {
-          try {
-            authorized = JSON.parse(clientPayload).authorization === '4321'
-          } catch {
-            authorized = false
-          }
-        }
-
-        if (!authorized) {
+      onBeforeGenerateToken: async () => {
+        const session = await requireUser()
+        if (!session) {
           throw new Error('Unauthorized')
         }
 

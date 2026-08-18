@@ -1,20 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { requireAdmin } from '@/lib/serverAuth'
 
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    const session = await requireAdmin()
+    if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const token = authHeader.substring(7)
-    if (token !== '4321') {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-    }
-
     const body = await request.json()
-    const { name, seriesId, size, releaseDate, description } = body
+    const { name, seriesId, categoryId, releaseDate, description, isSecret } = body
 
     if (!name || !seriesId) {
       return NextResponse.json(
@@ -23,27 +19,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const category = await prisma.categories.findFirst({ orderBy: { name: 'asc' } })
-    const createdBy = await prisma.users.findFirst({
-      where: { email: 'system@bearbrickdb.com' },
-    })
-
-    if (!category || !createdBy) {
-      return NextResponse.json(
-        { error: 'Missing default category or system user' },
-        { status: 500 }
-      )
-    }
-
     const bearbrick = await prisma.bearbrick.create({
       data: {
         name,
         seriesId,
-        categoryId: category.id,
-        createdById: createdBy.id,
-        sizePercentage: parseInt(size),
+        categoryId: categoryId || null,
+        createdById: session.user.id,
+        sizePercentage: 100,
         releaseDate: releaseDate ? new Date(releaseDate) : null,
         description: description || null,
+        isSecret: Boolean(isSecret),
       },
     })
 

@@ -1,20 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { requireAdmin } from '@/lib/serverAuth'
 
 export async function PUT(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    const session = await requireAdmin()
+    if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const token = authHeader.substring(7)
-    if (token !== '4321') {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-    }
-
     const body = await request.json()
-    const { id, name, seriesId, size, releaseDate, description } = body
+    const { id, name, seriesId, categoryId, releaseDate, description, isSecret } = body
 
     if (!id || !name) {
       return NextResponse.json(
@@ -29,9 +25,10 @@ export async function PUT(request: NextRequest) {
       data: {
         name,
         seriesId: seriesId || null,
-        sizePercentage: parseInt(size),
+        categoryId: categoryId || null,
         releaseDate: releaseDate ? new Date(releaseDate) : null,
         description,
+        isSecret: Boolean(isSecret),
       },
     })
 

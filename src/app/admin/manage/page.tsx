@@ -1,9 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { upload } from '@vercel/blob/client'
+import TopMenu from '@/components/TopMenu'
+import { sortBearbricks } from '@/lib/sortBearbricks'
 
 interface Bearbrick {
   id: string
@@ -12,7 +15,12 @@ interface Bearbrick {
     id: string
     name: string
   } | null
+  category: {
+    id: string
+    name: string
+  } | null
   size: number
+  isSecret: boolean
   images: { url: string; isPrimary: boolean }[]
 }
 
@@ -22,17 +30,36 @@ interface Series {
   number: number
 }
 
+interface Category {
+  id: string
+  name: string
+}
+
 export default function AdminManagePage() {
+  return (
+    <Suspense fallback={null}>
+      <AdminManagePageInner />
+    </Suspense>
+  )
+}
+
+function AdminManagePageInner() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const { data: session, status } = useSession()
   const [bearbricks, setBearbricks] = useState<Bearbrick[]>([])
   const [seriesList, setSeriesList] = useState<Series[]>([])
+  const [categoryList, setCategoryList] = useState<Category[]>([])
+  const [selectedSeries, setSelectedSeries] = useState<string>('')
   const [showAddForm, setShowAddForm] = useState(false)
+  const [showImportPanel, setShowImportPanel] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     seriesId: '',
-    size: '100',
+    categoryId: '',
     releaseDate: '',
     description: '',
+    isSecret: false,
   })
   const [creatingSeries, setCreatingSeries] = useState(false)
   const [imageFile, setImageFile] = useState<File | null>(null)
@@ -47,20 +74,39 @@ export default function AdminManagePage() {
   const [importProgress, setImportProgress] = useState<{ processed: number; total: number; etaSeconds: number | null } | null>(null)
 
   useEffect(() => {
-    const isAdmin = localStorage.getItem('isAdmin') === 'true'
-    if (!isAdmin) {
+    if (status === 'loading') return
+    const role = session?.user?.role
+    if (role !== 'ADMIN' && role !== 'OWNER') {
       router.push('/')
       return
     }
-    fetchBearbricks()
-    fetchSeriesList()
-  }, [])
+    loadInitial()
+  }, [status, session])
 
-  const fetchBearbricks = async () => {
+  useEffect(() => {
+    const action = searchParams.get('action')
+    if (action === 'add') setShowAddForm(true)
+    if (action === 'import') setShowImportPanel(true)
+  }, [searchParams])
+
+  const loadInitial = async () => {
+    fetchCategoryList()
+    const series = await fetchSeriesList()
+    const latest = series.length > 0 ? series[0].name : 'all'
+    setSelectedSeries(latest)
+  }
+
+  useEffect(() => {
+    if (!selectedSeries) return
+    fetchBearbricks(selectedSeries)
+  }, [selectedSeries])
+
+  const fetchBearbricks = async (series: string) => {
     try {
-      const res = await fetch('/api/bearbricks')
+      const url = series !== 'all' ? `/api/bearbricks?series=${encodeURIComponent(series)}` : '/api/bearbricks'
+      const res = await fetch(url)
       const data = await res.json()
-      setBearbricks(data)
+      setBearbricks(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Failed to fetch:', error)
     }
@@ -72,9 +118,23 @@ export default function AdminManagePage() {
       if (res.ok) {
         const data = await res.json()
         setSeriesList(data)
+        return data
       }
     } catch (error) {
       console.error('Failed to fetch series:', error)
+    }
+    return []
+  }
+
+  const fetchCategoryList = async () => {
+    try {
+      const res = await fetch('/api/categories')
+      if (res.ok) {
+        const data = await res.json()
+        setCategoryList(data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch categories:', error)
     }
   }
 
@@ -91,11 +151,9 @@ export default function AdminManagePage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer 4321',
         },
         body: JSON.stringify({
           ...formData,
-          size: parseInt(formData.size),
           releaseDate: formData.releaseDate || null,
         }),
       })
@@ -117,7 +175,6 @@ export default function AdminManagePage() {
           const blob = await upload(filename, imageFile, {
             access: 'public',
             handleUploadUrl: '/api/upload/presigned',
-            clientPayload: JSON.stringify({ authorization: '4321' }),
             onUploadProgress: (progress) => {
               setUploadProgress(Math.round((progress.loaded / progress.total) * 100))
             },
@@ -127,7 +184,6 @@ export default function AdminManagePage() {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': 'Bearer 4321',
             },
             body: JSON.stringify({ imageUrl: blob.url, isPrimary: true }),
           })
@@ -142,10 +198,11 @@ export default function AdminManagePage() {
 
       alert('추가되었습니다')
       setShowAddForm(false)
-      setFormData({ name: '', seriesId: '', size: '100', releaseDate: '', description: '' })
+      router.replace('/admin/manage')
+      setFormData({ name: '', seriesId: '', categoryId: '', releaseDate: '', description: '', isSecret: false })
       setImageFile(null)
       setImagePreview('')
-      fetchBearbricks()
+      fetchBearbricks(selectedSeries)
     } catch (error) {
       console.error('Failed to add:', error)
       alert('추가 실패')
@@ -184,7 +241,6 @@ export default function AdminManagePage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer 4321',
         },
         body: JSON.stringify({
           number: nextSeriesNumber,
@@ -214,9 +270,7 @@ export default function AdminManagePage() {
   const handleExport = async () => {
     setExporting(true)
     try {
-      const res = await fetch('/api/admin/bearbricks/export', {
-        headers: { 'Authorization': 'Bearer 4321' },
-      })
+      const res = await fetch('/api/admin/bearbricks/export')
       if (!res.ok) {
         alert('내보내기 실패')
         return
@@ -251,7 +305,6 @@ export default function AdminManagePage() {
       body.append('mode', 'preview')
       const res = await fetch('/api/admin/bearbricks/import', {
         method: 'POST',
-        headers: { 'Authorization': 'Bearer 4321' },
         body,
       })
       const data = await res.json()
@@ -296,7 +349,6 @@ export default function AdminManagePage() {
 
         const res = await fetch('/api/admin/bearbricks/import', {
           method: 'POST',
-          headers: { 'Authorization': 'Bearer 4321' },
           body,
         })
         const data = await res.json()
@@ -324,7 +376,9 @@ export default function AdminManagePage() {
       })
       setImportPreview(null)
       setImportFile(null)
-      fetchBearbricks()
+      setShowImportPanel(false)
+      router.replace('/admin/manage')
+      fetchBearbricks(selectedSeries)
     } catch (error) {
       console.error('Failed to apply import:', error)
       alert('적용 실패')
@@ -339,45 +393,54 @@ export default function AdminManagePage() {
     setImportPreview(null)
   }
 
+  const sortedBearbricks = sortBearbricks(bearbricks)
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
+    <div className="min-h-screen bg-white">
+      <header className="border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">베어브릭 관리</h1>
-          <div className="flex gap-3">
-            <Link href="/" className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
-              홈으로
-            </Link>
-            <button
-              onClick={handleExport}
-              disabled={exporting}
-              className="px-4 py-2 bg-green-700 text-white rounded hover:bg-green-800 disabled:opacity-50"
-            >
-              {exporting ? '내보내는 중...' : '엑셀 내보내기'}
-            </button>
-            <label className="px-4 py-2 bg-green-700 text-white rounded hover:bg-green-800 cursor-pointer">
-              엑셀 가져오기
-              <input
-                type="file"
-                accept=".xlsx,.xls"
-                onChange={handleImportFileSelect}
-                className="hidden"
-              />
-            </label>
-            <button
-              onClick={() => setShowAddForm(!showAddForm)}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              {showAddForm ? '취소' : '+ 추가'}
-            </button>
-          </div>
+          <Link href="/" className="text-lg font-bold text-gray-900 tracking-tight">GomBrick</Link>
+          <TopMenu />
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">베어브릭 관리</h1>
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-gray-500">시리즈</label>
+            <select
+              value={selectedSeries}
+              onChange={(e) => setSelectedSeries(e.target.value)}
+              className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm"
+            >
+              <option value="all">전체</option>
+              {seriesList.map((s) => (
+                <option key={s.id} value={s.name}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {showImportPanel && !importPreview && !importResult && (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8">
+            <h2 className="text-lg font-bold mb-4">엑셀 가져오기</h2>
+            <label className="block w-full px-4 py-10 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-gray-400 text-center transition-colors">
+              <input type="file" accept=".xlsx,.xls" onChange={handleImportFileSelect} className="hidden" />
+              <p className="text-gray-600">{importing ? '읽는 중...' : '클릭해서 엑셀 파일 선택'}</p>
+            </label>
+            <button
+              onClick={() => { setShowImportPanel(false); router.replace('/admin/manage') }}
+              className="mt-4 px-4 py-2 text-sm text-gray-500 hover:text-gray-900"
+            >
+              취소
+            </button>
+          </div>
+        )}
+
         {importPreview && (
-          <div className="bg-white rounded-lg shadow p-6 mb-8">
-            <h2 className="text-xl font-bold mb-4">엑셀 가져오기 미리보기</h2>
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8">
+            <h2 className="text-lg font-bold mb-4">엑셀 가져오기 미리보기</h2>
             <p className="mb-2">
               <span className="font-semibold text-blue-600">{importPreview.updateCount}개</span> 수정,{' '}
               <span className="font-semibold text-green-600">{importPreview.createCount}개</span> 추가
@@ -396,7 +459,7 @@ export default function AdminManagePage() {
               </p>
             )}
             {importPreview.errors.length > 0 && (
-              <div className="mb-4 max-h-48 overflow-y-auto bg-red-50 border border-red-200 rounded p-3 text-sm">
+              <div className="mb-4 max-h-48 overflow-y-auto bg-red-50 border border-red-100 rounded-lg p-3 text-sm">
                 {importPreview.errors.map((err, i) => (
                   <p key={i} className="text-red-700">
                     행 {err.rowNum}: {err.reason}
@@ -413,7 +476,7 @@ export default function AdminManagePage() {
                     <> (약 {importProgress.etaSeconds}초 남음)</>
                   )}
                 </p>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-gray-100 rounded-full h-2">
                   <div
                     className="bg-blue-600 h-2 rounded-full transition-all"
                     style={{
@@ -428,14 +491,14 @@ export default function AdminManagePage() {
               <button
                 onClick={handleImportConfirm}
                 disabled={importing || (importPreview.updateCount === 0 && importPreview.createCount === 0)}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-full hover:bg-gray-700 disabled:opacity-50"
               >
                 {importing ? '적용 중...' : '적용하기'}
               </button>
               <button
                 onClick={handleImportCancel}
                 disabled={importing}
-                className="flex-1 px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                className="flex-1 px-4 py-2 bg-gray-100 rounded-full hover:bg-gray-200"
               >
                 취소
               </button>
@@ -444,15 +507,15 @@ export default function AdminManagePage() {
         )}
 
         {importResult && (
-          <div className="bg-white rounded-lg shadow p-6 mb-8">
-            <h2 className="text-xl font-bold mb-2">가져오기 완료</h2>
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8">
+            <h2 className="text-lg font-bold mb-2">가져오기 완료</h2>
             <p>
               {importResult.updated}개 수정, {importResult.created}개 추가
               {importResult.skipped > 0 && `, ${importResult.skipped}개 건너뜀`}
             </p>
             <button
               onClick={() => setImportResult(null)}
-              className="mt-4 px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+              className="mt-4 px-4 py-2 bg-gray-100 rounded-full hover:bg-gray-200"
             >
               닫기
             </button>
@@ -460,8 +523,8 @@ export default function AdminManagePage() {
         )}
 
         {showAddForm && (
-          <div className="bg-white rounded-lg shadow p-6 mb-8">
-            <h2 className="text-xl font-bold mb-4">새 베어브릭 추가</h2>
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8">
+            <h2 className="text-lg font-bold mb-4">새 베어브릭 추가</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block font-semibold mb-1">이름 *</label>
@@ -469,7 +532,7 @@ export default function AdminManagePage() {
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-2 border rounded"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg"
                   required
                 />
               </div>
@@ -478,7 +541,7 @@ export default function AdminManagePage() {
                 <select
                   value={formData.seriesId}
                   onChange={(e) => handleSeriesSelect(e.target.value)}
-                  className="w-full px-4 py-2 border rounded"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg"
                   disabled={creatingSeries}
                   required
                 >
@@ -494,20 +557,30 @@ export default function AdminManagePage() {
                 </select>
               </div>
               <div>
-                <label className="block font-semibold mb-1">사이즈 *</label>
+                <label className="block font-semibold mb-1">카테고리</label>
                 <select
-                  value={formData.size}
-                  onChange={(e) => setFormData({ ...formData, size: e.target.value })}
-                  className="w-full px-4 py-2 border rounded"
-                  required
+                  value={formData.categoryId}
+                  onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg"
                 >
-                  <option value="50">50%</option>
-                  <option value="70">70%</option>
-                  <option value="100">100%</option>
-                  <option value="200">200%</option>
-                  <option value="400">400%</option>
-                  <option value="1000">1000%</option>
+                  <option value="">카테고리 없음</option>
+                  {categoryList.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
                 </select>
+              </div>
+              <div>
+                <label className="flex items-center gap-2 font-semibold">
+                  <input
+                    type="checkbox"
+                    checked={formData.isSecret}
+                    onChange={(e) => setFormData({ ...formData, isSecret: e.target.checked })}
+                    className="w-4 h-4"
+                  />
+                  Secret
+                </label>
               </div>
               <div>
                 <label className="block font-semibold mb-1">출시일</label>
@@ -515,7 +588,7 @@ export default function AdminManagePage() {
                   type="date"
                   value={formData.releaseDate}
                   onChange={(e) => setFormData({ ...formData, releaseDate: e.target.value })}
-                  className="w-full px-4 py-2 border rounded"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg"
                 />
               </div>
               <div>
@@ -523,13 +596,13 @@ export default function AdminManagePage() {
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-4 py-2 border rounded"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg"
                   rows={4}
                 />
               </div>
               <div>
                 <label className="block font-semibold mb-1">이미지</label>
-                <label className="block w-full px-4 py-6 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 text-center">
+                <label className="block w-full px-4 py-6 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-gray-400 text-center transition-colors">
                   <input
                     type="file"
                     accept="image/*"
@@ -540,7 +613,7 @@ export default function AdminManagePage() {
                     <img
                       src={imagePreview}
                       alt=""
-                      className="w-24 h-24 object-cover rounded mx-auto"
+                      className="w-24 h-24 object-cover rounded-lg mx-auto"
                     />
                   ) : (
                     <div>
@@ -552,7 +625,7 @@ export default function AdminManagePage() {
                 {uploading && (
                   <div className="mt-2">
                     <p className="text-sm text-blue-600 mb-1">이미지 업로드 중... {uploadProgress}%</p>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-gray-100 rounded-full h-2">
                       <div
                         className="bg-blue-600 h-2 rounded-full transition-all"
                         style={{ width: `${uploadProgress}%` }}
@@ -561,36 +634,44 @@ export default function AdminManagePage() {
                   </div>
                 )}
               </div>
-              <button
-                type="submit"
-                disabled={uploading}
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-              >
-                {uploading ? '업로드 중...' : '추가하기'}
-              </button>
+              <div className="flex gap-3">
+                <button
+                  type="submit"
+                  disabled={uploading}
+                  className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-full hover:bg-gray-700 disabled:opacity-50"
+                >
+                  {uploading ? '업로드 중...' : '추가하기'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setShowAddForm(false); router.replace('/admin/manage') }}
+                  className="flex-1 px-4 py-2 bg-gray-100 rounded-full hover:bg-gray-200"
+                >
+                  취소
+                </button>
+              </div>
             </form>
           </div>
         )}
 
-        {!showAddForm && (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        {!showAddForm && !showImportPanel && (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">이미지</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">이름</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">시리즈</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">사이즈</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">작업</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
-              {bearbricks.map((bearbrick) => {
+            <tbody className="divide-y divide-gray-100">
+              {sortedBearbricks.map((bearbrick) => {
                 const primaryImage = bearbrick.images.find(img => img.isPrimary)
                 return (
                   <tr key={bearbrick.id}>
                     <td className="px-6 py-4">
-                      <div className="w-16 h-16 bg-gray-100 rounded overflow-hidden">
+                      <div className="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden">
                         <img
                           src={primaryImage?.url || bearbrick.images[0]?.url || '/bearbrick-placeholder.svg'}
                           alt={bearbrick.name}
@@ -598,9 +679,18 @@ export default function AdminManagePage() {
                         />
                       </div>
                     </td>
-                    <td className="px-6 py-4 font-medium">{bearbrick.name}</td>
-                    <td className="px-6 py-4 text-gray-600">{bearbrick.series?.name || '-'}</td>
-                    <td className="px-6 py-4 text-gray-600">{bearbrick.size}%</td>
+                    <td className="px-6 py-4 font-medium">
+                      {bearbrick.isSecret && (
+                        <span className="inline-block px-2 py-0.5 mr-2 text-xs font-semibold bg-blue-50 text-blue-700 rounded-full">
+                          Secret
+                        </span>
+                      )}
+                      {bearbrick.category && (
+                        <span className="text-gray-400">[{bearbrick.category.name}] </span>
+                      )}
+                      {bearbrick.name}
+                    </td>
+                    <td className="px-6 py-4 text-gray-500">{bearbrick.series?.name || '-'}</td>
                     <td className="px-6 py-4">
                       <Link
                         href={`/admin/bearbricks/${bearbrick.id}/edit`}

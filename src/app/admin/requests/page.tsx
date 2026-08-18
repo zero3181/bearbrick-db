@@ -1,0 +1,221 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
+import Link from 'next/link'
+import TopMenu from '@/components/TopMenu'
+
+interface RequestData {
+  name?: string
+  seriesId?: string | null
+  categoryId?: string | null
+  releaseDate?: string | null
+  description?: string | null
+  isSecret?: boolean
+  imageUrl?: string | null
+}
+
+interface EditRequest {
+  id: string
+  description: string | null
+  oldData: RequestData
+  newData: RequestData
+  createdAt: string
+  bearbricks: { id: string; name: string }
+  users: { name: string | null; email: string }
+}
+
+interface Series {
+  id: string
+  name: string
+}
+
+interface Category {
+  id: string
+  name: string
+}
+
+export default function AdminRequestsPage() {
+  const router = useRouter()
+  const { data: session, status } = useSession()
+  const [requests, setRequests] = useState<EditRequest[]>([])
+  const [seriesList, setSeriesList] = useState<Series[]>([])
+  const [categoryList, setCategoryList] = useState<Category[]>([])
+  const [loading, setLoading] = useState(true)
+  const [processingId, setProcessingId] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (status === 'loading') return
+    const role = session?.user?.role
+    if (role !== 'ADMIN' && role !== 'OWNER') {
+      router.push('/')
+      return
+    }
+    fetchRequests()
+    fetch('/api/series')
+      .then((res) => (res.ok ? res.json() : []))
+      .then(setSeriesList)
+      .catch(() => setSeriesList([]))
+    fetch('/api/categories')
+      .then((res) => (res.ok ? res.json() : []))
+      .then(setCategoryList)
+      .catch(() => setCategoryList([]))
+  }, [status, session])
+
+  const fetchRequests = async () => {
+    try {
+      const res = await fetch('/api/admin/edit-requests')
+      if (res.ok) {
+        setRequests(await res.json())
+      }
+    } catch (error) {
+      console.error('Failed to fetch requests:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const seriesName = (id: string | null | undefined) => {
+    if (!id) return '(없음)'
+    return seriesList.find((s) => s.id === id)?.name || id
+  }
+
+  const categoryName = (id: string | null | undefined) => {
+    if (!id) return '(없음)'
+    return categoryList.find((c) => c.id === id)?.name || id
+  }
+
+  const handleReview = async (id: string, action: 'approve' | 'reject') => {
+    setProcessingId(id)
+    try {
+      const res = await fetch(`/api/admin/edit-requests/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      })
+      if (res.ok) {
+        setRequests((prev) => prev.filter((r) => r.id !== id))
+      } else {
+        alert('처리 실패')
+      }
+    } catch (error) {
+      console.error('Failed to review request:', error)
+      alert('처리 실패')
+    } finally {
+      setProcessingId(null)
+    }
+  }
+
+  const Field = ({ label, oldVal, newVal }: { label: string; oldVal: string; newVal: string }) => {
+    const changed = oldVal !== newVal
+    return (
+      <div className="flex gap-2 text-sm">
+        <span className="w-16 shrink-0 text-gray-500">{label}</span>
+        {changed ? (
+          <span>
+            <span className="text-gray-400 line-through">{oldVal || '(없음)'}</span>
+            {' → '}
+            <span className="text-blue-600 font-medium">{newVal || '(없음)'}</span>
+          </span>
+        ) : (
+          <span className="text-gray-700">{oldVal || '(없음)'}</span>
+        )}
+      </div>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl">Loading...</div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-white">
+      <header className="border-b border-gray-100">
+        <div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
+          <Link href="/admin/manage" className="text-sm text-gray-500 hover:text-gray-900">
+            ← 관리 페이지로
+          </Link>
+          <TopMenu />
+        </div>
+      </header>
+      <div className="max-w-5xl mx-auto px-4 pt-6">
+        <h1 className="text-2xl font-bold text-gray-900">수정 요청 승인</h1>
+      </div>
+
+      <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+        {requests.length === 0 ? (
+          <p className="text-center text-gray-500 py-12">대기 중인 수정 요청이 없습니다</p>
+        ) : (
+          requests.map((req) => (
+            <div key={req.id} className="bg-white rounded-lg shadow p-6">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <Link href={`/bearbricks/${req.bearbricks.id}`} className="text-lg font-bold text-blue-600 hover:underline">
+                    {req.bearbricks.name}
+                  </Link>
+                  <p className="text-sm text-gray-500 mt-1">
+                    요청자: {req.users.name || req.users.email} · {new Date(req.createdAt).toLocaleString('ko-KR')}
+                  </p>
+                </div>
+              </div>
+
+              {req.description && (
+                <p className="text-sm bg-gray-50 border rounded p-3 mb-4">사유: {req.description}</p>
+              )}
+
+              <div className="space-y-1 mb-4">
+                <Field label="이름" oldVal={req.oldData.name || ''} newVal={req.newData.name || ''} />
+                <Field
+                  label="시리즈"
+                  oldVal={seriesName(req.oldData.seriesId)}
+                  newVal={seriesName(req.newData.seriesId)}
+                />
+                <Field
+                  label="카테고리"
+                  oldVal={categoryName(req.oldData.categoryId)}
+                  newVal={categoryName(req.newData.categoryId)}
+                />
+                <Field label="출시일" oldVal={req.oldData.releaseDate || ''} newVal={req.newData.releaseDate || ''} />
+                <Field label="설명" oldVal={req.oldData.description || ''} newVal={req.newData.description || ''} />
+                <Field
+                  label="Secret"
+                  oldVal={req.oldData.isSecret ? '예' : '아니오'}
+                  newVal={req.newData.isSecret ? '예' : '아니오'}
+                />
+              </div>
+
+              {req.newData.imageUrl && (
+                <div className="mb-4">
+                  <p className="text-sm text-gray-500 mb-1">첨부된 이미지</p>
+                  <img src={req.newData.imageUrl} alt="" className="w-32 h-32 object-cover rounded border" />
+                </div>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => handleReview(req.id, 'approve')}
+                  disabled={processingId === req.id}
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                >
+                  승인
+                </button>
+                <button
+                  onClick={() => handleReview(req.id, 'reject')}
+                  disabled={processingId === req.id}
+                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+                >
+                  거절
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </main>
+    </div>
+  )
+}

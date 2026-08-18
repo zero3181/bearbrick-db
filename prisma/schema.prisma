@@ -17,16 +17,17 @@ model Bearbrick {
   estimatedQuantity Int?
   materialType      String?           @default("ABS Plastic")
   description       String?
+  isSecret          Boolean           @default(false)
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
   seriesId          String
-  categoryId        String
+  categoryId        String?
   collaborationId   String?
   createdById       String
   images            BearbrickImage[]
-  categories        categories        @relation(fields: [categoryId], references: [id])
+  categories        categories?       @relation(fields: [categoryId], references: [id])
   collaborations    collaborations?   @relation(fields: [collaborationId], references: [id])
-  users             users             @relation(fields: [createdById], references: [id])
+  users             User              @relation(fields: [createdById], references: [id])
   series            series            @relation(fields: [seriesId], references: [id])
   edit_requests     edit_requests[]
   image_requests    image_requests[]
@@ -44,13 +45,13 @@ model BearbrickImage {
   bearbrickId  String
   uploadedById String
   bearbrick    Bearbrick @relation(fields: [bearbrickId], references: [id], onDelete: Cascade)
-  users        users     @relation(fields: [uploadedById], references: [id])
+  users        User      @relation(fields: [uploadedById], references: [id])
 
   @@map("bearbrick_images")
 }
 
 model Account {
-  id                String  @id
+  id                String  @id @default(cuid())
   userId            String
   type              String
   provider          String
@@ -62,17 +63,17 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-  users             users   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
 
 model Session {
-  id           String   @id
+  id           String   @id @default(cuid())
   sessionToken String   @unique
   userId       String
   expires      DateTime
-  users        users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
@@ -89,7 +90,7 @@ model categories {
   description  String?
   rarityWeight Float       @default(1.0)
   createdAt    DateTime    @default(now())
-  updatedAt    DateTime
+  updatedAt    DateTime @updatedAt
   bearbricks   Bearbrick[]
 }
 
@@ -100,7 +101,7 @@ model collaborations {
   type        String
   description String?
   createdAt   DateTime    @default(now())
-  updatedAt   DateTime
+  updatedAt   DateTime @updatedAt
   bearbricks  Bearbrick[]
 }
 
@@ -110,7 +111,7 @@ model edit_requests {
   oldData       Json?
   newData       Json
   createdAt     DateTime        @default(now())
-  updatedAt     DateTime
+  updatedAt     DateTime @updatedAt
   reviewedAt    DateTime?
   bearbrickId   String
   requestedById String
@@ -118,7 +119,7 @@ model edit_requests {
   type          EditRequestType
   status        RequestStatus   @default(PENDING)
   bearbricks    Bearbrick       @relation(fields: [bearbrickId], references: [id])
-  users         users           @relation(fields: [requestedById], references: [id])
+  users         User            @relation(fields: [requestedById], references: [id])
 }
 
 model image_requests {
@@ -126,14 +127,14 @@ model image_requests {
   newImageUrl   String
   reason        String?
   createdAt     DateTime      @default(now())
-  updatedAt     DateTime
+  updatedAt     DateTime @updatedAt
   reviewedAt    DateTime?
   bearbrickId   String
   requestedById String
   reviewedById  String?
   status        RequestStatus @default(PENDING)
   bearbricks    Bearbrick     @relation(fields: [bearbrickId], references: [id])
-  users         users         @relation(fields: [requestedById], references: [id])
+  users         User          @relation(fields: [requestedById], references: [id])
 }
 
 model recommendations {
@@ -142,7 +143,7 @@ model recommendations {
   userId      String
   bearbrickId String
   bearbricks  Bearbrick @relation(fields: [bearbrickId], references: [id], onDelete: Cascade)
-  users       users     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  users       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, bearbrickId])
 }
@@ -156,7 +157,7 @@ model series {
   theme       String?
   description String?
   createdAt   DateTime    @default(now())
-  updatedAt   DateTime
+  updatedAt   DateTime @updatedAt
   bearbricks  Bearbrick[]
 }
 
@@ -167,23 +168,23 @@ model user_submitted_images {
   description                                      String?
   status                                           SubmissionStatus @default(PENDING)
   createdAt                                        DateTime         @default(now())
-  updatedAt                                        DateTime
+  updatedAt                                        DateTime @updatedAt
   reviewedAt                                       DateTime?
   submittedById                                    String
   reviewedById                                     String?
-  users_user_submitted_images_reviewedByIdTousers  users?           @relation("user_submitted_images_reviewedByIdTousers", fields: [reviewedById], references: [id])
-  users_user_submitted_images_submittedByIdTousers users            @relation("user_submitted_images_submittedByIdTousers", fields: [submittedById], references: [id])
+  users_user_submitted_images_reviewedByIdTousers  User?            @relation("user_submitted_images_reviewedByIdTousers", fields: [reviewedById], references: [id])
+  users_user_submitted_images_submittedByIdTousers User             @relation("user_submitted_images_submittedByIdTousers", fields: [submittedById], references: [id])
 }
 
-model users {
-  id                                                               String                  @id
+model User {
+  id                                                               String                  @id @default(cuid())
   name                                                             String?
   email                                                            String                  @unique
   emailVerified                                                    DateTime?
   image                                                            String?
   role                                                             UserRole                @default(USER)
   createdAt                                                        DateTime                @default(now())
-  updatedAt                                                        DateTime
+  updatedAt                                                        DateTime @updatedAt
   Account                                                          Account[]
   Session                                                          Session[]
   bearbrick_images                                                 BearbrickImage[]
@@ -193,6 +194,8 @@ model users {
   recommendations                                                  recommendations[]
   user_submitted_images_user_submitted_images_reviewedByIdTousers  user_submitted_images[] @relation("user_submitted_images_reviewedByIdTousers")
   user_submitted_images_user_submitted_images_submittedByIdTousers user_submitted_images[] @relation("user_submitted_images_submittedByIdTousers")
+
+  @@map("users")
 }
 
 enum EditRequestType {

@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { upload } from '@vercel/blob/client'
+import TopMenu from '@/components/TopMenu'
 
 interface Bearbrick {
   id: string
@@ -12,9 +14,14 @@ interface Bearbrick {
     id: string
     name: string
   } | null
+  category: {
+    id: string
+    name: string
+  } | null
   size: number
   releaseDate: string | null
   description: string | null
+  isSecret: boolean
   images: {
     id: string
     url: string
@@ -28,30 +35,40 @@ interface Series {
   number: number
 }
 
+interface Category {
+  id: string
+  name: string
+}
+
 export default function EditBearbrickPage() {
   const params = useParams()
   const router = useRouter()
+  const { data: session, status } = useSession()
   const [bearbrick, setBearbrick] = useState<Bearbrick | null>(null)
   const [seriesList, setSeriesList] = useState<Series[]>([])
+  const [categoryList, setCategoryList] = useState<Category[]>([])
   const [formData, setFormData] = useState({
     name: '',
     seriesId: '',
-    size: '100',
+    categoryId: '',
     releaseDate: '',
     description: '',
+    isSecret: false,
   })
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
 
   useEffect(() => {
-    const isAdmin = localStorage.getItem('isAdmin') === 'true'
-    if (!isAdmin) {
+    if (status === 'loading') return
+    const role = session?.user?.role
+    if (role !== 'ADMIN' && role !== 'OWNER') {
       router.push('/')
       return
     }
     fetchSeriesList()
+    fetchCategoryList()
     fetchBearbrick()
-  }, [params.id])
+  }, [params.id, status, session])
 
   const fetchSeriesList = async () => {
     try {
@@ -65,6 +82,18 @@ export default function EditBearbrickPage() {
     }
   }
 
+  const fetchCategoryList = async () => {
+    try {
+      const res = await fetch('/api/categories')
+      if (res.ok) {
+        const data = await res.json()
+        setCategoryList(data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch categories:', error)
+    }
+  }
+
   const fetchBearbrick = async () => {
     try {
       const res = await fetch(`/api/bearbricks/${params.id}`)
@@ -74,9 +103,10 @@ export default function EditBearbrickPage() {
         setFormData({
           name: data.name,
           seriesId: data.series?.id || '',
-          size: data.size.toString(),
+          categoryId: data.category?.id || '',
           releaseDate: data.releaseDate ? data.releaseDate.split('T')[0] : '',
           description: data.description || '',
+          isSecret: Boolean(data.isSecret),
         })
       }
     } catch (error) {
@@ -92,12 +122,10 @@ export default function EditBearbrickPage() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer 4321',
         },
         body: JSON.stringify({
           id: params.id,
           ...formData,
-          size: parseInt(formData.size),
           releaseDate: formData.releaseDate || null,
         }),
       })
@@ -130,7 +158,6 @@ export default function EditBearbrickPage() {
       const blob = await upload(filename, file, {
         access: 'public',
         handleUploadUrl: '/api/upload/presigned',
-        clientPayload: JSON.stringify({ authorization: '4321' }),
         onUploadProgress: (progress) => {
           setUploadProgress(Math.round((progress.loaded / progress.total) * 100))
         },
@@ -141,7 +168,6 @@ export default function EditBearbrickPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer 4321',
         },
         body: JSON.stringify({
           imageUrl: blob.url,
@@ -170,7 +196,6 @@ export default function EditBearbrickPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer 4321',
         },
         body: JSON.stringify({ imageId }),
       })
@@ -191,7 +216,6 @@ export default function EditBearbrickPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer 4321',
         },
         body: JSON.stringify({ imageId }),
       })
@@ -216,12 +240,13 @@ export default function EditBearbrickPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href="/admin/manage" className="text-blue-600 hover:underline">
+    <div className="min-h-screen bg-white">
+      <header className="border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+          <Link href="/admin/manage" className="text-sm text-gray-500 hover:text-gray-900">
             ← 관리 페이지로
           </Link>
+          <TopMenu />
         </div>
       </header>
 
@@ -258,20 +283,30 @@ export default function EditBearbrickPage() {
               </select>
             </div>
             <div>
-              <label className="block font-semibold mb-1">사이즈 *</label>
+              <label className="block font-semibold mb-1">카테고리</label>
               <select
-                value={formData.size}
-                onChange={(e) => setFormData({ ...formData, size: e.target.value })}
+                value={formData.categoryId}
+                onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
                 className="w-full px-4 py-2 border rounded"
-                required
               >
-                <option value="50">50%</option>
-                <option value="70">70%</option>
-                <option value="100">100%</option>
-                <option value="200">200%</option>
-                <option value="400">400%</option>
-                <option value="1000">1000%</option>
+                <option value="">카테고리 없음</option>
+                {categoryList.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
               </select>
+            </div>
+            <div>
+              <label className="flex items-center gap-2 font-semibold">
+                <input
+                  type="checkbox"
+                  checked={formData.isSecret}
+                  onChange={(e) => setFormData({ ...formData, isSecret: e.target.checked })}
+                  className="w-4 h-4"
+                />
+                Secret
+              </label>
             </div>
             <div>
               <label className="block font-semibold mb-1">출시일</label>
