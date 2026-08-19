@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { upload } from '@vercel/blob/client'
 import TopMenu from '@/components/TopMenu'
 import { BASIC_ORDER } from '@/lib/sortBearbricks'
+import { compressImage } from '@/lib/compressImage'
 
 interface Bearbrick {
   id: string
@@ -151,11 +152,12 @@ export default function BearbrickDetailPage() {
     setShowRequestForm(true)
   }
 
-  const handleRequestImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleRequestImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    setRequestImageFile(file)
-    setRequestImagePreview(URL.createObjectURL(file))
+    const compressed = await compressImage(file)
+    setRequestImageFile(compressed)
+    setRequestImagePreview(URL.createObjectURL(compressed))
   }
 
   const handleRequestSubmit = async (e: React.FormEvent) => {

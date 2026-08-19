@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { upload } from '@vercel/blob/client'
 import TopMenu from '@/components/TopMenu'
+import { compressImage } from '@/lib/compressImage'
 
 interface Bearbrick {
   id: string
@@ -150,12 +151,14 @@ export default function EditBearbrickPage() {
     setUploadProgress(0)
 
     try {
+      const compressedFile = await compressImage(file)
+
       // Upload to Vercel Blob
       const timestamp = Date.now()
-      const ext = file.name.split('.').pop() || 'jpg'
+      const ext = compressedFile.name.split('.').pop() || 'jpg'
       const filename = `bearbrick-${params.id}-${timestamp}.${ext}`
 
-      const blob = await upload(filename, file, {
+      const blob = await upload(filename, compressedFile, {
         access: 'public',
         handleUploadUrl: '/api/upload/presigned',
         onUploadProgress: (progress) => {

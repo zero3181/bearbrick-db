@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { upload } from '@vercel/blob/client'
 import TopMenu from '@/components/TopMenu'
 import { sortBearbricks } from '@/lib/sortBearbricks'
+import { compressImage } from '@/lib/compressImage'
 
 interface Bearbrick {
   id: string
@@ -209,11 +210,12 @@ function AdminManagePageInner() {
     }
   }
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    setImageFile(file)
-    setImagePreview(URL.createObjectURL(file))
+    const compressed = await compressImage(file)
+    setImageFile(compressed)
+    setImagePreview(URL.createObjectURL(compressed))
   }
 
   const getCurrentSeason = () => {
