@@ -15,7 +15,7 @@ const CATEGORY_ORDER = [
 ]
 
 // Within the Basic category, items follow this fixed code order
-const BASIC_ORDER = ['B', 'E', '@', 'R', 'b', 'R(2)', 'I', 'C', 'K']
+export const BASIC_ORDER = ['B', 'E', '@', 'R', 'b', 'R(2)', 'I', 'C', 'K']
 
 interface SortableBearbrick {
   name: string
@@ -45,4 +45,26 @@ export function sortBearbricks<T extends SortableBearbrick>(items: T[]): T[] {
 
     return a.name.localeCompare(b.name)
   })
+}
+
+interface BasicGroupable extends SortableBearbrick {
+  id: string
+  series: { id: string } | null
+}
+
+// Basic items (B E @ R b R I C K) are 9 separate records per series.
+// On listing screens we only want to show one representative card per
+// series for the group; the detail page offers a selector for the rest.
+export function collapseBasicGroup<T extends BasicGroupable>(items: T[]): T[] {
+  const seenSeries = new Set<string>()
+  const result: T[] = []
+  for (const item of items) {
+    if (item.category?.name === 'Basic') {
+      const seriesKey = item.series?.id ?? 'none'
+      if (seenSeries.has(seriesKey)) continue
+      seenSeries.add(seriesKey)
+    }
+    result.push(item)
+  }
+  return result
 }

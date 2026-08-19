@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import TopMenu from '@/components/TopMenu'
-import { sortBearbricks } from '@/lib/sortBearbricks'
+import { sortBearbricks, collapseBasicGroup } from '@/lib/sortBearbricks'
 
 interface Bearbrick {
   id: string
@@ -113,7 +113,7 @@ export default function HomePage() {
     return primary?.url || bearbrick.images[0]?.url || '/bearbrick-placeholder.svg'
   }
 
-  const sortedBearbricks = sortBearbricks(bearbricks)
+  const sortedBearbricks = collapseBasicGroup(sortBearbricks(bearbricks))
 
   return (
     <div className="min-h-screen bg-white">
@@ -200,7 +200,7 @@ export default function HomePage() {
                 <div className="pt-2 px-1">
                   <h3 className="font-medium text-xs md:text-sm line-clamp-2 text-gray-900">
                     {bearbrick.category && <span className="text-gray-400">[{bearbrick.category.name}] </span>}
-                    {bearbrick.name}
+                    {bearbrick.category?.name === 'Basic' ? 'BE@RBRICK' : bearbrick.name}
                   </h3>
                   {bearbrick.series && (
                     <p className="text-xs text-gray-400 mt-0.5">{bearbrick.series.name}</p>

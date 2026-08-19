@@ -6,6 +6,7 @@ import { useSession, signIn } from 'next-auth/react'
 import Link from 'next/link'
 import { upload } from '@vercel/blob/client'
 import TopMenu from '@/components/TopMenu'
+import { BASIC_ORDER } from '@/lib/sortBearbricks'
 
 interface Bearbrick {
   id: string
@@ -47,6 +48,7 @@ export default function BearbrickDetailPage() {
   const [bearbrick, setBearbrick] = useState<Bearbrick | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState<string>('')
+  const [basicVariants, setBasicVariants] = useState<{ id: string; name: string }[]>([])
 
   const [seriesList, setSeriesList] = useState<Series[]>([])
   const [categoryList, setCategoryList] = useState<Category[]>([])
@@ -84,11 +86,32 @@ export default function BearbrickDetailPage() {
         setBearbrick(data)
         const primary = data.images.find((img: { isPrimary: boolean }) => img.isPrimary)
         setSelectedImage(primary?.url || data.images[0]?.url || '/bearbrick-placeholder.svg')
+
+        if (data.category?.name === 'Basic' && data.series?.name) {
+          fetchBasicVariants(data.series.name)
+        } else {
+          setBasicVariants([])
+        }
       }
     } catch (error) {
       console.error('Failed to fetch bearbrick:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchBasicVariants = async (seriesName: string) => {
+    try {
+      const res = await fetch(`/api/bearbricks?series=${encodeURIComponent(seriesName)}`)
+      if (!res.ok) return
+      const data = await res.json()
+      const variants = (Array.isArray(data) ? data : [])
+        .filter((b: Bearbrick) => b.category?.name === 'Basic')
+        .sort((a: Bearbrick, b: Bearbrick) => BASIC_ORDER.indexOf(a.name) - BASIC_ORDER.indexOf(b.name))
+        .map((b: Bearbrick) => ({ id: b.id, name: b.name }))
+      setBasicVariants(variants)
+    } catch (error) {
+      console.error('Failed to fetch basic variants:', error)
     }
   }
 
@@ -264,6 +287,34 @@ export default function BearbrickDetailPage() {
                 )}
                 {bearbrick.name}
               </h1>
+
+              {basicVariants.length > 0 && (
+                <div className="mb-6">
+                  <span className="block font-semibold w-24 mb-2">종류 선택:</span>
+                  <div className="flex flex-wrap gap-2">
+                    {basicVariants.map((variant) => (
+                      <label
+                        key={variant.id}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border cursor-pointer text-sm font-medium ${
+                          variant.id === bearbrick.id
+                            ? 'bg-blue-600 border-blue-600 text-white'
+                            : 'bg-white border-gray-300 text-gray-700 hover:border-blue-400'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="basic-variant"
+                          value={variant.id}
+                          checked={variant.id === bearbrick.id}
+                          onChange={() => router.push(`/bearbricks/${variant.id}`)}
+                          className="sr-only"
+                        />
+                        {variant.name}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-3 mb-6">
                 {bearbrick.series && (
