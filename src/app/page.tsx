@@ -140,7 +140,7 @@ export default function HomePage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 pt-4 pb-8">
+      <main className="max-w-7xl mx-auto px-4 pt-1 pb-8">
         {/* Series title / selector */}
         <div className="mb-8 relative inline-block" ref={seriesMenuRef}>
           <button
