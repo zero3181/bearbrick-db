@@ -6,6 +6,7 @@ import { useSession, signIn } from 'next-auth/react'
 import Link from 'next/link'
 import { upload } from '@vercel/blob/client'
 import TopMenu from '@/components/TopMenu'
+import LoadingSpinner from '@/components/LoadingSpinner'
 import { BASIC_ORDER } from '@/lib/sortBearbricks'
 import { compressImage } from '@/lib/compressImage'
 
@@ -212,7 +213,7 @@ export default function BearbrickDetailPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl">Loading...</div>
+        <LoadingSpinner />
       </div>
     )
   }

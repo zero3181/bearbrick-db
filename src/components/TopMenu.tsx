@@ -6,7 +6,7 @@ import Link from 'next/link'
 
 function MenuLink({ href, onClick, children }: { href: string; onClick: () => void; children: React.ReactNode }) {
   return (
-    <Link href={href} onClick={onClick} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+    <Link href={href} onClick={onClick} className="block px-4 py-2 text-base text-gray-700 hover:bg-gray-50">
       {children}
     </Link>
   )
@@ -81,9 +81,9 @@ export default function TopMenu() {
           })
         }}
         aria-label="메뉴"
-        className="relative p-2 rounded-full hover:bg-gray-100 active:bg-gray-200 transition-colors"
+        className="relative p-2.5 rounded-full hover:bg-gray-100 active:bg-gray-200 transition-colors"
       >
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <svg width="26" height="26" viewBox="0 0 20 20" fill="none">
           <path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
         </svg>
         {isAdmin && pendingCount > 0 && (
@@ -112,7 +112,7 @@ export default function TopMenu() {
               <button
                 onClick={handleExport}
                 disabled={exporting}
-                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                className="w-full text-left px-4 py-2 text-base text-gray-700 hover:bg-gray-50 disabled:opacity-50"
               >
                 {exporting ? '내보내는 중...' : '엑셀 내보내기'}
               </button>
@@ -130,7 +130,7 @@ export default function TopMenu() {
                 signOut()
                 setOpen(false)
               }}
-              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50"
+              className="w-full text-left px-4 py-2 text-base text-red-600 hover:bg-gray-50"
             >
               로그아웃
             </button>
@@ -140,7 +140,7 @@ export default function TopMenu() {
                 signIn('google')
                 setOpen(false)
               }}
-              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+              className="w-full text-left px-4 py-2 text-base text-gray-700 hover:bg-gray-50"
             >
               로그인
             </button>

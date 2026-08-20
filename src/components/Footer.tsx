@@ -8,12 +8,6 @@ export default function Footer() {
           unofficial, non-commercial fan project and is not affiliated with or endorsed by
           Medicom Toy.
         </p>
-        <p className="mt-1">
-          문의:{' '}
-          <a href="mailto:my@favorite.kr" className="hover:text-gray-600">
-            my@favorite.kr
-          </a>
-        </p>
       </div>
     </footer>
   )

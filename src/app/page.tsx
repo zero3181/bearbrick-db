@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import TopMenu from '@/components/TopMenu'
+import LoadingSpinner from '@/components/LoadingSpinner'
 import { sortBearbricks, collapseBasicGroup } from '@/lib/sortBearbricks'
 
 interface Bearbrick {
@@ -113,7 +114,20 @@ export default function HomePage() {
     return primary?.url || bearbrick.images[0]?.url || '/bearbrick-placeholder.svg'
   }
 
-  const sortedBearbricks = collapseBasicGroup(sortBearbricks(bearbricks))
+  const baseSortedBearbricks = collapseBasicGroup(sortBearbricks(bearbricks))
+  // allSeries is already ordered newest-first (API returns number: 'desc'),
+  // so grouping "전체" by that index keeps series clustered together with
+  // the latest series at the top, while a stable sort preserves each
+  // series's own category/secret ordering within its group.
+  const seriesRank = new Map(allSeries.map((s, i) => [s.id, i]))
+  const sortedBearbricks =
+    selectedSeries === 'all'
+      ? [...baseSortedBearbricks].sort(
+          (a, b) =>
+            (a.series ? seriesRank.get(a.series.id) ?? allSeries.length : allSeries.length) -
+            (b.series ? seriesRank.get(b.series.id) ?? allSeries.length : allSeries.length)
+        )
+      : baseSortedBearbricks
 
   return (
     <div className="min-h-screen bg-white">
@@ -126,7 +140,7 @@ export default function HomePage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-4 pt-4 pb-8">
         {/* Series title / selector */}
         <div className="mb-8 relative inline-block" ref={seriesMenuRef}>
           <button
@@ -145,17 +159,17 @@ export default function HomePage() {
             <div className="absolute left-0 mt-2 w-72 max-h-96 overflow-y-auto bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-40">
               <button
                 onClick={() => handleSeriesChange('all')}
-                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === 'all' ? 'text-gray-900' : 'text-gray-700'}`}
+                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === 'all' ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
               >
-                <span className="font-agency-wide inline-block">전체</span>
+                전체
               </button>
               {allSeries.map((series) => (
                 <button
                   key={series.id}
                   onClick={() => handleSeriesChange(series.name)}
-                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === series.name ? 'text-gray-900' : 'text-gray-700'}`}
+                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === series.name ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
                 >
-                  <span className="font-agency-wide inline-block">{series.name}</span>
+                  {series.name}
                   {series._count && <span className="text-gray-400"> ({series._count.bearbricks})</span>}
                 </button>
               ))}
@@ -164,8 +178,8 @@ export default function HomePage() {
         </div>
 
         {loading ? (
-          <div className="text-center py-24">
-            <p className="text-gray-400">불러오는 중...</p>
+          <div className="py-24">
+            <LoadingSpinner label="불러오는 중..." />
           </div>
         ) : sortedBearbricks.length === 0 ? (
           <div className="text-center py-24">

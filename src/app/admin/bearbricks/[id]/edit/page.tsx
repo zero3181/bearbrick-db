@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { upload } from '@vercel/blob/client'
 import TopMenu from '@/components/TopMenu'
+import LoadingSpinner from '@/components/LoadingSpinner'
 import { compressImage } from '@/lib/compressImage'
 
 interface Bearbrick {
@@ -237,7 +238,7 @@ export default function EditBearbrickPage() {
   if (!bearbrick) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl">Loading...</div>
+        <LoadingSpinner />
       </div>
     )
   }

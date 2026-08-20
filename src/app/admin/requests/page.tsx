@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import TopMenu from '@/components/TopMenu'
+import LoadingSpinner from '@/components/LoadingSpinner'
 
 interface RequestData {
   name?: string
@@ -128,7 +129,7 @@ export default function AdminRequestsPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl">Loading...</div>
+        <LoadingSpinner />
       </div>
     )
   }
