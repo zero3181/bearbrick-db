@@ -17,7 +17,24 @@ export default function TopMenu() {
   const isAdmin = session?.user?.role === 'ADMIN' || session?.user?.role === 'OWNER'
   const [open, setOpen] = useState(false)
   const [exporting, setExporting] = useState(false)
+  const [pendingCount, setPendingCount] = useState(0)
   const menuRef = useRef<HTMLDivElement>(null)
+
+  const fetchPendingCount = async () => {
+    try {
+      const res = await fetch('/api/admin/edit-requests')
+      if (res.ok) {
+        const data = await res.json()
+        setPendingCount(Array.isArray(data) ? data.length : 0)
+      }
+    } catch (error) {
+      console.error('Failed to fetch pending edit requests:', error)
+    }
+  }
+
+  useEffect(() => {
+    if (isAdmin) fetchPendingCount()
+  }, [isAdmin])
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -56,13 +73,22 @@ export default function TopMenu() {
   return (
     <div className="relative" ref={menuRef}>
       <button
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          setOpen((v) => {
+            const next = !v
+            if (next && isAdmin) fetchPendingCount()
+            return next
+          })
+        }}
         aria-label="메뉴"
-        className="p-2 rounded-full hover:bg-gray-100 active:bg-gray-200 transition-colors"
+        className="relative p-2 rounded-full hover:bg-gray-100 active:bg-gray-200 transition-colors"
       >
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
           <path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
         </svg>
+        {isAdmin && pendingCount > 0 && (
+          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+        )}
       </button>
 
       {open && (
