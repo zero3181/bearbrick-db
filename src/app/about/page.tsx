@@ -12,7 +12,7 @@ export default function AboutPage() {
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-16">
-        <img src="/logo-gombrick.png" alt="GomBrick" className="h-8 w-auto mb-4" />
+        <img src="/logo-gombrick.png" alt="GomBrick" className="h-12 w-auto mb-4" />
         <p className="text-gray-600 leading-relaxed">
           베어브릭 컬렉션을 정리하고 관리하는 데이터베이스입니다.
         </p>

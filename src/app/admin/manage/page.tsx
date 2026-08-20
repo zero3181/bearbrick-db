@@ -402,7 +402,7 @@ function AdminManagePageInner() {
       <header className="border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/">
-            <img src="/logo-gombrick.png" alt="GomBrick" className="h-6 md:h-7 w-auto" />
+            <img src="/logo-gombrick.png" alt="GomBrick" className="h-9 md:h-[42px] w-auto" />
           </Link>
           <TopMenu />
         </div>

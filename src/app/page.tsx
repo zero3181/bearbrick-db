@@ -120,7 +120,7 @@ export default function HomePage() {
       {/* Header */}
       <header className="border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <img src="/logo-gombrick.png" alt="GomBrick" className="h-6 md:h-7 w-auto" />
+          <img src="/logo-gombrick.png" alt="GomBrick" className="h-9 md:h-[42px] w-auto" />
           <TopMenu />
         </div>
       </header>
@@ -131,9 +131,11 @@ export default function HomePage() {
         <div className="mb-8 relative inline-block" ref={seriesMenuRef}>
           <button
             onClick={() => setSeriesMenuOpen((v) => !v)}
-            className="font-agency-wide flex items-center gap-2 text-3xl md:text-4xl text-gray-900 hover:text-gray-500 transition-colors"
+            className="flex items-center gap-2 text-3xl md:text-4xl text-gray-900 hover:text-gray-500 transition-colors"
           >
-            {selectedSeries === 'all' ? '전체' : selectedSeries}
+            <span className="font-agency-wide inline-block">
+              {selectedSeries === 'all' ? '전체' : selectedSeries}
+            </span>
             <svg width="22" height="22" viewBox="0 0 20 20" fill="none" className="mt-1 text-gray-400">
               <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -143,17 +145,17 @@ export default function HomePage() {
             <div className="absolute left-0 mt-2 w-72 max-h-96 overflow-y-auto bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-40">
               <button
                 onClick={() => handleSeriesChange('all')}
-                className={`font-agency-wide w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === 'all' ? 'text-gray-900' : 'text-gray-700'}`}
+                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === 'all' ? 'text-gray-900' : 'text-gray-700'}`}
               >
-                전체
+                <span className="font-agency-wide inline-block">전체</span>
               </button>
               {allSeries.map((series) => (
                 <button
                   key={series.id}
                   onClick={() => handleSeriesChange(series.name)}
-                  className={`font-agency-wide w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === series.name ? 'text-gray-900' : 'text-gray-700'}`}
+                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === series.name ? 'text-gray-900' : 'text-gray-700'}`}
                 >
-                  {series.name}
+                  <span className="font-agency-wide inline-block">{series.name}</span>
                   {series._count && <span className="text-gray-400"> ({series._count.bearbricks})</span>}
                 </button>
               ))}

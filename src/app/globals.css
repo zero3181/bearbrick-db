@@ -1,5 +1,5 @@
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css");
-@import url("https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Wallpoet&display=swap");
 @import "tailwindcss";
 
 :root {
@@ -26,13 +26,14 @@ body {
   font-family: 'Pretendard', sans-serif;
 }
 
-/* Close free substitute for Agency FB (Wide/Black), which is a paid
-   commercial font unavailable for web embedding. Archivo Black has a
-   similar geometric, heavy feel; extra letter-spacing approximates
-   the "Wide" cut, matching the bold condensed-but-wide look used on
-   bearbrick.com's own navigation. */
+/* Close free substitute for the official "SERIES XX" badge font
+   (Agency FB Bold Italic), which is a paid commercial font unavailable
+   for web embedding. Wallpoet has the same chamfered/cut-corner block
+   letterforms; the skew fakes the italic lean since Wallpoet has no
+   true italic cut. */
 .font-agency-wide {
-  font-family: 'Archivo Black', 'Pretendard', sans-serif;
+  font-family: 'Wallpoet', 'Pretendard', sans-serif;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
+  transform: skewX(-8deg);
 }
