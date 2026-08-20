@@ -120,7 +120,7 @@ export default function HomePage() {
       {/* Header */}
       <header className="border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <span className="text-lg font-bold text-gray-900 tracking-tight">GomBrick</span>
+          <img src="/logo-gombrick.png" alt="GomBrick" className="h-6 md:h-7 w-auto" />
           <TopMenu />
         </div>
       </header>
@@ -131,7 +131,7 @@ export default function HomePage() {
         <div className="mb-8 relative inline-block" ref={seriesMenuRef}>
           <button
             onClick={() => setSeriesMenuOpen((v) => !v)}
-            className="flex items-center gap-2 text-3xl md:text-4xl font-bold text-gray-900 hover:text-gray-500 transition-colors"
+            className="font-agency-wide flex items-center gap-2 text-3xl md:text-4xl text-gray-900 hover:text-gray-500 transition-colors"
           >
             {selectedSeries === 'all' ? '전체' : selectedSeries}
             <svg width="22" height="22" viewBox="0 0 20 20" fill="none" className="mt-1 text-gray-400">
@@ -143,7 +143,7 @@ export default function HomePage() {
             <div className="absolute left-0 mt-2 w-72 max-h-96 overflow-y-auto bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-40">
               <button
                 onClick={() => handleSeriesChange('all')}
-                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === 'all' ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
+                className={`font-agency-wide w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === 'all' ? 'text-gray-900' : 'text-gray-700'}`}
               >
                 전체
               </button>
@@ -151,7 +151,7 @@ export default function HomePage() {
                 <button
                   key={series.id}
                   onClick={() => handleSeriesChange(series.name)}
-                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === series.name ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
+                  className={`font-agency-wide w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === series.name ? 'text-gray-900' : 'text-gray-700'}`}
                 >
                   {series.name}
                   {series._count && <span className="text-gray-400"> ({series._count.bearbricks})</span>}
@@ -196,6 +196,7 @@ export default function HomePage() {
                     alt={bearbrick.name}
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
+                  <div className="absolute inset-0 bg-gray-900/[0.04] pointer-events-none" />
                 </div>
                 <div className="pt-2 px-1">
                   <h3 className="font-medium text-xs md:text-sm line-clamp-2 text-gray-900">

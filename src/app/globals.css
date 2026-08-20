@@ -1,4 +1,5 @@
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css");
+@import url("https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap");
 @import "tailwindcss";
 
 :root {
@@ -23,4 +24,15 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: 'Pretendard', sans-serif;
+}
+
+/* Close free substitute for Agency FB (Wide/Black), which is a paid
+   commercial font unavailable for web embedding. Archivo Black has a
+   similar geometric, heavy feel; extra letter-spacing approximates
+   the "Wide" cut, matching the bold condensed-but-wide look used on
+   bearbrick.com's own navigation. */
+.font-agency-wide {
+  font-family: 'Archivo Black', 'Pretendard', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
