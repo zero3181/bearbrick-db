@@ -23,7 +23,7 @@ type ClassifiedRow =
 
 function parseSecret(value: unknown): boolean {
   const normalized = String(value ?? '').trim().toUpperCase()
-  return ['Y', 'YES', 'TRUE', '1', '예', 'O'].includes(normalized)
+  return ['Y', 'YES', 'TRUE', '1', 'O'].includes(normalized)
 }
 
 function parseDate(value: unknown): { ok: true; date: Date | null } | { ok: false } {
@@ -49,7 +49,7 @@ function getCurrentSeason() {
 }
 
 function seriesNamesIn(rows: Record<string, unknown>[]) {
-  return [...new Set(rows.map((row) => String(row['시리즈'] ?? '').trim()).filter((n) => n.length > 0))]
+  return [...new Set(rows.map((row) => String(row['Series'] ?? '').trim()).filter((n) => n.length > 0))]
 }
 
 // Creates any series referenced in `names` that don't exist yet, numbering
@@ -88,27 +88,27 @@ function classifyRow(
   existingById: Map<string, ExistingBearbrick>
 ): ClassifiedRow {
   const id = String(row['ID'] ?? '').trim()
-  const name = String(row['이름'] ?? '').trim()
-  const seriesName = String(row['시리즈'] ?? '').trim()
-  const categoryName = String(row['카테고리'] ?? '').trim()
-  const description = String(row['설명'] ?? '').trim() || null
+  const name = String(row['Name'] ?? '').trim()
+  const seriesName = String(row['Series'] ?? '').trim()
+  const categoryName = String(row['Category'] ?? '').trim()
+  const description = String(row['Description'] ?? '').trim() || null
   const isSecret = parseSecret(row['Secret'])
 
-  if (!name) return { kind: 'error', rowNum, reason: '이름이 비어있습니다' }
+  if (!name) return { kind: 'error', rowNum, reason: 'Name is empty' }
 
   const seriesId = seriesByName.get(seriesName)
-  if (!seriesId) return { kind: 'error', rowNum, reason: `시리즈 "${seriesName}"를 찾을 수 없습니다` }
+  if (!seriesId) return { kind: 'error', rowNum, reason: `Series "${seriesName}" not found` }
 
   let categoryId: string | null = null
   if (categoryName) {
     const found = categoryByName.get(categoryName)
-    if (!found) return { kind: 'error', rowNum, reason: `카테고리 "${categoryName}"를 찾을 수 없습니다` }
+    if (!found) return { kind: 'error', rowNum, reason: `Category "${categoryName}" not found` }
     categoryId = found
   }
 
-  const dateResult = parseDate(row['출시일'])
+  const dateResult = parseDate(row['ReleaseDate'])
   if (!dateResult.ok) {
-    return { kind: 'error', rowNum, reason: `출시일 형식이 올바르지 않습니다: "${row['출시일']}"` }
+    return { kind: 'error', rowNum, reason: `Invalid release date format: "${row['ReleaseDate']}"` }
   }
 
   if (id) {
@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
   const mode = formData.get('mode') as string | null
 
   if (!file) {
-    return NextResponse.json({ error: '파일이 없습니다' }, { status: 400 })
+    return NextResponse.json({ error: 'No file provided' }, { status: 400 })
   }
   if (mode !== 'preview' && mode !== 'apply') {
     return NextResponse.json({ error: 'Invalid mode' }, { status: 400 })
@@ -203,7 +203,7 @@ export async function POST(request: NextRequest) {
       } else if (classified.kind === 'update') {
         updateCount += 1
       } else if (classified.kind === 'create' && classified.id && seenNewIds.has(classified.id)) {
-        errors.push({ rowNum: classified.rowNum, reason: `ID "${classified.id}"가 파일 안에서 중복됩니다` })
+        errors.push({ rowNum: classified.rowNum, reason: `ID "${classified.id}" is duplicated within the file` })
       } else {
         if (classified.id) seenNewIds.add(classified.id)
         createCount += 1
@@ -245,7 +245,7 @@ export async function POST(request: NextRequest) {
   const creates: typeof rawCreates = []
   for (const c of rawCreates) {
     if (c.id && seenIds.has(c.id)) {
-      batchErrors.push({ kind: 'error', rowNum: c.rowNum, reason: `ID "${c.id}"가 파일 안에서 중복됩니다` })
+      batchErrors.push({ kind: 'error', rowNum: c.rowNum, reason: `ID "${c.id}" is duplicated within the file` })
       continue
     }
     if (c.id) seenIds.add(c.id)
@@ -287,7 +287,7 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       console.error('Import batch failed:', error)
       return NextResponse.json(
-        { error: `${offset + 2}~${offset + sliceRows.length + 1}행 처리 중 오류가 발생했습니다 (예: 중복된 ID)` },
+        { error: `An error occurred processing rows ${offset + 2}-${offset + sliceRows.length + 1} (e.g. a duplicate ID)` },
         { status: 500 }
       )
     }

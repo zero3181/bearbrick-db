@@ -19,27 +19,27 @@ export async function GET() {
 
   const rows = bearbricks.map((b) => ({
     ID: b.id,
-    이름: b.name,
-    시리즈: b.series?.name || '',
-    카테고리: b.categories?.name || '',
+    Name: b.name,
+    Series: b.series?.name || '',
+    Category: b.categories?.name || '',
     Secret: b.isSecret ? 'Y' : 'N',
-    출시일: b.releaseDate ? b.releaseDate.toISOString().split('T')[0] : '',
-    설명: b.description || '',
+    ReleaseDate: b.releaseDate ? b.releaseDate.toISOString().split('T')[0] : '',
+    Description: b.description || '',
   }))
 
   const worksheet = XLSX.utils.json_to_sheet(rows)
   worksheet['!cols'] = [
     { wch: 26 }, // ID
-    { wch: 30 }, // 이름
-    { wch: 14 }, // 시리즈
-    { wch: 12 }, // 카테고리
+    { wch: 30 }, // Name
+    { wch: 14 }, // Series
+    { wch: 12 }, // Category
     { wch: 8 },  // Secret
-    { wch: 12 }, // 출시일
-    { wch: 40 }, // 설명
+    { wch: 12 }, // ReleaseDate
+    { wch: 40 }, // Description
   ]
 
   const workbook = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(workbook, worksheet, '베어브릭')
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Bearbricks')
 
   const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' })
 

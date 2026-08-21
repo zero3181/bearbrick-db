@@ -133,14 +133,14 @@ export default function EditBearbrickPage() {
       })
 
       if (res.ok) {
-        alert('수정되었습니다')
+        alert('Updated')
         router.push('/admin/manage')
       } else {
-        alert('수정 실패')
+        alert('Update failed')
       }
     } catch (error) {
       console.error('Failed to update:', error)
-      alert('수정 실패')
+      alert('Update failed')
     }
   }
 
@@ -180,14 +180,14 @@ export default function EditBearbrickPage() {
       })
 
       if (res.ok) {
-        alert('이미지가 업로드되었습니다')
+        alert('Image uploaded')
         fetchBearbrick()
       } else {
-        alert('이미지 저장 실패')
+        alert('Failed to save the image')
       }
     } catch (error) {
       console.error('Upload failed:', error)
-      alert('업로드 실패')
+      alert('Upload failed')
     } finally {
       setUploading(false)
       setUploadProgress(0)
@@ -213,7 +213,7 @@ export default function EditBearbrickPage() {
   }
 
   const handleDeleteImage = async (imageId: string) => {
-    if (!confirm('이미지를 삭제하시겠습니까?')) return
+    if (!confirm('Delete this image?')) return
 
     try {
       const res = await fetch(`/api/admin/bearbricks/${params.id}/delete-image`, {
@@ -227,11 +227,11 @@ export default function EditBearbrickPage() {
       if (res.ok) {
         fetchBearbrick()
       } else {
-        alert('삭제 실패')
+        alert('Delete failed')
       }
     } catch (error) {
       console.error('Failed to delete:', error)
-      alert('삭제 실패')
+      alert('Delete failed')
     }
   }
 
@@ -248,21 +248,21 @@ export default function EditBearbrickPage() {
       <header className="border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/admin/manage" className="text-sm text-gray-500 hover:text-gray-900">
-            ← 관리 페이지로
+            ← Back to admin
           </Link>
           <TopMenu />
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">베어브릭 수정</h1>
+        <h1 className="text-3xl font-bold mb-8">Edit Bearbrick</h1>
 
         {/* Basic Info Form */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <h2 className="text-xl font-bold mb-4">기본 정보</h2>
+          <h2 className="text-xl font-bold mb-4">Basic Info</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block font-semibold mb-1">이름 *</label>
+              <label className="block font-semibold mb-1">Name *</label>
               <input
                 type="text"
                 value={formData.name}
@@ -272,13 +272,13 @@ export default function EditBearbrickPage() {
               />
             </div>
             <div>
-              <label className="block font-semibold mb-1">시리즈</label>
+              <label className="block font-semibold mb-1">Series</label>
               <select
                 value={formData.seriesId}
                 onChange={(e) => setFormData({ ...formData, seriesId: e.target.value })}
                 className="w-full px-4 py-2 border rounded"
               >
-                <option value="">시리즈 없음</option>
+                <option value="">No series</option>
                 {seriesList.map((series) => (
                   <option key={series.id} value={series.id}>
                     {series.name}
@@ -287,13 +287,13 @@ export default function EditBearbrickPage() {
               </select>
             </div>
             <div>
-              <label className="block font-semibold mb-1">카테고리</label>
+              <label className="block font-semibold mb-1">Category</label>
               <select
                 value={formData.categoryId}
                 onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
                 className="w-full px-4 py-2 border rounded"
               >
-                <option value="">카테고리 없음</option>
+                <option value="">No category</option>
                 {categoryList.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
@@ -313,7 +313,7 @@ export default function EditBearbrickPage() {
               </label>
             </div>
             <div>
-              <label className="block font-semibold mb-1">출시일</label>
+              <label className="block font-semibold mb-1">Release Date</label>
               <input
                 type="date"
                 value={formData.releaseDate}
@@ -322,7 +322,7 @@ export default function EditBearbrickPage() {
               />
             </div>
             <div>
-              <label className="block font-semibold mb-1">설명</label>
+              <label className="block font-semibold mb-1">Description</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -334,14 +334,14 @@ export default function EditBearbrickPage() {
               type="submit"
               className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
             >
-              저장
+              Save
             </button>
           </form>
         </div>
 
         {/* Images */}
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold mb-4">이미지 관리</h2>
+          <h2 className="text-xl font-bold mb-4">Manage Images</h2>
 
           {/* Upload */}
           <div className="mb-6">
@@ -355,7 +355,7 @@ export default function EditBearbrickPage() {
               />
               {uploading ? (
                 <div>
-                  <p className="text-blue-600 mb-2">업로드 중... {uploadProgress}%</p>
+                  <p className="text-blue-600 mb-2">Uploading... {uploadProgress}%</p>
                   <div className="w-full bg-gray-200 rounded-full h-2 max-w-xs mx-auto">
                     <div
                       className="bg-blue-600 h-2 rounded-full transition-all"
@@ -365,8 +365,8 @@ export default function EditBearbrickPage() {
                 </div>
               ) : (
                 <div>
-                  <p className="text-gray-600">클릭하여 이미지 업로드</p>
-                  <p className="text-sm text-gray-400 mt-1">JPG, PNG, GIF (최대 5MB)</p>
+                  <p className="text-gray-600">Click to upload an image</p>
+                  <p className="text-sm text-gray-400 mt-1">JPG, PNG, GIF (max 5MB)</p>
                 </div>
               )}
             </label>
@@ -383,7 +383,7 @@ export default function EditBearbrickPage() {
                 />
                 {image.isPrimary && (
                   <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
-                    메인
+                    Primary
                   </div>
                 )}
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all rounded flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
@@ -392,14 +392,14 @@ export default function EditBearbrickPage() {
                       onClick={() => handleSetPrimary(image.id)}
                       className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
                     >
-                      메인 설정
+                      Set as primary
                     </button>
                   )}
                   <button
                     onClick={() => handleDeleteImage(image.id)}
                     className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
                   >
-                    삭제
+                    Delete
                   </button>
                 </div>
               </div>
@@ -407,7 +407,7 @@ export default function EditBearbrickPage() {
           </div>
 
           {bearbrick.images.length === 0 && (
-            <p className="text-center text-gray-500 py-8">등록된 이미지가 없습니다</p>
+            <p className="text-center text-gray-500 py-8">No images yet</p>
           )}
         </div>
       </main>

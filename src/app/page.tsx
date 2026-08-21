@@ -116,7 +116,7 @@ export default function HomePage() {
 
   const baseSortedBearbricks = collapseBasicGroup(sortBearbricks(bearbricks))
   // allSeries is already ordered newest-first (API returns number: 'desc'),
-  // so grouping "전체" by that index keeps series clustered together with
+  // so grouping "All" by that index keeps series clustered together with
   // the latest series at the top, while a stable sort preserves each
   // series's own category/secret ordering within its group.
   const seriesRank = new Map(allSeries.map((s, i) => [s.id, i]))
@@ -148,7 +148,7 @@ export default function HomePage() {
             className="flex items-center gap-2 text-3xl md:text-4xl text-gray-900 hover:text-gray-500 transition-colors"
           >
             <span className="font-agency-wide inline-block">
-              {selectedSeries === 'all' ? '전체' : selectedSeries}
+              {selectedSeries === 'all' ? 'All' : selectedSeries}
             </span>
             <svg width="22" height="22" viewBox="0 0 20 20" fill="none" className="mt-1 text-gray-400">
               <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
@@ -161,7 +161,7 @@ export default function HomePage() {
                 onClick={() => handleSeriesChange('all')}
                 className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === 'all' ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
               >
-                전체
+                All
               </button>
               {allSeries.map((series) => (
                 <button
@@ -179,17 +179,17 @@ export default function HomePage() {
 
         {loading ? (
           <div className="py-24">
-            <LoadingSpinner label="불러오는 중..." />
+            <LoadingSpinner label="Loading..." />
           </div>
         ) : sortedBearbricks.length === 0 ? (
           <div className="text-center py-24">
-            <p className="text-gray-400">등록된 베어브릭이 없습니다</p>
+            <p className="text-gray-400">No bearbricks registered yet</p>
             {isAdmin && (
               <Link
                 href="/admin/manage"
                 className="mt-4 inline-block px-4 py-2 bg-gray-900 text-white rounded-full hover:bg-gray-700"
               >
-                베어브릭 추가하기
+                Add a bearbrick
               </Link>
             )}
           </div>

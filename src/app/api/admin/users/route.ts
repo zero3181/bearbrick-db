@@ -10,12 +10,12 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions)
 
     if (!session?.user) {
-      return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
+      return NextResponse.json({ error: 'Sign-in required.' }, { status: 401 })
     }
 
-    // OWNER 권한만 사용자 목록 조회 가능
+    // Only OWNER can list users
     if (session.user.role !== 'OWNER') {
-      return NextResponse.json({ error: 'OWNER 권한이 필요합니다.' }, { status: 403 })
+      return NextResponse.json({ error: 'OWNER role required.' }, { status: 403 })
     }
 
     const users = await prisma.user.findMany({
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Users fetch error:', error)
     return NextResponse.json(
-      { error: '사용자 목록 조회 중 오류가 발생했습니다.' },
+      { error: 'An error occurred while fetching the user list.' },
       { status: 500 }
     )
   } finally {

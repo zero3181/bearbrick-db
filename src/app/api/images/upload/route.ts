@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
 
     if (!session?.user?.id) {
       return NextResponse.json(
-        { error: '로그인이 필요합니다.' },
+        { error: 'Sign-in required.' },
         { status: 401 }
       );
     }
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 
     if (!file) {
       return NextResponse.json(
-        { error: '파일이 선택되지 않았습니다.' },
+        { error: 'No file was selected.' },
         { status: 400 }
       );
     }
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
-        { error: '지원되지 않는 파일 형식입니다. (JPEG, PNG, GIF, WebP만 허용)' },
+        { error: 'Unsupported file type. (Only JPEG, PNG, GIF, WebP allowed)' },
         { status: 400 }
       );
     }
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
       return NextResponse.json(
-        { error: '파일 크기는 5MB 이하여야 합니다.' },
+        { error: 'File size must be 5MB or less.' },
         { status: 400 }
       );
     }
@@ -59,9 +59,9 @@ export async function POST(request: NextRequest) {
       filename,
     });
   } catch (error) {
-    console.error('파일 업로드 오류:', error);
+    console.error('File upload error:', error);
     return NextResponse.json(
-      { error: '파일 업로드에 실패했습니다.' },
+      { error: 'File upload failed.' },
       { status: 500 }
     );
   }

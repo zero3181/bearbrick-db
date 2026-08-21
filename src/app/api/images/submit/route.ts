@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
 
     if (!session?.user?.id) {
       return NextResponse.json(
-        { error: '로그인이 필요합니다.' },
+        { error: 'Sign-in required.' },
         { status: 401 }
       );
     }
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 
     if (!imageUrl) {
       return NextResponse.json(
-        { error: '이미지 URL이 필요합니다.' },
+        { error: 'An image URL is required.' },
         { status: 400 }
       );
     }
@@ -49,9 +49,9 @@ export async function POST(request: NextRequest) {
       image: submittedImage,
     });
   } catch (error) {
-    console.error('이미지 제출 오류:', error);
+    console.error('Image submission error:', error);
     return NextResponse.json(
-      { error: '이미지 제출에 실패했습니다.' },
+      { error: 'Failed to submit the image.' },
       { status: 500 }
     );
   }
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
 
     if (!session?.user?.id) {
       return NextResponse.json(
-        { error: '로그인이 필요합니다.' },
+        { error: 'Sign-in required.' },
         { status: 401 }
       );
     }
@@ -118,9 +118,9 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('이미지 목록 조회 오류:', error);
+    console.error('Image list fetch error:', error);
     return NextResponse.json(
-      { error: '이미지 목록을 불러오는데 실패했습니다.' },
+      { error: 'Failed to load the image list.' },
       { status: 500 }
     );
   }

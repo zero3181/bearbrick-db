@@ -118,7 +118,7 @@ export default function BearbrickDetailPage() {
   }
 
   const handleDelete = async () => {
-    if (!confirm('정말 삭제하시겠습니까?')) return
+    if (!confirm('Are you sure you want to delete this?')) return
 
     try {
       const res = await fetch(`/api/admin/bearbricks/${params.id}`, {
@@ -126,14 +126,14 @@ export default function BearbrickDetailPage() {
       })
 
       if (res.ok) {
-        alert('삭제되었습니다')
+        alert('Deleted')
         router.push('/')
       } else {
-        alert('삭제 실패')
+        alert('Delete failed')
       }
     } catch (error) {
       console.error('Delete failed:', error)
-      alert('삭제 실패')
+      alert('Delete failed')
     }
   }
 
@@ -197,14 +197,14 @@ export default function BearbrickDetailPage() {
       })
 
       if (res.ok) {
-        alert('수정 요청이 접수되었습니다. 관리자 승인 후 반영됩니다.')
+        alert('Your edit request has been submitted. It will take effect once an admin approves it.')
         setShowRequestForm(false)
       } else {
-        alert('요청 실패')
+        alert('Request failed')
       }
     } catch (error) {
       console.error('Failed to submit edit request:', error)
-      alert('요청 실패')
+      alert('Request failed')
     } finally {
       setSubmittingRequest(false)
     }
@@ -222,9 +222,9 @@ export default function BearbrickDetailPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4">베어브릭을 찾을 수 없습니다</h2>
+          <h2 className="text-2xl font-bold mb-4">Bearbrick not found</h2>
           <Link href="/" className="text-blue-600 hover:underline">
-            홈으로 돌아가기
+            Back to home
           </Link>
         </div>
       </div>
@@ -237,7 +237,7 @@ export default function BearbrickDetailPage() {
       <header className="border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/" className="text-sm text-gray-500 hover:text-gray-900">
-            ← 목록으로
+            ← Back to list
           </Link>
           <TopMenu />
         </div>
@@ -293,7 +293,7 @@ export default function BearbrickDetailPage() {
 
               {basicVariants.length > 0 && (
                 <div className="mb-6">
-                  <span className="block font-semibold w-24 mb-2">종류 선택:</span>
+                  <span className="block font-semibold w-24 mb-2">Variant:</span>
                   <div className="flex flex-wrap gap-2">
                     {basicVariants.map((variant) => (
                       <label
@@ -322,21 +322,21 @@ export default function BearbrickDetailPage() {
               <div className="space-y-3 mb-6">
                 {bearbrick.series && (
                   <div className="flex">
-                    <span className="font-semibold w-24">시리즈:</span>
+                    <span className="font-semibold w-24">Series:</span>
                     <span>{bearbrick.series.name}</span>
                   </div>
                 )}
                 {bearbrick.releaseDate && (
                   <div className="flex">
-                    <span className="font-semibold w-24">출시일:</span>
-                    <span>{new Date(bearbrick.releaseDate).toLocaleDateString('ko-KR')}</span>
+                    <span className="font-semibold w-24">Released:</span>
+                    <span>{new Date(bearbrick.releaseDate).toLocaleDateString('en-US')}</span>
                   </div>
                 )}
               </div>
 
               {bearbrick.description && (
                 <div className="mb-6">
-                  <h3 className="font-semibold mb-2">설명</h3>
+                  <h3 className="font-semibold mb-2">Description</h3>
                   <p className="text-gray-700 whitespace-pre-wrap">{bearbrick.description}</p>
                 </div>
               )}
@@ -348,13 +348,13 @@ export default function BearbrickDetailPage() {
                     href={`/admin/bearbricks/${bearbrick.id}/edit`}
                     className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-center"
                   >
-                    수정
+                    Edit
                   </Link>
                   <button
                     onClick={handleDelete}
                     className="flex-1 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
                   >
-                    삭제
+                    Delete
                   </button>
                 </div>
               )}
@@ -367,14 +367,14 @@ export default function BearbrickDetailPage() {
                       onClick={openRequestForm}
                       className="w-full px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-900"
                     >
-                      정보 수정 요청
+                      Request a correction
                     </button>
                   ) : (
                     <button
                       onClick={() => signIn('google')}
                       className="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
                     >
-                      로그인하고 정보 수정 요청하기
+                      Sign in to request a correction
                     </button>
                   )}
                 </div>
@@ -388,10 +388,10 @@ export default function BearbrickDetailPage() {
       {showRequestForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <h3 className="text-xl font-bold mb-4">정보 수정 요청</h3>
+            <h3 className="text-xl font-bold mb-4">Request a Correction</h3>
             <form onSubmit={handleRequestSubmit} className="space-y-4">
               <div>
-                <label className="block font-semibold mb-1">이름</label>
+                <label className="block font-semibold mb-1">Name</label>
                 <input
                   type="text"
                   value={requestData.name}
@@ -401,13 +401,13 @@ export default function BearbrickDetailPage() {
                 />
               </div>
               <div>
-                <label className="block font-semibold mb-1">시리즈</label>
+                <label className="block font-semibold mb-1">Series</label>
                 <select
                   value={requestData.seriesId}
                   onChange={(e) => setRequestData({ ...requestData, seriesId: e.target.value })}
                   className="w-full px-4 py-2 border rounded"
                 >
-                  <option value="">시리즈 없음</option>
+                  <option value="">No series</option>
                   {seriesList.map((s) => (
                     <option key={s.id} value={s.id}>
                       {s.name}
@@ -416,13 +416,13 @@ export default function BearbrickDetailPage() {
                 </select>
               </div>
               <div>
-                <label className="block font-semibold mb-1">카테고리</label>
+                <label className="block font-semibold mb-1">Category</label>
                 <select
                   value={requestData.categoryId}
                   onChange={(e) => setRequestData({ ...requestData, categoryId: e.target.value })}
                   className="w-full px-4 py-2 border rounded"
                 >
-                  <option value="">카테고리 없음</option>
+                  <option value="">No category</option>
                   {categoryList.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
@@ -442,7 +442,7 @@ export default function BearbrickDetailPage() {
                 </label>
               </div>
               <div>
-                <label className="block font-semibold mb-1">출시일</label>
+                <label className="block font-semibold mb-1">Release Date</label>
                 <input
                   type="date"
                   value={requestData.releaseDate}
@@ -451,7 +451,7 @@ export default function BearbrickDetailPage() {
                 />
               </div>
               <div>
-                <label className="block font-semibold mb-1">설명</label>
+                <label className="block font-semibold mb-1">Description</label>
                 <textarea
                   value={requestData.description}
                   onChange={(e) => setRequestData({ ...requestData, description: e.target.value })}
@@ -460,22 +460,22 @@ export default function BearbrickDetailPage() {
                 />
               </div>
               <div>
-                <label className="block font-semibold mb-1">새 이미지 (선택)</label>
+                <label className="block font-semibold mb-1">New Image (optional)</label>
                 <label className="block w-full px-4 py-4 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 text-center">
                   <input type="file" accept="image/*" onChange={handleRequestImageSelect} className="hidden" />
                   {requestImagePreview ? (
                     <img src={requestImagePreview} alt="" className="w-20 h-20 object-cover rounded mx-auto" />
                   ) : (
-                    <p className="text-sm text-gray-500">클릭하여 이미지 첨부</p>
+                    <p className="text-sm text-gray-500">Click to attach an image</p>
                   )}
                 </label>
               </div>
               <div>
-                <label className="block font-semibold mb-1">수정 사유</label>
+                <label className="block font-semibold mb-1">Reason for the change</label>
                 <textarea
                   value={requestReason}
                   onChange={(e) => setRequestReason(e.target.value)}
-                  placeholder="무엇이 왜 잘못됐는지 알려주세요"
+                  placeholder="Let us know what's wrong and why"
                   className="w-full px-4 py-2 border rounded"
                   rows={2}
                 />
@@ -486,7 +486,7 @@ export default function BearbrickDetailPage() {
                   disabled={submittingRequest}
                   className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
                 >
-                  {submittingRequest ? '제출 중...' : '요청 보내기'}
+                  {submittingRequest ? 'Submitting...' : 'Send Request'}
                 </button>
                 <button
                   type="button"
@@ -494,7 +494,7 @@ export default function BearbrickDetailPage() {
                   disabled={submittingRequest}
                   className="flex-1 px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
                 >
-                  취소
+                  Cancel
                 </button>
               </div>
             </form>

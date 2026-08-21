@@ -143,7 +143,7 @@ function AdminManagePageInner() {
     e.preventDefault()
 
     if (formData.seriesId === '__new__') {
-      alert('새 시리즈를 먼저 생성해주세요')
+      alert('Please create the new series first')
       return
     }
 
@@ -160,7 +160,7 @@ function AdminManagePageInner() {
       })
 
       if (!res.ok) {
-        alert('추가 실패')
+        alert('Add failed')
         return
       }
 
@@ -190,14 +190,14 @@ function AdminManagePageInner() {
           })
         } catch (error) {
           console.error('Failed to upload image:', error)
-          alert('베어브릭은 추가되었지만 이미지 업로드에 실패했습니다')
+          alert('The bearbrick was added, but the image upload failed')
         } finally {
           setUploading(false)
           setUploadProgress(0)
         }
       }
 
-      alert('추가되었습니다')
+      alert('Added')
       setShowAddForm(false)
       router.replace('/admin/manage')
       setFormData({ name: '', seriesId: '', categoryId: '', releaseDate: '', description: '', isSecret: false })
@@ -206,7 +206,7 @@ function AdminManagePageInner() {
       fetchBearbricks(selectedSeries)
     } catch (error) {
       console.error('Failed to add:', error)
-      alert('추가 실패')
+      alert('Add failed')
     }
   }
 
@@ -257,12 +257,12 @@ function AdminManagePageInner() {
         await fetchSeriesList()
         setFormData((prev) => ({ ...prev, seriesId: newSeries.id }))
       } else {
-        alert('시리즈 추가 실패')
+        alert('Failed to add series')
         setFormData((prev) => ({ ...prev, seriesId: '' }))
       }
     } catch (error) {
       console.error('Failed to add series:', error)
-      alert('시리즈 추가 실패')
+      alert('Failed to add series')
       setFormData((prev) => ({ ...prev, seriesId: '' }))
     } finally {
       setCreatingSeries(false)
@@ -274,7 +274,7 @@ function AdminManagePageInner() {
     try {
       const res = await fetch('/api/admin/bearbricks/export')
       if (!res.ok) {
-        alert('내보내기 실패')
+        alert('Export failed')
         return
       }
       const blob = await res.blob()
@@ -286,7 +286,7 @@ function AdminManagePageInner() {
       URL.revokeObjectURL(url)
     } catch (error) {
       console.error('Failed to export:', error)
-      alert('내보내기 실패')
+      alert('Export failed')
     } finally {
       setExporting(false)
     }
@@ -311,14 +311,14 @@ function AdminManagePageInner() {
       })
       const data = await res.json()
       if (!res.ok) {
-        alert(data.error || '파일을 읽을 수 없습니다')
+        alert(data.error || 'Could not read the file')
         setImportFile(null)
         return
       }
       setImportPreview(data)
     } catch (error) {
       console.error('Failed to preview import:', error)
-      alert('파일을 읽을 수 없습니다')
+      alert('Could not read the file')
       setImportFile(null)
     } finally {
       setImporting(false)
@@ -355,7 +355,7 @@ function AdminManagePageInner() {
         })
         const data = await res.json()
         if (!res.ok) {
-          alert(data.error || '적용 실패')
+          alert(data.error || 'Apply failed')
           return
         }
 
@@ -383,7 +383,7 @@ function AdminManagePageInner() {
       fetchBearbricks(selectedSeries)
     } catch (error) {
       console.error('Failed to apply import:', error)
-      alert('적용 실패')
+      alert('Apply failed')
     } finally {
       setImporting(false)
       setImportProgress(null)
@@ -410,15 +410,15 @@ function AdminManagePageInner() {
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">베어브릭 관리</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Manage Bearbricks</h1>
           <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-500">시리즈</label>
+            <label className="text-sm text-gray-500">Series</label>
             <select
               value={selectedSeries}
               onChange={(e) => setSelectedSeries(e.target.value)}
               className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm"
             >
-              <option value="all">전체</option>
+              <option value="all">All</option>
               {seriesList.map((s) => (
                 <option key={s.id} value={s.name}>{s.name}</option>
               ))}
@@ -428,45 +428,45 @@ function AdminManagePageInner() {
 
         {showImportPanel && !importPreview && !importResult && (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8">
-            <h2 className="text-lg font-bold mb-4">엑셀 가져오기</h2>
+            <h2 className="text-lg font-bold mb-4">Import from Excel</h2>
             <label className="block w-full px-4 py-10 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-gray-400 text-center transition-colors">
               <input type="file" accept=".xlsx,.xls" onChange={handleImportFileSelect} className="hidden" />
-              <p className="text-gray-600">{importing ? '읽는 중...' : '클릭해서 엑셀 파일 선택'}</p>
+              <p className="text-gray-600">{importing ? 'Reading...' : 'Click to choose an Excel file'}</p>
             </label>
             <button
               onClick={() => { setShowImportPanel(false); router.replace('/admin/manage') }}
               className="mt-4 px-4 py-2 text-sm text-gray-500 hover:text-gray-900"
             >
-              취소
+              Cancel
             </button>
           </div>
         )}
 
         {importPreview && (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8">
-            <h2 className="text-lg font-bold mb-4">엑셀 가져오기 미리보기</h2>
+            <h2 className="text-lg font-bold mb-4">Import Preview</h2>
             <p className="mb-2">
-              <span className="font-semibold text-blue-600">{importPreview.updateCount}개</span> 수정,{' '}
-              <span className="font-semibold text-green-600">{importPreview.createCount}개</span> 추가
+              <span className="font-semibold text-blue-600">{importPreview.updateCount}</span> to update,{' '}
+              <span className="font-semibold text-green-600">{importPreview.createCount}</span> to add
               {importPreview.errors.length > 0 && (
-                <>, <span className="font-semibold text-red-600">{importPreview.errors.length}개</span> 오류</>
+                <>, <span className="font-semibold text-red-600">{importPreview.errors.length}</span> errors</>
               )}
             </p>
             {importPreview.unchangedCount > 0 && (
               <p className="mb-2 text-sm text-gray-500">
-                변경사항 없어 건너뜀: {importPreview.unchangedCount}개
+                Skipped (no changes): {importPreview.unchangedCount}
               </p>
             )}
             {importPreview.newSeriesNames.length > 0 && (
               <p className="mb-2 text-sm text-gray-700">
-                새로 만들어질 시리즈: {importPreview.newSeriesNames.join(', ')}
+                New series to be created: {importPreview.newSeriesNames.join(', ')}
               </p>
             )}
             {importPreview.errors.length > 0 && (
               <div className="mb-4 max-h-48 overflow-y-auto bg-red-50 border border-red-100 rounded-lg p-3 text-sm">
                 {importPreview.errors.map((err, i) => (
                   <p key={i} className="text-red-700">
-                    행 {err.rowNum}: {err.reason}
+                    Row {err.rowNum}: {err.reason}
                   </p>
                 ))}
               </div>
@@ -475,9 +475,9 @@ function AdminManagePageInner() {
             {importing && importProgress && (
               <div className="mb-4">
                 <p className="text-sm text-blue-600 mb-1">
-                  적용 중... {importProgress.processed} / {importProgress.total}
+                  Applying... {importProgress.processed} / {importProgress.total}
                   {importProgress.etaSeconds !== null && importProgress.etaSeconds > 0 && (
-                    <> (약 {importProgress.etaSeconds}초 남음)</>
+                    <> (about {importProgress.etaSeconds}s left)</>
                   )}
                 </p>
                 <div className="w-full bg-gray-100 rounded-full h-2">
@@ -497,14 +497,14 @@ function AdminManagePageInner() {
                 disabled={importing || (importPreview.updateCount === 0 && importPreview.createCount === 0)}
                 className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-full hover:bg-gray-700 disabled:opacity-50"
               >
-                {importing ? '적용 중...' : '적용하기'}
+                {importing ? 'Applying...' : 'Apply'}
               </button>
               <button
                 onClick={handleImportCancel}
                 disabled={importing}
                 className="flex-1 px-4 py-2 bg-gray-100 rounded-full hover:bg-gray-200"
               >
-                취소
+                Cancel
               </button>
             </div>
           </div>
@@ -512,26 +512,26 @@ function AdminManagePageInner() {
 
         {importResult && (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8">
-            <h2 className="text-lg font-bold mb-2">가져오기 완료</h2>
+            <h2 className="text-lg font-bold mb-2">Import Complete</h2>
             <p>
-              {importResult.updated}개 수정, {importResult.created}개 추가
-              {importResult.skipped > 0 && `, ${importResult.skipped}개 건너뜀`}
+              {importResult.updated} updated, {importResult.created} added
+              {importResult.skipped > 0 && `, ${importResult.skipped} skipped`}
             </p>
             <button
               onClick={() => setImportResult(null)}
               className="mt-4 px-4 py-2 bg-gray-100 rounded-full hover:bg-gray-200"
             >
-              닫기
+              Close
             </button>
           </div>
         )}
 
         {showAddForm && (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8">
-            <h2 className="text-lg font-bold mb-4">새 베어브릭 추가</h2>
+            <h2 className="text-lg font-bold mb-4">Add a New Bearbrick</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block font-semibold mb-1">이름 *</label>
+                <label className="block font-semibold mb-1">Name *</label>
                 <input
                   type="text"
                   value={formData.name}
@@ -541,7 +541,7 @@ function AdminManagePageInner() {
                 />
               </div>
               <div>
-                <label className="block font-semibold mb-1">시리즈 *</label>
+                <label className="block font-semibold mb-1">Series *</label>
                 <select
                   value={formData.seriesId}
                   onChange={(e) => handleSeriesSelect(e.target.value)}
@@ -549,9 +549,9 @@ function AdminManagePageInner() {
                   disabled={creatingSeries}
                   required
                 >
-                  <option value="">시리즈 선택</option>
+                  <option value="">Select a series</option>
                   <option value="__new__">
-                    {creatingSeries ? '생성 중...' : `+ 새 시리즈 (Series ${nextSeriesNumber})`}
+                    {creatingSeries ? 'Creating...' : `+ New series (Series ${nextSeriesNumber})`}
                   </option>
                   {seriesList.map((series) => (
                     <option key={series.id} value={series.id}>
@@ -561,13 +561,13 @@ function AdminManagePageInner() {
                 </select>
               </div>
               <div>
-                <label className="block font-semibold mb-1">카테고리</label>
+                <label className="block font-semibold mb-1">Category</label>
                 <select
                   value={formData.categoryId}
                   onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg"
                 >
-                  <option value="">카테고리 없음</option>
+                  <option value="">No category</option>
                   {categoryList.map((category) => (
                     <option key={category.id} value={category.id}>
                       {category.name}
@@ -587,7 +587,7 @@ function AdminManagePageInner() {
                 </label>
               </div>
               <div>
-                <label className="block font-semibold mb-1">출시일</label>
+                <label className="block font-semibold mb-1">Release Date</label>
                 <input
                   type="date"
                   value={formData.releaseDate}
@@ -596,7 +596,7 @@ function AdminManagePageInner() {
                 />
               </div>
               <div>
-                <label className="block font-semibold mb-1">설명</label>
+                <label className="block font-semibold mb-1">Description</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -605,7 +605,7 @@ function AdminManagePageInner() {
                 />
               </div>
               <div>
-                <label className="block font-semibold mb-1">이미지</label>
+                <label className="block font-semibold mb-1">Image</label>
                 <label className="block w-full px-4 py-6 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-gray-400 text-center transition-colors">
                   <input
                     type="file"
@@ -621,14 +621,14 @@ function AdminManagePageInner() {
                     />
                   ) : (
                     <div>
-                      <p className="text-gray-600">클릭하여 이미지 선택</p>
-                      <p className="text-sm text-gray-400 mt-1">비워두면 기본 이미지가 표시됩니다</p>
+                      <p className="text-gray-600">Click to choose an image</p>
+                      <p className="text-sm text-gray-400 mt-1">A placeholder image is used if left empty</p>
                     </div>
                   )}
                 </label>
                 {uploading && (
                   <div className="mt-2">
-                    <p className="text-sm text-blue-600 mb-1">이미지 업로드 중... {uploadProgress}%</p>
+                    <p className="text-sm text-blue-600 mb-1">Uploading image... {uploadProgress}%</p>
                     <div className="w-full bg-gray-100 rounded-full h-2">
                       <div
                         className="bg-blue-600 h-2 rounded-full transition-all"
@@ -644,14 +644,14 @@ function AdminManagePageInner() {
                   disabled={uploading}
                   className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-full hover:bg-gray-700 disabled:opacity-50"
                 >
-                  {uploading ? '업로드 중...' : '추가하기'}
+                  {uploading ? 'Uploading...' : 'Add'}
                 </button>
                 <button
                   type="button"
                   onClick={() => { setShowAddForm(false); router.replace('/admin/manage') }}
                   className="flex-1 px-4 py-2 bg-gray-100 rounded-full hover:bg-gray-200"
                 >
-                  취소
+                  Cancel
                 </button>
               </div>
             </form>
@@ -663,10 +663,10 @@ function AdminManagePageInner() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">이미지</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">이름</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">시리즈</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">작업</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Image</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Series</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -700,7 +700,7 @@ function AdminManagePageInner() {
                         href={`/admin/bearbricks/${bearbrick.id}/edit`}
                         className="text-blue-600 hover:underline"
                       >
-                        수정
+                        Edit
                       </Link>
                     </td>
                   </tr>

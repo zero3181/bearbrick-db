@@ -13,52 +13,52 @@ export async function PATCH(
     const session = await getServerSession(authOptions)
 
     if (!session?.user) {
-      return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
+      return NextResponse.json({ error: 'Sign-in required.' }, { status: 401 })
     }
 
-    // 관리자 권한 확인
+    // Confirm admin role
     if (session.user.role !== 'ADMIN' && session.user.role !== 'OWNER') {
-      return NextResponse.json({ error: '관리자 권한이 필요합니다.' }, { status: 403 })
+      return NextResponse.json({ error: 'Admin role required.' }, { status: 403 })
     }
 
     const { action, bearbrickId, reason } = await request.json()
     const submissionId = params.id
 
     if (!action || !['APPROVE', 'REJECT'].includes(action)) {
-      return NextResponse.json({ error: '올바른 액션을 지정해주세요.' }, { status: 400 })
+      return NextResponse.json({ error: 'Please specify a valid action.' }, { status: 400 })
     }
 
-    // 제출된 이미지 찾기
+    // Find the submitted image
     const submission = await prisma.userSubmittedImage.findUnique({
       where: { id: submissionId },
       include: { submittedBy: true }
     })
 
     if (!submission) {
-      return NextResponse.json({ error: '제출된 이미지를 찾을 수 없습니다.' }, { status: 404 })
+      return NextResponse.json({ error: 'Submitted image not found.' }, { status: 404 })
     }
 
     if (submission.status !== 'PENDING') {
-      return NextResponse.json({ error: '이미 처리된 제출입니다.' }, { status: 400 })
+      return NextResponse.json({ error: 'This submission has already been processed.' }, { status: 400 })
     }
 
     if (action === 'APPROVE') {
       if (!bearbrickId) {
-        return NextResponse.json({ error: '베어브릭 ID가 필요합니다.' }, { status: 400 })
+        return NextResponse.json({ error: 'A bearbrick ID is required.' }, { status: 400 })
       }
 
-      // 베어브릭 존재 확인
+      // Confirm the bearbrick exists
       const bearbrick = await prisma.bearbrick.findUnique({
         where: { id: bearbrickId }
       })
 
       if (!bearbrick) {
-        return NextResponse.json({ error: '베어브릭을 찾을 수 없습니다.' }, { status: 404 })
+        return NextResponse.json({ error: 'Bearbrick not found.' }, { status: 404 })
       }
 
-      // 트랜잭션으로 승인 처리
+      // Approve within a transaction
       await prisma.$transaction(async (tx) => {
-        // 1. UserSubmittedImage 상태 업데이트
+        // 1. Update the UserSubmittedImage status
         await tx.userSubmittedImage.update({
           where: { id: submissionId },
           data: {
@@ -68,7 +68,7 @@ export async function PATCH(
           }
         })
 
-        // 2. BearbrickImage로 이미지 추가
+        // 2. Add the image as a BearbrickImage
         await tx.bearbrickImage.create({
           data: {
             url: submission.imageUrl,
@@ -82,31 +82,31 @@ export async function PATCH(
 
       return NextResponse.json({
         success: true,
-        message: '이미지가 승인되고 베어브릭에 추가되었습니다.'
+        message: 'Image approved and added to the bearbrick.'
       })
 
     } else if (action === 'REJECT') {
-      // 거부 처리
+      // Reject
       await prisma.userSubmittedImage.update({
         where: { id: submissionId },
         data: {
           status: 'REJECTED',
           reviewedAt: new Date(),
           reviewedById: session.user.id,
-          description: reason ? `${submission.description || ''}\n\n거부 사유: ${reason}` : submission.description
+          description: reason ? `${submission.description || ''}\n\nRejection reason: ${reason}` : submission.description
         }
       })
 
       return NextResponse.json({
         success: true,
-        message: '이미지가 거부되었습니다.'
+        message: 'Image rejected.'
       })
     }
 
   } catch (error) {
     console.error('Submission review error:', error)
     return NextResponse.json(
-      { error: '제출 검토 중 오류가 발생했습니다.' },
+      { error: 'An error occurred while reviewing the submission.' },
       { status: 500 }
     )
   } finally {

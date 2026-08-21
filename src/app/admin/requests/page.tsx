@@ -78,12 +78,12 @@ export default function AdminRequestsPage() {
   }
 
   const seriesName = (id: string | null | undefined) => {
-    if (!id) return '(없음)'
+    if (!id) return '(none)'
     return seriesList.find((s) => s.id === id)?.name || id
   }
 
   const categoryName = (id: string | null | undefined) => {
-    if (!id) return '(없음)'
+    if (!id) return '(none)'
     return categoryList.find((c) => c.id === id)?.name || id
   }
 
@@ -98,11 +98,11 @@ export default function AdminRequestsPage() {
       if (res.ok) {
         setRequests((prev) => prev.filter((r) => r.id !== id))
       } else {
-        alert('처리 실패')
+        alert('Failed to process')
       }
     } catch (error) {
       console.error('Failed to review request:', error)
-      alert('처리 실패')
+      alert('Failed to process')
     } finally {
       setProcessingId(null)
     }
@@ -115,12 +115,12 @@ export default function AdminRequestsPage() {
         <span className="w-16 shrink-0 text-gray-500">{label}</span>
         {changed ? (
           <span>
-            <span className="text-gray-400 line-through">{oldVal || '(없음)'}</span>
+            <span className="text-gray-400 line-through">{oldVal || '(none)'}</span>
             {' → '}
-            <span className="text-blue-600 font-medium">{newVal || '(없음)'}</span>
+            <span className="text-blue-600 font-medium">{newVal || '(none)'}</span>
           </span>
         ) : (
-          <span className="text-gray-700">{oldVal || '(없음)'}</span>
+          <span className="text-gray-700">{oldVal || '(none)'}</span>
         )}
       </div>
     )
@@ -139,18 +139,18 @@ export default function AdminRequestsPage() {
       <header className="border-b border-gray-100">
         <div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/admin/manage" className="text-sm text-gray-500 hover:text-gray-900">
-            ← 관리 페이지로
+            ← Back to admin
           </Link>
           <TopMenu />
         </div>
       </header>
       <div className="max-w-5xl mx-auto px-4 pt-6">
-        <h1 className="text-2xl font-bold text-gray-900">수정 요청 승인</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Approve Edit Requests</h1>
       </div>
 
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
         {requests.length === 0 ? (
-          <p className="text-center text-gray-500 py-12">대기 중인 수정 요청이 없습니다</p>
+          <p className="text-center text-gray-500 py-12">No pending edit requests</p>
         ) : (
           requests.map((req) => (
             <div key={req.id} className="bg-white rounded-lg shadow p-6">
@@ -160,39 +160,39 @@ export default function AdminRequestsPage() {
                     {req.bearbricks.name}
                   </Link>
                   <p className="text-sm text-gray-500 mt-1">
-                    요청자: {req.users.name || req.users.email} · {new Date(req.createdAt).toLocaleString('ko-KR')}
+                    Requested by: {req.users.name || req.users.email} · {new Date(req.createdAt).toLocaleString('en-US')}
                   </p>
                 </div>
               </div>
 
               {req.description && (
-                <p className="text-sm bg-gray-50 border rounded p-3 mb-4">사유: {req.description}</p>
+                <p className="text-sm bg-gray-50 border rounded p-3 mb-4">Reason: {req.description}</p>
               )}
 
               <div className="space-y-1 mb-4">
-                <Field label="이름" oldVal={req.oldData.name || ''} newVal={req.newData.name || ''} />
+                <Field label="Name" oldVal={req.oldData.name || ''} newVal={req.newData.name || ''} />
                 <Field
-                  label="시리즈"
+                  label="Series"
                   oldVal={seriesName(req.oldData.seriesId)}
                   newVal={seriesName(req.newData.seriesId)}
                 />
                 <Field
-                  label="카테고리"
+                  label="Category"
                   oldVal={categoryName(req.oldData.categoryId)}
                   newVal={categoryName(req.newData.categoryId)}
                 />
-                <Field label="출시일" oldVal={req.oldData.releaseDate || ''} newVal={req.newData.releaseDate || ''} />
-                <Field label="설명" oldVal={req.oldData.description || ''} newVal={req.newData.description || ''} />
+                <Field label="Released" oldVal={req.oldData.releaseDate || ''} newVal={req.newData.releaseDate || ''} />
+                <Field label="Description" oldVal={req.oldData.description || ''} newVal={req.newData.description || ''} />
                 <Field
                   label="Secret"
-                  oldVal={req.oldData.isSecret ? '예' : '아니오'}
-                  newVal={req.newData.isSecret ? '예' : '아니오'}
+                  oldVal={req.oldData.isSecret ? 'Yes' : 'No'}
+                  newVal={req.newData.isSecret ? 'Yes' : 'No'}
                 />
               </div>
 
               {req.newData.imageUrl && (
                 <div className="mb-4">
-                  <p className="text-sm text-gray-500 mb-1">첨부된 이미지</p>
+                  <p className="text-sm text-gray-500 mb-1">Attached image</p>
                   <img src={req.newData.imageUrl} alt="" className="w-32 h-32 object-cover rounded border" />
                 </div>
               )}
@@ -203,14 +203,14 @@ export default function AdminRequestsPage() {
                   disabled={processingId === req.id}
                   className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
                 >
-                  승인
+                  Approve
                 </button>
                 <button
                   onClick={() => handleReview(req.id, 'reject')}
                   disabled={processingId === req.id}
                   className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
                 >
-                  거절
+                  Reject
                 </button>
               </div>
             </div>
