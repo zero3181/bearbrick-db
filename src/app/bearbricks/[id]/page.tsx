@@ -461,14 +461,15 @@ export default function BearbrickDetailPage() {
               </div>
               <div>
                 <label className="block font-semibold mb-1">New Image (optional)</label>
-                <label className="block w-full px-4 py-4 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 text-center">
-                  <input type="file" accept="image/*" onChange={handleRequestImageSelect} className="hidden" />
-                  {requestImagePreview ? (
-                    <img src={requestImagePreview} alt="" className="w-20 h-20 object-cover rounded mx-auto" />
-                  ) : (
-                    <p className="text-sm text-gray-500">Click to attach an image</p>
+                <div className="flex items-center gap-3">
+                  <label className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 text-sm font-medium text-gray-700 transition-colors">
+                    <input type="file" accept="image/*" onChange={handleRequestImageSelect} className="hidden" />
+                    {requestImagePreview ? 'Change Image' : 'Attach Image'}
+                  </label>
+                  {requestImagePreview && (
+                    <img src={requestImagePreview} alt="" className="w-12 h-12 object-cover rounded" />
                   )}
-                </label>
+                </div>
               </div>
               <div>
                 <label className="block font-semibold mb-1">Reason for the change</label>

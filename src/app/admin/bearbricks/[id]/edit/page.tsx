@@ -339,31 +339,27 @@ export default function EditBearbrickPage() {
 
           {/* Upload */}
           <div className="mb-6">
-            <label className="block w-full px-4 py-8 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 text-center">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                disabled={uploading}
-                className="hidden"
-              />
-              {uploading ? (
-                <div>
-                  <p className="text-blue-600 mb-2">Uploading... {uploadProgress}%</p>
-                  <div className="w-full bg-gray-200 rounded-full h-2 max-w-xs mx-auto">
-                    <div
-                      className="bg-blue-600 h-2 rounded-full transition-all"
-                      style={{ width: `${uploadProgress}%` }}
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <p className="text-gray-600">Click to upload an image</p>
-                  <p className="text-sm text-gray-400 mt-1">JPG, PNG, GIF (max 5MB)</p>
-                </div>
-              )}
-            </label>
+            <div className="flex items-center gap-3">
+              <label className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:text-blue-600 text-sm font-medium text-gray-700 transition-colors">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  disabled={uploading}
+                  className="hidden"
+                />
+                {uploading ? `Uploading... ${uploadProgress}%` : 'Upload Image'}
+              </label>
+              <span className="text-xs text-gray-400">JPG, PNG, GIF (max 5MB)</span>
+            </div>
+            {uploading && (
+              <div className="w-full max-w-xs bg-gray-200 rounded-full h-2 mt-2">
+                <div
+                  className="bg-blue-600 h-2 rounded-full transition-all"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            )}
           </div>
 
           {/* Image List */}

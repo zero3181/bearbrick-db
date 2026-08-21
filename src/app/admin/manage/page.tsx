@@ -610,30 +610,29 @@ function AdminManagePageInner() {
               </div>
               <div>
                 <label className="block font-semibold mb-1">Image</label>
-                <label className="block w-full px-4 py-6 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-gray-400 text-center transition-colors">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageSelect}
-                    className="hidden"
-                  />
-                  {imagePreview ? (
+                <div className="flex items-center gap-3">
+                  <label className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 text-sm font-medium text-gray-700 transition-colors">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageSelect}
+                      className="hidden"
+                    />
+                    {imagePreview ? 'Change Image' : 'Choose Image'}
+                  </label>
+                  {imagePreview && (
                     <img
                       src={imagePreview}
                       alt=""
-                      className="w-24 h-24 object-cover rounded-lg mx-auto"
+                      className="w-12 h-12 object-cover rounded-lg"
                     />
-                  ) : (
-                    <div>
-                      <p className="text-gray-600">Click to choose an image</p>
-                      <p className="text-sm text-gray-400 mt-1">A placeholder image is used if left empty</p>
-                    </div>
                   )}
-                </label>
+                  <span className="text-xs text-gray-400">Optional — a placeholder is used if left empty</span>
+                </div>
                 {uploading && (
                   <div className="mt-2">
                     <p className="text-sm text-blue-600 mb-1">Uploading image... {uploadProgress}%</p>
-                    <div className="w-full bg-gray-100 rounded-full h-2">
+                    <div className="w-full max-w-xs bg-gray-100 rounded-full h-2">
                       <div
                         className="bg-blue-600 h-2 rounded-full transition-all"
                         style={{ width: `${uploadProgress}%` }}
