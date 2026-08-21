@@ -369,7 +369,7 @@ export default function EditBearbrickPage() {
                 <img
                   src={image.url}
                   alt=""
-                  className="w-full aspect-square object-cover rounded"
+                  className="w-full aspect-square object-contain rounded bg-gray-50 dark:bg-gray-800"
                 />
                 {image.isPrimary && (
                   <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">

@@ -253,7 +253,7 @@ export default function BearbrickDetailPage() {
                 <img
                   src={selectedImage || '/bearbrick-placeholder.svg'}
                   alt={bearbrick.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                 />
               </div>
               {bearbrick.images.length > 1 && (
@@ -269,7 +269,7 @@ export default function BearbrickDetailPage() {
                       <img
                         src={image.url}
                         alt=""
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                       />
                     </button>
                   ))}
@@ -471,7 +471,7 @@ export default function BearbrickDetailPage() {
                     {requestImagePreview ? 'Change Image' : 'Attach Image'}
                   </label>
                   {requestImagePreview && (
-                    <img src={requestImagePreview} alt="" className="w-12 h-12 object-cover rounded" />
+                    <img src={requestImagePreview} alt="" className="w-12 h-12 object-contain rounded bg-gray-50 dark:bg-gray-800" />
                   )}
                 </div>
               </div>
