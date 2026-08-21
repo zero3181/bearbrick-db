@@ -34,7 +34,7 @@ interface Series {
   }
 }
 
-const SERIES_STORAGE_KEY = 'gombrick:home:selectedSeries'
+const SERIES_STORAGE_KEY = 'gombrick:selectedSeries'
 
 export default function HomePage() {
   const { data: session } = useSession()

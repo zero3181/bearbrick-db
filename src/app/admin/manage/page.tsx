@@ -44,7 +44,7 @@ export default function AdminManagePage() {
   )
 }
 
-const SERIES_STORAGE_KEY = 'gombrick:admin:selectedSeries'
+const SERIES_STORAGE_KEY = 'gombrick:selectedSeries'
 
 function AdminManagePageInner() {
   const router = useRouter()
