@@ -208,7 +208,11 @@ export default function HomePage() {
               >
                 <div className="relative aspect-square bg-gray-50 rounded-2xl overflow-hidden">
                   {bearbrick.isSecret && (
-                    <span className="absolute top-2 left-2 px-2 py-1 text-[10px] md:text-xs font-semibold bg-blue-600 text-white rounded-full z-10">
+                    <span
+                      className={`absolute top-2 left-2 px-2 py-1 text-[10px] md:text-xs font-semibold rounded-full z-10 ${
+                        bearbrick.category?.name === 'Secret' ? 'bg-yellow-400 text-gray-900' : 'bg-blue-600 text-white'
+                      }`}
+                    >
                       Secret
                     </span>
                   )}
