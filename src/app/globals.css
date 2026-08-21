@@ -5,11 +5,9 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  /* This app has a single light-only design (no dark theme exists for
-     it), so pin native form controls/scrollbars to light regardless of
-     OS/browser preference — otherwise inputs render light-on-light and
-     the body flashes black on mobile overscroll under a dark OS theme. */
-  color-scheme: light;
+  /* The app follows the OS/browser color scheme; native form controls
+     and scrollbars should switch along with it. */
+  color-scheme: light dark;
 }
 
 @theme inline {
@@ -19,8 +17,6 @@
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
   font-family: 'Pretendard', sans-serif;
 }
 

@@ -112,15 +112,15 @@ export default function AdminRequestsPage() {
     const changed = oldVal !== newVal
     return (
       <div className="flex gap-2 text-sm">
-        <span className="w-16 shrink-0 text-gray-500">{label}</span>
+        <span className="w-16 shrink-0 text-gray-500 dark:text-gray-400">{label}</span>
         {changed ? (
           <span>
-            <span className="text-gray-400 line-through">{oldVal || '(none)'}</span>
+            <span className="text-gray-400 line-through dark:text-gray-500">{oldVal || '(none)'}</span>
             {' → '}
-            <span className="text-blue-600 font-medium">{newVal || '(none)'}</span>
+            <span className="text-blue-600 font-medium dark:text-blue-400">{newVal || '(none)'}</span>
           </span>
         ) : (
-          <span className="text-gray-700">{oldVal || '(none)'}</span>
+          <span className="text-gray-700 dark:text-gray-300">{oldVal || '(none)'}</span>
         )}
       </div>
     )
@@ -128,45 +128,45 @@ export default function AdminRequestsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center dark:bg-gray-950">
         <LoadingSpinner />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <header className="border-b border-gray-100">
+    <div className="min-h-screen bg-white dark:bg-gray-950">
+      <header className="border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/admin/manage" className="text-sm text-gray-500 hover:text-gray-900">
+          <Link href="/admin/manage" className="text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
             ← Back to admin
           </Link>
           <TopMenu />
         </div>
       </header>
       <div className="max-w-5xl mx-auto px-4 pt-6">
-        <h1 className="text-2xl font-bold text-gray-900">Approve Edit Requests</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Approve Edit Requests</h1>
       </div>
 
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
         {requests.length === 0 ? (
-          <p className="text-center text-gray-500 py-12">No pending edit requests</p>
+          <p className="text-center text-gray-500 py-12 dark:text-gray-400">No pending edit requests</p>
         ) : (
           requests.map((req) => (
-            <div key={req.id} className="bg-white rounded-lg shadow p-6">
+            <div key={req.id} className="bg-white rounded-lg shadow p-6 dark:bg-gray-900">
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <Link href={`/bearbricks/${req.bearbricks.id}`} className="text-lg font-bold text-blue-600 hover:underline">
+                  <Link href={`/bearbricks/${req.bearbricks.id}`} className="text-lg font-bold text-blue-600 hover:underline dark:text-blue-400">
                     {req.bearbricks.name}
                   </Link>
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-sm text-gray-500 mt-1 dark:text-gray-400">
                     Requested by: {req.users.name || req.users.email} · {new Date(req.createdAt).toLocaleString('en-US')}
                   </p>
                 </div>
               </div>
 
               {req.description && (
-                <p className="text-sm bg-gray-50 border rounded p-3 mb-4">Reason: {req.description}</p>
+                <p className="text-sm bg-gray-50 border rounded p-3 mb-4 dark:bg-gray-800 dark:border-gray-700">Reason: {req.description}</p>
               )}
 
               <div className="space-y-1 mb-4">
@@ -192,7 +192,7 @@ export default function AdminRequestsPage() {
 
               {req.newData.imageUrl && (
                 <div className="mb-4">
-                  <p className="text-sm text-gray-500 mb-1">Attached image</p>
+                  <p className="text-sm text-gray-500 mb-1 dark:text-gray-400">Attached image</p>
                   <img src={req.newData.imageUrl} alt="" className="w-32 h-32 object-cover rounded border" />
                 </div>
               )}
