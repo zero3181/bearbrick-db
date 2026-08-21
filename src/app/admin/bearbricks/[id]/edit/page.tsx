@@ -260,7 +260,7 @@ export default function EditBearbrickPage() {
         {/* Basic Info Form */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">
           <h2 className="text-xl font-bold mb-4">Basic Info</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form id="edit-bearbrick-form" onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block font-semibold mb-1">Name *</label>
               <input
@@ -330,12 +330,6 @@ export default function EditBearbrickPage() {
                 rows={4}
               />
             </div>
-            <button
-              type="submit"
-              className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              Save
-            </button>
           </form>
         </div>
 
@@ -410,6 +404,14 @@ export default function EditBearbrickPage() {
             <p className="text-center text-gray-500 py-8">No images yet</p>
           )}
         </div>
+
+        <button
+          type="submit"
+          form="edit-bearbrick-form"
+          className="w-full mt-8 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Save
+        </button>
       </main>
     </div>
   )

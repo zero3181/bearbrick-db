@@ -34,6 +34,8 @@ interface Series {
   }
 }
 
+const SERIES_STORAGE_KEY = 'gombrick:home:selectedSeries'
+
 export default function HomePage() {
   const { data: session } = useSession()
   const isAdmin = session?.user?.role === 'ADMIN' || session?.user?.role === 'OWNER'
@@ -46,10 +48,12 @@ export default function HomePage() {
 
   useEffect(() => {
     const loadInitialData = async () => {
-      // Fetch series first, then default the view to the latest one
-      // instead of loading every bearbrick across all series
+      // Fetch series first, then restore whichever series the user was
+      // last looking at (if still valid), defaulting to the latest one
       const seriesData = await fetchSeries()
-      setSelectedSeries(seriesData && seriesData.length > 0 ? seriesData[0].name : 'all')
+      const saved = sessionStorage.getItem(SERIES_STORAGE_KEY)
+      const savedIsValid = saved === 'all' || (saved && seriesData.some((s: Series) => s.name === saved))
+      setSelectedSeries(savedIsValid ? saved! : seriesData && seriesData.length > 0 ? seriesData[0].name : 'all')
     }
 
     loadInitialData()
@@ -57,6 +61,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!selectedSeries) return
+    sessionStorage.setItem(SERIES_STORAGE_KEY, selectedSeries)
     if (selectedSeries === 'all') {
       fetchBearbricks()
     } else {

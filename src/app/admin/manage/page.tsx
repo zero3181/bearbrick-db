@@ -44,6 +44,8 @@ export default function AdminManagePage() {
   )
 }
 
+const SERIES_STORAGE_KEY = 'gombrick:admin:selectedSeries'
+
 function AdminManagePageInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -93,12 +95,14 @@ function AdminManagePageInner() {
   const loadInitial = async () => {
     fetchCategoryList()
     const series = await fetchSeriesList()
-    const latest = series.length > 0 ? series[0].name : 'all'
-    setSelectedSeries(latest)
+    const saved = sessionStorage.getItem(SERIES_STORAGE_KEY)
+    const savedIsValid = saved === 'all' || (saved && series.some((s: Series) => s.name === saved))
+    setSelectedSeries(savedIsValid ? saved! : series.length > 0 ? series[0].name : 'all')
   }
 
   useEffect(() => {
     if (!selectedSeries) return
+    sessionStorage.setItem(SERIES_STORAGE_KEY, selectedSeries)
     fetchBearbricks(selectedSeries)
   }, [selectedSeries])
 
