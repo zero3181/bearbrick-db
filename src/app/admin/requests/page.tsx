@@ -193,7 +193,7 @@ export default function AdminRequestsPage() {
               {req.newData.imageUrl && (
                 <div className="mb-4">
                   <p className="text-sm text-gray-500 mb-1 dark:text-gray-400">Attached image</p>
-                  <img src={req.newData.imageUrl} alt="" className="w-32 h-32 object-contain rounded border bg-gray-50 dark:bg-gray-800" />
+                  <img src={req.newData.imageUrl} alt="" className="w-32 h-32 object-cover object-top rounded border" />
                 </div>
               )}
 

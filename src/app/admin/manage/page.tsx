@@ -624,7 +624,7 @@ function AdminManagePageInner() {
                     <img
                       src={imagePreview}
                       alt=""
-                      className="w-12 h-12 object-contain rounded-lg bg-gray-50 dark:bg-gray-800"
+                      className="w-12 h-12 object-cover object-top rounded-lg"
                     />
                   )}
                   <span className="text-xs text-gray-400 dark:text-gray-500">Optional — a placeholder is used if left empty</span>
@@ -682,7 +682,7 @@ function AdminManagePageInner() {
                         <img
                           src={primaryImage?.url || bearbrick.images[0]?.url || '/bearbrick-placeholder.svg'}
                           alt={bearbrick.name}
-                          className="w-full h-full object-contain"
+                          className="w-full h-full object-cover object-top"
                         />
                       </div>
                     </td>
