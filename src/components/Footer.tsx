@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="border-t border-gray-100 mt-16">
+    <footer className="border-t border-gray-100 mt-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 py-6 text-center text-xs text-gray-400">
         <p>GomBrick &mdash; BEARBRICK DATABASE</p>
         <p className="mt-1">
