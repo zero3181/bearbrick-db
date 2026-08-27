@@ -402,11 +402,11 @@ function AdminManagePageInner() {
   const sortedBearbricks = sortBearbricks(bearbricks)
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950">
-      <header className="border-b border-gray-100 dark:border-gray-800">
+    <div className="min-h-screen bg-white">
+      <header className="border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/">
-            <img src="/logo-gombrick.png" alt="GomBrick" className="h-9 md:h-[42px] w-auto dark:invert" />
+            <img src="/logo-gombrick.png" alt="GomBrick" className="h-9 md:h-[42px] w-auto" />
           </Link>
           <TopMenu />
         </div>
@@ -414,13 +414,13 @@ function AdminManagePageInner() {
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Manage Bearbricks</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Manage Bearbricks</h1>
           <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-500 dark:text-gray-400">Series</label>
+            <label className="text-sm text-gray-500">Series</label>
             <select
               value={selectedSeries}
               onChange={(e) => setSelectedSeries(e.target.value)}
-              className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
+              className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm"
             >
               <option value="all">All</option>
               {seriesList.map((s) => (
@@ -431,15 +431,15 @@ function AdminManagePageInner() {
         </div>
 
         {showImportPanel && !importPreview && !importResult && (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8 dark:bg-gray-900 dark:border-gray-800">
-            <h2 className="text-lg font-bold mb-4 dark:text-gray-100">Import from Excel</h2>
-            <label className="block w-full px-4 py-10 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-gray-400 text-center transition-colors dark:border-gray-700 dark:hover:border-gray-500">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8">
+            <h2 className="text-lg font-bold mb-4">Import from Excel</h2>
+            <label className="block w-full px-4 py-10 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-gray-400 text-center transition-colors">
               <input type="file" accept=".xlsx,.xls" onChange={handleImportFileSelect} className="hidden" />
-              <p className="text-gray-600 dark:text-gray-300">{importing ? 'Reading...' : 'Click to choose an Excel file'}</p>
+              <p className="text-gray-600">{importing ? 'Reading...' : 'Click to choose an Excel file'}</p>
             </label>
             <button
               onClick={() => { setShowImportPanel(false); router.replace('/admin/manage') }}
-              className="mt-4 px-4 py-2 text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+              className="mt-4 px-4 py-2 text-sm text-gray-500 hover:text-gray-900"
             >
               Cancel
             </button>
@@ -447,29 +447,29 @@ function AdminManagePageInner() {
         )}
 
         {importPreview && (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8 dark:bg-gray-900 dark:border-gray-800">
-            <h2 className="text-lg font-bold mb-4 dark:text-gray-100">Import Preview</h2>
-            <p className="mb-2 dark:text-gray-100">
-              <span className="font-semibold text-blue-600 dark:text-blue-400">{importPreview.updateCount}</span> to update,{' '}
-              <span className="font-semibold text-green-600 dark:text-green-400">{importPreview.createCount}</span> to add
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8">
+            <h2 className="text-lg font-bold mb-4">Import Preview</h2>
+            <p className="mb-2">
+              <span className="font-semibold text-blue-600">{importPreview.updateCount}</span> to update,{' '}
+              <span className="font-semibold text-green-600">{importPreview.createCount}</span> to add
               {importPreview.errors.length > 0 && (
-                <>, <span className="font-semibold text-red-600 dark:text-red-400">{importPreview.errors.length}</span> errors</>
+                <>, <span className="font-semibold text-red-600">{importPreview.errors.length}</span> errors</>
               )}
             </p>
             {importPreview.unchangedCount > 0 && (
-              <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+              <p className="mb-2 text-sm text-gray-500">
                 Skipped (no changes): {importPreview.unchangedCount}
               </p>
             )}
             {importPreview.newSeriesNames.length > 0 && (
-              <p className="mb-2 text-sm text-gray-700 dark:text-gray-300">
+              <p className="mb-2 text-sm text-gray-700">
                 New series to be created: {importPreview.newSeriesNames.join(', ')}
               </p>
             )}
             {importPreview.errors.length > 0 && (
-              <div className="mb-4 max-h-48 overflow-y-auto bg-red-50 border border-red-100 rounded-lg p-3 text-sm dark:bg-red-950/30 dark:border-red-900">
+              <div className="mb-4 max-h-48 overflow-y-auto bg-red-50 border border-red-100 rounded-lg p-3 text-sm">
                 {importPreview.errors.map((err, i) => (
-                  <p key={i} className="text-red-700 dark:text-red-400">
+                  <p key={i} className="text-red-700">
                     Row {err.rowNum}: {err.reason}
                   </p>
                 ))}
@@ -478,13 +478,13 @@ function AdminManagePageInner() {
 
             {importing && importProgress && (
               <div className="mb-4">
-                <p className="text-sm text-blue-600 mb-1 dark:text-blue-400">
+                <p className="text-sm text-blue-600 mb-1">
                   Applying... {importProgress.processed} / {importProgress.total}
                   {importProgress.etaSeconds !== null && importProgress.etaSeconds > 0 && (
                     <> (about {importProgress.etaSeconds}s left)</>
                   )}
                 </p>
-                <div className="w-full bg-gray-100 rounded-full h-2 dark:bg-gray-800">
+                <div className="w-full bg-gray-100 rounded-full h-2">
                   <div
                     className="bg-blue-600 h-2 rounded-full transition-all"
                     style={{
@@ -499,14 +499,14 @@ function AdminManagePageInner() {
               <button
                 onClick={handleImportConfirm}
                 disabled={importing || (importPreview.updateCount === 0 && importPreview.createCount === 0)}
-                className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-full hover:bg-gray-700 disabled:opacity-50 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-300"
+                className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-full hover:bg-gray-700 disabled:opacity-50"
               >
                 {importing ? 'Applying...' : 'Apply'}
               </button>
               <button
                 onClick={handleImportCancel}
                 disabled={importing}
-                className="flex-1 px-4 py-2 bg-gray-100 rounded-full hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100"
+                className="flex-1 px-4 py-2 bg-gray-100 rounded-full hover:bg-gray-200"
               >
                 Cancel
               </button>
@@ -515,15 +515,15 @@ function AdminManagePageInner() {
         )}
 
         {importResult && (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8 dark:bg-gray-900 dark:border-gray-800">
-            <h2 className="text-lg font-bold mb-2 dark:text-gray-100">Import Complete</h2>
-            <p className="dark:text-gray-100">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8">
+            <h2 className="text-lg font-bold mb-2">Import Complete</h2>
+            <p className="">
               {importResult.updated} updated, {importResult.created} added
               {importResult.skipped > 0 && `, ${importResult.skipped} skipped`}
             </p>
             <button
               onClick={() => setImportResult(null)}
-              className="mt-4 px-4 py-2 bg-gray-100 rounded-full hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100"
+              className="mt-4 px-4 py-2 bg-gray-100 rounded-full hover:bg-gray-200"
             >
               Close
             </button>
@@ -531,16 +531,16 @@ function AdminManagePageInner() {
         )}
 
         {showAddForm && (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8 dark:bg-gray-900 dark:border-gray-800">
-            <h2 className="text-lg font-bold mb-4 dark:text-gray-100">Add a New Bearbrick</h2>
-            <form onSubmit={handleSubmit} className="space-y-4 dark:text-gray-100">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8">
+            <h2 className="text-lg font-bold mb-4">Add a New Bearbrick</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block font-semibold mb-1">Name *</label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg"
                   required
                 />
               </div>
@@ -549,7 +549,7 @@ function AdminManagePageInner() {
                 <select
                   value={formData.seriesId}
                   onChange={(e) => handleSeriesSelect(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg"
                   disabled={creatingSeries}
                   required
                 >
@@ -569,7 +569,7 @@ function AdminManagePageInner() {
                 <select
                   value={formData.categoryId}
                   onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg"
                 >
                   <option value="">No category</option>
                   {categoryList.map((category) => (
@@ -596,7 +596,7 @@ function AdminManagePageInner() {
                   type="date"
                   value={formData.releaseDate}
                   onChange={(e) => setFormData({ ...formData, releaseDate: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg"
                 />
               </div>
               <div>
@@ -604,14 +604,14 @@ function AdminManagePageInner() {
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg"
                   rows={4}
                 />
               </div>
               <div>
                 <label className="block font-semibold mb-1">Image</label>
                 <div className="flex items-center gap-3">
-                  <label className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 text-sm font-medium text-gray-700 transition-colors dark:border-gray-700 dark:text-gray-300">
+                  <label className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 text-sm font-medium text-gray-700 transition-colors">
                     <input
                       type="file"
                       accept="image/*"
@@ -627,12 +627,12 @@ function AdminManagePageInner() {
                       className="w-12 h-12 object-cover object-top rounded-lg"
                     />
                   )}
-                  <span className="text-xs text-gray-400 dark:text-gray-500">Optional — a placeholder is used if left empty</span>
+                  <span className="text-xs text-gray-400">Optional — a placeholder is used if left empty</span>
                 </div>
                 {uploading && (
                   <div className="mt-2">
-                    <p className="text-sm text-blue-600 mb-1 dark:text-blue-400">Uploading image... {uploadProgress}%</p>
-                    <div className="w-full max-w-xs bg-gray-100 rounded-full h-2 dark:bg-gray-800">
+                    <p className="text-sm text-blue-600 mb-1">Uploading image... {uploadProgress}%</p>
+                    <div className="w-full max-w-xs bg-gray-100 rounded-full h-2">
                       <div
                         className="bg-blue-600 h-2 rounded-full transition-all"
                         style={{ width: `${uploadProgress}%` }}
@@ -645,14 +645,14 @@ function AdminManagePageInner() {
                 <button
                   type="submit"
                   disabled={uploading}
-                  className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-full hover:bg-gray-700 disabled:opacity-50 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-300"
+                  className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-full hover:bg-gray-700 disabled:opacity-50"
                 >
                   {uploading ? 'Uploading...' : 'Add'}
                 </button>
                 <button
                   type="button"
                   onClick={() => { setShowAddForm(false); router.replace('/admin/manage') }}
-                  className="flex-1 px-4 py-2 bg-gray-100 rounded-full hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
+                  className="flex-1 px-4 py-2 bg-gray-100 rounded-full hover:bg-gray-200"
                 >
                   Cancel
                 </button>
@@ -662,23 +662,23 @@ function AdminManagePageInner() {
         )}
 
         {!showAddForm && !showImportPanel && (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden dark:bg-gray-900 dark:border-gray-800">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-800">
+            <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Image</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Series</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Image</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Series</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+            <tbody className="divide-y divide-gray-100">
               {sortedBearbricks.map((bearbrick) => {
                 const primaryImage = bearbrick.images.find(img => img.isPrimary)
                 return (
                   <tr key={bearbrick.id}>
                     <td className="px-6 py-4">
-                      <div className="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden dark:bg-gray-800">
+                      <div className="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden">
                         <img
                           src={primaryImage?.url || bearbrick.images[0]?.url || '/bearbrick-placeholder.svg'}
                           alt={bearbrick.name}
@@ -686,26 +686,26 @@ function AdminManagePageInner() {
                         />
                       </div>
                     </td>
-                    <td className="px-6 py-4 font-medium dark:text-gray-100">
+                    <td className="px-6 py-4 font-medium">
                       {bearbrick.isSecret && (
                         <span
                           className={`inline-block px-2 py-0.5 mr-2 text-xs font-semibold rounded-full ${
-                            bearbrick.category?.name === 'Secret' ? 'bg-yellow-50 text-yellow-700 dark:bg-yellow-950/40 dark:text-yellow-300' : 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300'
+                            bearbrick.category?.name === 'Secret' ? 'bg-yellow-50 text-yellow-700' : 'bg-blue-50 text-blue-700'
                           }`}
                         >
                           Secret
                         </span>
                       )}
                       {bearbrick.category && (
-                        <span className="text-gray-400 dark:text-gray-500">[{bearbrick.category.name}] </span>
+                        <span className="text-gray-400">[{bearbrick.category.name}] </span>
                       )}
                       {bearbrick.name}
                     </td>
-                    <td className="px-6 py-4 text-gray-500 dark:text-gray-400">{bearbrick.series?.name || '-'}</td>
+                    <td className="px-6 py-4 text-gray-500">{bearbrick.series?.name || '-'}</td>
                     <td className="px-6 py-4">
                       <Link
                         href={`/admin/bearbricks/${bearbrick.id}/edit`}
-                        className="text-blue-600 hover:underline dark:text-blue-400"
+                        className="text-blue-600 hover:underline"
                       >
                         Edit
                       </Link>

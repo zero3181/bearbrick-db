@@ -6,7 +6,7 @@ import Link from 'next/link'
 
 function MenuLink({ href, onClick, children }: { href: string; onClick: () => void; children: React.ReactNode }) {
   return (
-    <Link href={href} onClick={onClick} className="block px-4 py-2 text-base text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800">
+    <Link href={href} onClick={onClick} className="block px-4 py-2 text-base text-gray-700 hover:bg-gray-50">
       {children}
     </Link>
   )
@@ -81,7 +81,7 @@ export default function TopMenu() {
           })
         }}
         aria-label="Menu"
-        className="relative p-2.5 rounded-full hover:bg-gray-100 active:bg-gray-200 dark:hover:bg-gray-800 dark:active:bg-gray-700 transition-colors"
+        className="relative p-2.5 rounded-full hover:bg-gray-100 active:bg-gray-200 transition-colors"
       >
         <svg width="26" height="26" viewBox="0 0 20 20" fill="none">
           <path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -92,15 +92,15 @@ export default function TopMenu() {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50 dark:bg-gray-900 dark:border-gray-800">
+        <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50">
           {session && (
-            <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2 dark:border-gray-800">
+            <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
               {session.user.image && (
                 <img src={session.user.image} alt="" className="w-8 h-8 rounded-full" />
               )}
               <div className="min-w-0">
-                <p className="text-sm font-medium truncate dark:text-gray-100">{session.user.name}</p>
-                <p className="text-xs text-gray-500 truncate dark:text-gray-400">{session.user.email}</p>
+                <p className="text-sm font-medium truncate">{session.user.name}</p>
+                <p className="text-xs text-gray-500 truncate">{session.user.email}</p>
               </div>
             </div>
           )}
@@ -112,13 +112,13 @@ export default function TopMenu() {
               <button
                 onClick={handleExport}
                 disabled={exporting}
-                className="w-full text-left px-4 py-2 text-base text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:text-gray-300 dark:hover:bg-gray-800"
+                className="w-full text-left px-4 py-2 text-base text-gray-700 hover:bg-gray-50 disabled:opacity-50"
               >
                 {exporting ? 'Exporting...' : 'Export to Excel'}
               </button>
               <MenuLink href="/admin/manage?action=import" onClick={() => setOpen(false)}>Import from Excel</MenuLink>
               <MenuLink href="/admin/manage?action=add" onClick={() => setOpen(false)}>Add Bearbrick</MenuLink>
-              <div className="my-1 border-t border-gray-100 dark:border-gray-800" />
+              <div className="my-1 border-t border-gray-100" />
             </>
           )}
 
@@ -130,7 +130,7 @@ export default function TopMenu() {
                 signOut()
                 setOpen(false)
               }}
-              className="w-full text-left px-4 py-2 text-base text-red-600 hover:bg-gray-50 dark:text-red-400 dark:hover:bg-gray-800"
+              className="w-full text-left px-4 py-2 text-base text-red-600 hover:bg-gray-50"
             >
               Log out
             </button>
@@ -140,7 +140,7 @@ export default function TopMenu() {
                 signIn('google')
                 setOpen(false)
               }}
-              className="w-full text-left px-4 py-2 text-base text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
+              className="w-full text-left px-4 py-2 text-base text-gray-700 hover:bg-gray-50"
             >
               Log in
             </button>

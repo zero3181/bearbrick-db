@@ -94,16 +94,31 @@ export default function HomePage() {
   }
 
   const fetchBearbricks = async (series?: string) => {
-    try {
+    // Show cached data from this session instantly (if any) instead of a
+    // loading spinner, then quietly refetch in the background to refresh it.
+    const cacheKey = `gombrick:bearbricks:${series || 'all'}`
+    const cached = sessionStorage.getItem(cacheKey)
+    if (cached) {
+      try {
+        setBearbricks(JSON.parse(cached))
+        setLoading(false)
+      } catch {
+        // ignore malformed cache entry
+      }
+    } else {
       setLoading(true)
+    }
+
+    try {
       const url = series && series !== 'all' ? `/api/bearbricks?series=${encodeURIComponent(series)}` : '/api/bearbricks'
       const res = await fetch(url)
       const data = await res.json()
-      // Ensure data is an array before setting state
-      setBearbricks(Array.isArray(data) ? data : [])
+      const bearbricksArray = Array.isArray(data) ? data : []
+      setBearbricks(bearbricksArray)
+      sessionStorage.setItem(cacheKey, JSON.stringify(bearbricksArray))
     } catch (error) {
       console.error('Failed to fetch bearbricks:', error)
-      setBearbricks([])
+      if (!cached) setBearbricks([])
     } finally {
       setLoading(false)
     }
@@ -135,11 +150,11 @@ export default function HomePage() {
       : baseSortedBearbricks
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="border-b border-gray-100 dark:border-gray-800">
+      <header className="border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <img src="/logo-gombrick.png" alt="GomBrick" className="h-9 md:h-[42px] w-auto dark:invert" />
+          <img src="/logo-gombrick.png" alt="GomBrick" className="h-9 md:h-[42px] w-auto" />
           <TopMenu />
         </div>
       </header>
@@ -150,21 +165,21 @@ export default function HomePage() {
         <div className="mb-8 relative inline-block" ref={seriesMenuRef}>
           <button
             onClick={() => setSeriesMenuOpen((v) => !v)}
-            className="flex items-center gap-2 text-3xl md:text-4xl text-gray-900 hover:text-gray-500 dark:text-gray-100 dark:hover:text-gray-400 transition-colors"
+            className="flex items-center gap-2 text-3xl md:text-4xl text-gray-900 hover:text-gray-500 transition-colors"
           >
             <span className="font-agency-wide inline-block">
               {selectedSeries === 'all' ? 'All' : selectedSeries}
             </span>
-            <svg width="22" height="22" viewBox="0 0 20 20" fill="none" className="mt-1 text-gray-400 dark:text-gray-500">
+            <svg width="22" height="22" viewBox="0 0 20 20" fill="none" className="mt-1 text-gray-400">
               <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
 
           {seriesMenuOpen && (
-            <div className="absolute left-0 mt-2 w-72 max-h-96 overflow-y-auto bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-40 dark:bg-gray-900 dark:border-gray-800">
+            <div className="absolute left-0 mt-2 w-72 max-h-96 overflow-y-auto bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-40">
               <button
                 onClick={() => handleSeriesChange('all')}
-                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 ${selectedSeries === 'all' ? 'font-semibold text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300'}`}
+                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === 'all' ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
               >
                 All
               </button>
@@ -172,10 +187,10 @@ export default function HomePage() {
                 <button
                   key={series.id}
                   onClick={() => handleSeriesChange(series.name)}
-                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 ${selectedSeries === series.name ? 'font-semibold text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300'}`}
+                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === series.name ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
                 >
                   {series.name}
-                  {series._count && <span className="text-gray-400 dark:text-gray-500"> ({series._count.bearbricks})</span>}
+                  {series._count && <span className="text-gray-400"> ({series._count.bearbricks})</span>}
                 </button>
               ))}
             </div>
@@ -183,16 +198,16 @@ export default function HomePage() {
         </div>
 
         {loading ? (
-          <div className="py-24">
+          <div className="min-h-[50vh] flex items-center justify-center">
             <LoadingSpinner label="Loading..." />
           </div>
         ) : sortedBearbricks.length === 0 ? (
           <div className="text-center py-24">
-            <p className="text-gray-400 dark:text-gray-500">No bearbricks registered yet</p>
+            <p className="text-gray-400">No bearbricks registered yet</p>
             {isAdmin && (
               <Link
                 href="/admin/manage"
-                className="mt-4 inline-block px-4 py-2 bg-gray-900 text-white rounded-full hover:bg-gray-700 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-300"
+                className="mt-4 inline-block px-4 py-2 bg-gray-900 text-white rounded-full hover:bg-gray-700"
               >
                 Add a bearbrick
               </Link>
@@ -206,7 +221,7 @@ export default function HomePage() {
                 href={`/bearbricks/${bearbrick.id}`}
                 className="group"
               >
-                <div className="relative aspect-square bg-gray-50 dark:bg-gray-800 rounded-2xl overflow-hidden">
+                <div className="relative aspect-square bg-gray-50 rounded-2xl overflow-hidden">
                   {bearbrick.isSecret && (
                     <span
                       className={`absolute top-2 left-2 px-2 py-1 text-[10px] md:text-xs font-semibold rounded-full z-10 ${
@@ -224,12 +239,12 @@ export default function HomePage() {
                   <div className="absolute inset-0 bg-gray-900/[0.04] pointer-events-none" />
                 </div>
                 <div className="pt-2 px-1">
-                  <h3 className="font-medium text-xs md:text-sm line-clamp-2 text-gray-900 dark:text-gray-100">
-                    {bearbrick.category && <span className="text-gray-400 dark:text-gray-500">[{bearbrick.category.name}] </span>}
+                  <h3 className="font-medium text-xs md:text-sm line-clamp-2 text-gray-900">
+                    {bearbrick.category && <span className="text-gray-400">[{bearbrick.category.name}] </span>}
                     {bearbrick.category?.name === 'Basic' ? 'BE@RBRICK' : bearbrick.name}
                   </h3>
                   {bearbrick.series && (
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{bearbrick.series.name}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{bearbrick.series.name}</p>
                   )}
                 </div>
               </Link>

@@ -5,9 +5,9 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  /* The app follows the OS/browser color scheme; native form controls
-     and scrollbars should switch along with it. */
-  color-scheme: light dark;
+  /* This app has a single light-only design, so pin native form
+     controls/scrollbars to light regardless of OS/browser preference. */
+  color-scheme: light;
 }
 
 @theme inline {

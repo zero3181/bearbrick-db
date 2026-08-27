@@ -212,7 +212,7 @@ export default function BearbrickDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center dark:bg-gray-950">
+      <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner />
       </div>
     )
@@ -220,10 +220,10 @@ export default function BearbrickDetailPage() {
 
   if (!bearbrick) {
     return (
-      <div className="min-h-screen flex items-center justify-center dark:bg-gray-950">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4 dark:text-gray-100">Bearbrick not found</h2>
-          <Link href="/" className="text-blue-600 dark:text-blue-400 hover:underline">
+          <h2 className="text-2xl font-bold mb-4">Bearbrick not found</h2>
+          <Link href="/" className="text-blue-600 hover:underline">
             Back to home
           </Link>
         </div>
@@ -232,11 +232,11 @@ export default function BearbrickDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="border-b border-gray-100 dark:border-gray-800">
+      <header className="border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+          <Link href="/" className="text-sm text-gray-500 hover:text-gray-900">
             ← Back to list
           </Link>
           <TopMenu />
@@ -245,11 +245,11 @@ export default function BearbrickDetailPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg overflow-hidden">
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8">
             {/* Images */}
             <div>
-              <div className="aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
+              <div className="aspect-square bg-gray-100 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
                 <img
                   src={selectedImage || '/bearbrick-placeholder.svg'}
                   alt={bearbrick.name}
@@ -262,7 +262,7 @@ export default function BearbrickDetailPage() {
                     <button
                       key={image.id}
                       onClick={() => setSelectedImage(image.url)}
-                      className={`aspect-square bg-gray-100 dark:bg-gray-800 rounded overflow-hidden ${
+                      className={`aspect-square bg-gray-100 rounded overflow-hidden ${
                         selectedImage === image.url ? 'ring-2 ring-blue-600' : ''
                       }`}
                     >
@@ -279,7 +279,7 @@ export default function BearbrickDetailPage() {
 
             {/* Info */}
             <div>
-              <h1 className="text-3xl font-bold mb-4 dark:text-gray-100">
+              <h1 className="text-3xl font-bold mb-4">
                 {bearbrick.isSecret && (
                   <span
                     className={`inline-block align-middle mr-2 px-2 py-1 text-sm font-semibold rounded ${
@@ -290,14 +290,14 @@ export default function BearbrickDetailPage() {
                   </span>
                 )}
                 {bearbrick.category && (
-                  <span className="text-gray-500 dark:text-gray-400">[{bearbrick.category.name}] </span>
+                  <span className="text-gray-500">[{bearbrick.category.name}] </span>
                 )}
                 {bearbrick.name}
               </h1>
 
               {basicVariants.length > 0 && (
                 <div className="mb-6">
-                  <span className="block font-semibold w-24 mb-2 dark:text-gray-100">Variant:</span>
+                  <span className="block font-semibold w-24 mb-2">Variant:</span>
                   <div className="flex flex-wrap gap-2">
                     {basicVariants.map((variant) => (
                       <label
@@ -305,7 +305,7 @@ export default function BearbrickDetailPage() {
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border cursor-pointer text-sm font-medium ${
                           variant.id === bearbrick.id
                             ? 'bg-blue-600 border-blue-600 text-white'
-                            : 'bg-white border-gray-300 text-gray-700 hover:border-blue-400 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300'
+                            : 'bg-white border-gray-300 text-gray-700 hover:border-blue-400'
                         }`}
                       >
                         <input
@@ -323,7 +323,7 @@ export default function BearbrickDetailPage() {
                 </div>
               )}
 
-              <div className="space-y-3 mb-6 dark:text-gray-100">
+              <div className="space-y-3 mb-6">
                 {bearbrick.series && (
                   <div className="flex">
                     <span className="font-semibold w-24">Series:</span>
@@ -340,14 +340,14 @@ export default function BearbrickDetailPage() {
 
               {bearbrick.description && (
                 <div className="mb-6">
-                  <h3 className="font-semibold mb-2 dark:text-gray-100">Description</h3>
-                  <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{bearbrick.description}</p>
+                  <h3 className="font-semibold mb-2">Description</h3>
+                  <p className="text-gray-700 whitespace-pre-wrap">{bearbrick.description}</p>
                 </div>
               )}
 
               {/* Admin Actions */}
               {isAdmin && (
-                <div className="flex gap-3 pt-6 border-t dark:border-gray-800">
+                <div className="flex gap-3 pt-6 border-t">
                   <Link
                     href={`/admin/bearbricks/${bearbrick.id}/edit`}
                     className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-center"
@@ -365,18 +365,18 @@ export default function BearbrickDetailPage() {
 
               {/* Edit request (regular users) */}
               {!isAdmin && (
-                <div className="pt-6 border-t dark:border-gray-800">
+                <div className="pt-6 border-t">
                   {session ? (
                     <button
                       onClick={openRequestForm}
-                      className="w-full px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-300"
+                      className="w-full px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-900"
                     >
                       Request a correction
                     </button>
                   ) : (
                     <button
                       onClick={() => signIn('google')}
-                      className="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                      className="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
                     >
                       Sign in to request a correction
                     </button>
@@ -391,16 +391,16 @@ export default function BearbrickDetailPage() {
       {/* Edit Request Modal */}
       {showRequestForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-900 rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <h3 className="text-xl font-bold mb-4 dark:text-gray-100">Request a Correction</h3>
-            <form onSubmit={handleRequestSubmit} className="space-y-4 dark:text-gray-100">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-bold mb-4">Request a Correction</h3>
+            <form onSubmit={handleRequestSubmit} className="space-y-4">
               <div>
                 <label className="block font-semibold mb-1">Name</label>
                 <input
                   type="text"
                   value={requestData.name}
                   onChange={(e) => setRequestData({ ...requestData, name: e.target.value })}
-                  className="w-full px-4 py-2 border rounded dark:bg-gray-800 dark:border-gray-700"
+                  className="w-full px-4 py-2 border rounded"
                   required
                 />
               </div>
@@ -409,7 +409,7 @@ export default function BearbrickDetailPage() {
                 <select
                   value={requestData.seriesId}
                   onChange={(e) => setRequestData({ ...requestData, seriesId: e.target.value })}
-                  className="w-full px-4 py-2 border rounded dark:bg-gray-800 dark:border-gray-700"
+                  className="w-full px-4 py-2 border rounded"
                 >
                   <option value="">No series</option>
                   {seriesList.map((s) => (
@@ -424,7 +424,7 @@ export default function BearbrickDetailPage() {
                 <select
                   value={requestData.categoryId}
                   onChange={(e) => setRequestData({ ...requestData, categoryId: e.target.value })}
-                  className="w-full px-4 py-2 border rounded dark:bg-gray-800 dark:border-gray-700"
+                  className="w-full px-4 py-2 border rounded"
                 >
                   <option value="">No category</option>
                   {categoryList.map((c) => (
@@ -451,7 +451,7 @@ export default function BearbrickDetailPage() {
                   type="date"
                   value={requestData.releaseDate}
                   onChange={(e) => setRequestData({ ...requestData, releaseDate: e.target.value })}
-                  className="w-full px-4 py-2 border rounded dark:bg-gray-800 dark:border-gray-700"
+                  className="w-full px-4 py-2 border rounded"
                 />
               </div>
               <div>
@@ -459,14 +459,14 @@ export default function BearbrickDetailPage() {
                 <textarea
                   value={requestData.description}
                   onChange={(e) => setRequestData({ ...requestData, description: e.target.value })}
-                  className="w-full px-4 py-2 border rounded dark:bg-gray-800 dark:border-gray-700"
+                  className="w-full px-4 py-2 border rounded"
                   rows={3}
                 />
               </div>
               <div>
                 <label className="block font-semibold mb-1">New Image (optional)</label>
                 <div className="flex items-center gap-3">
-                  <label className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 text-sm font-medium text-gray-700 transition-colors dark:border-gray-700 dark:text-gray-300">
+                  <label className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 text-sm font-medium text-gray-700 transition-colors">
                     <input type="file" accept="image/*" onChange={handleRequestImageSelect} className="hidden" />
                     {requestImagePreview ? 'Change Image' : 'Attach Image'}
                   </label>
@@ -481,7 +481,7 @@ export default function BearbrickDetailPage() {
                   value={requestReason}
                   onChange={(e) => setRequestReason(e.target.value)}
                   placeholder="Let us know what's wrong and why"
-                  className="w-full px-4 py-2 border rounded dark:bg-gray-800 dark:border-gray-700"
+                  className="w-full px-4 py-2 border rounded"
                   rows={2}
                 />
               </div>
@@ -497,7 +497,7 @@ export default function BearbrickDetailPage() {
                   type="button"
                   onClick={() => setShowRequestForm(false)}
                   disabled={submittingRequest}
-                  className="flex-1 px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-600"
+                  className="flex-1 px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
                 >
                   Cancel
                 </button>

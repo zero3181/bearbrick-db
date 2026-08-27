@@ -237,17 +237,17 @@ export default function EditBearbrickPage() {
 
   if (!bearbrick) {
     return (
-      <div className="min-h-screen flex items-center justify-center dark:bg-gray-950">
+      <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950">
-      <header className="border-b border-gray-100 dark:border-gray-800">
+    <div className="min-h-screen bg-white">
+      <header className="border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/admin/manage" className="text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+          <Link href="/admin/manage" className="text-sm text-gray-500 hover:text-gray-900">
             ← Back to admin
           </Link>
           <TopMenu />
@@ -255,19 +255,19 @@ export default function EditBearbrickPage() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 dark:text-gray-100">Edit Bearbrick</h1>
+        <h1 className="text-3xl font-bold mb-8">Edit Bearbrick</h1>
 
         {/* Basic Info Form */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8 dark:bg-gray-900">
-          <h2 className="text-xl font-bold mb-4 dark:text-gray-100">Basic Info</h2>
-          <form id="edit-bearbrick-form" onSubmit={handleSubmit} className="space-y-4 dark:text-gray-100">
+        <div className="bg-white rounded-lg shadow p-6 mb-8">
+          <h2 className="text-xl font-bold mb-4">Basic Info</h2>
+          <form id="edit-bearbrick-form" onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block font-semibold mb-1">Name *</label>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-4 py-2 border rounded dark:bg-gray-800 dark:border-gray-700"
+                className="w-full px-4 py-2 border rounded"
                 required
               />
             </div>
@@ -276,7 +276,7 @@ export default function EditBearbrickPage() {
               <select
                 value={formData.seriesId}
                 onChange={(e) => setFormData({ ...formData, seriesId: e.target.value })}
-                className="w-full px-4 py-2 border rounded dark:bg-gray-800 dark:border-gray-700"
+                className="w-full px-4 py-2 border rounded"
               >
                 <option value="">No series</option>
                 {seriesList.map((series) => (
@@ -291,7 +291,7 @@ export default function EditBearbrickPage() {
               <select
                 value={formData.categoryId}
                 onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                className="w-full px-4 py-2 border rounded dark:bg-gray-800 dark:border-gray-700"
+                className="w-full px-4 py-2 border rounded"
               >
                 <option value="">No category</option>
                 {categoryList.map((category) => (
@@ -318,7 +318,7 @@ export default function EditBearbrickPage() {
                 type="date"
                 value={formData.releaseDate}
                 onChange={(e) => setFormData({ ...formData, releaseDate: e.target.value })}
-                className="w-full px-4 py-2 border rounded dark:bg-gray-800 dark:border-gray-700"
+                className="w-full px-4 py-2 border rounded"
               />
             </div>
             <div>
@@ -326,7 +326,7 @@ export default function EditBearbrickPage() {
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full px-4 py-2 border rounded dark:bg-gray-800 dark:border-gray-700"
+                className="w-full px-4 py-2 border rounded"
                 rows={4}
               />
             </div>
@@ -334,13 +334,13 @@ export default function EditBearbrickPage() {
         </div>
 
         {/* Images */}
-        <div className="bg-white rounded-lg shadow p-6 dark:bg-gray-900">
-          <h2 className="text-xl font-bold mb-4 dark:text-gray-100">Manage Images</h2>
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-bold mb-4">Manage Images</h2>
 
           {/* Upload */}
           <div className="mb-6">
             <div className="flex items-center gap-3">
-              <label className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:text-blue-600 text-sm font-medium text-gray-700 transition-colors dark:border-gray-700 dark:text-gray-300">
+              <label className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:text-blue-600 text-sm font-medium text-gray-700 transition-colors">
                 <input
                   type="file"
                   accept="image/*"
@@ -350,10 +350,10 @@ export default function EditBearbrickPage() {
                 />
                 {uploading ? `Uploading... ${uploadProgress}%` : 'Upload Image'}
               </label>
-              <span className="text-xs text-gray-400 dark:text-gray-500">JPG, PNG, GIF (max 5MB)</span>
+              <span className="text-xs text-gray-400">JPG, PNG, GIF (max 5MB)</span>
             </div>
             {uploading && (
-              <div className="w-full max-w-xs bg-gray-200 rounded-full h-2 mt-2 dark:bg-gray-800">
+              <div className="w-full max-w-xs bg-gray-200 rounded-full h-2 mt-2">
                 <div
                   className="bg-blue-600 h-2 rounded-full transition-all"
                   style={{ width: `${uploadProgress}%` }}
@@ -397,7 +397,7 @@ export default function EditBearbrickPage() {
           </div>
 
           {bearbrick.images.length === 0 && (
-            <p className="text-center text-gray-500 py-8 dark:text-gray-400">No images yet</p>
+            <p className="text-center text-gray-500 py-8">No images yet</p>
           )}
         </div>
 

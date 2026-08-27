@@ -55,7 +55,9 @@ export async function GET() {
     })
 
     console.log(`[API] Found ${series.length} series`)
-    return NextResponse.json(series)
+    return NextResponse.json(series, {
+      headers: { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=300' },
+    })
   } catch (error) {
     console.error('Error fetching series:', error)
     console.error('Error details:', error instanceof Error ? error.message : String(error))
