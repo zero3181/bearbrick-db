@@ -29,13 +29,14 @@ function categoryRank(categoryName: string | undefined) {
   return idx === -1 ? CATEGORY_ORDER.length : idx
 }
 
-export function sortBearbricks<T extends SortableBearbrick>(items: T[]): T[] {
+export function sortBearbricks<T extends SortableBearbrick>(items: T[], direction: 'asc' | 'desc' = 'asc'): T[] {
+  const dir = direction === 'desc' ? -1 : 1
   return [...items].sort((a, b) => {
-    if (a.isSecret !== b.isSecret) return a.isSecret ? 1 : -1
+    if (a.isSecret !== b.isSecret) return dir * (a.isSecret ? 1 : -1)
 
     const rankA = categoryRank(a.category?.name)
     const rankB = categoryRank(b.category?.name)
-    if (rankA !== rankB) return rankA - rankB
+    if (rankA !== rankB) return dir * (rankA - rankB)
 
     if (a.category?.name === 'Basic' && b.category?.name === 'Basic') {
       const basicIdxA = BASIC_ORDER.indexOf(a.name)

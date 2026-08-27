@@ -34,14 +34,29 @@ interface Series {
   }
 }
 
+interface Category {
+  id: string
+  name: string
+}
+
+type SortBy = 'category' | 'series'
+type SortDirection = 'asc' | 'desc'
+
 const SERIES_STORAGE_KEY = 'gombrick:selectedSeries'
+const CATEGORY_STORAGE_KEY = 'gombrick:selectedCategory'
+const SORT_BY_STORAGE_KEY = 'gombrick:sortBy'
+const SORT_DIRECTION_STORAGE_KEY = 'gombrick:sortDirection'
 
 export default function HomePage() {
   const { data: session } = useSession()
   const isAdmin = session?.user?.role === 'ADMIN' || session?.user?.role === 'OWNER'
   const [bearbricks, setBearbricks] = useState<Bearbrick[]>([])
   const [allSeries, setAllSeries] = useState<Series[]>([])
+  const [categoryList, setCategoryList] = useState<Category[]>([])
   const [selectedSeries, setSelectedSeries] = useState<string>('')
+  const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [sortBy, setSortBy] = useState<SortBy>('category')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
   const [loading, setLoading] = useState(true)
   const [seriesMenuOpen, setSeriesMenuOpen] = useState(false)
   const seriesMenuRef = useRef<HTMLDivElement>(null)
@@ -57,6 +72,14 @@ export default function HomePage() {
     }
 
     loadInitialData()
+    fetchCategories()
+
+    const savedCategory = sessionStorage.getItem(CATEGORY_STORAGE_KEY)
+    if (savedCategory) setSelectedCategory(savedCategory)
+    const savedSortBy = sessionStorage.getItem(SORT_BY_STORAGE_KEY)
+    if (savedSortBy === 'category' || savedSortBy === 'series') setSortBy(savedSortBy)
+    const savedSortDirection = sessionStorage.getItem(SORT_DIRECTION_STORAGE_KEY)
+    if (savedSortDirection === 'asc' || savedSortDirection === 'desc') setSortDirection(savedSortDirection)
   }, [])
 
   useEffect(() => {
@@ -68,6 +91,18 @@ export default function HomePage() {
       fetchBearbricks(selectedSeries)
     }
   }, [selectedSeries])
+
+  useEffect(() => {
+    sessionStorage.setItem(CATEGORY_STORAGE_KEY, selectedCategory)
+  }, [selectedCategory])
+
+  useEffect(() => {
+    sessionStorage.setItem(SORT_BY_STORAGE_KEY, sortBy)
+  }, [sortBy])
+
+  useEffect(() => {
+    sessionStorage.setItem(SORT_DIRECTION_STORAGE_KEY, sortDirection)
+  }, [sortDirection])
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -90,6 +125,17 @@ export default function HomePage() {
       console.error('Failed to fetch series:', error)
       setAllSeries([])
       return []
+    }
+  }
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch('/api/categories')
+      const data = await res.json()
+      setCategoryList(Array.isArray(data) ? data : [])
+    } catch (error) {
+      console.error('Failed to fetch categories:', error)
+      setCategoryList([])
     }
   }
 
@@ -134,20 +180,29 @@ export default function HomePage() {
     return primary?.url || bearbrick.images[0]?.url || '/bearbrick-placeholder.svg'
   }
 
-  const baseSortedBearbricks = collapseBasicGroup(sortBearbricks(bearbricks))
-  // allSeries is already ordered newest-first (API returns number: 'desc'),
-  // so grouping "All" by that index keeps series clustered together with
-  // the latest series at the top, while a stable sort preserves each
-  // series's own category/secret ordering within its group.
+  // "Category" sort applies the direction to the official category order
+  // (and secret-last) directly; "Series" sort applies the direction to
+  // series recency instead, while items within a series always keep the
+  // normal forward category order so the direction toggle only ever
+  // reverses the one axis the user actually picked.
+  const baseSortedBearbricks = collapseBasicGroup(
+    sortBearbricks(bearbricks, sortBy === 'category' ? sortDirection : 'asc')
+  )
+  // allSeries is already ordered newest-first (API returns number: 'desc')
   const seriesRank = new Map(allSeries.map((s, i) => [s.id, i]))
   const sortedBearbricks =
-    selectedSeries === 'all'
-      ? [...baseSortedBearbricks].sort(
-          (a, b) =>
-            (a.series ? seriesRank.get(a.series.id) ?? allSeries.length : allSeries.length) -
-            (b.series ? seriesRank.get(b.series.id) ?? allSeries.length : allSeries.length)
-        )
+    sortBy === 'series'
+      ? [...baseSortedBearbricks].sort((a, b) => {
+          const rankA = a.series ? seriesRank.get(a.series.id) ?? allSeries.length : allSeries.length
+          const rankB = b.series ? seriesRank.get(b.series.id) ?? allSeries.length : allSeries.length
+          return (sortDirection === 'desc' ? -1 : 1) * (rankA - rankB)
+        })
       : baseSortedBearbricks
+
+  const filteredBearbricks =
+    selectedCategory === 'all'
+      ? sortedBearbricks
+      : sortedBearbricks.filter((b) => b.category?.name === selectedCategory)
 
   return (
     <div className="min-h-screen bg-white">
@@ -162,7 +217,7 @@ export default function HomePage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 pt-1 pb-8">
         {/* Series title / selector */}
-        <div className="mb-8 relative inline-block" ref={seriesMenuRef}>
+        <div className="mb-4 relative inline-block" ref={seriesMenuRef}>
           <button
             onClick={() => setSeriesMenuOpen((v) => !v)}
             className="flex items-center gap-2 text-3xl md:text-4xl text-gray-900 hover:text-gray-500 transition-colors"
@@ -197,11 +252,44 @@ export default function HomePage() {
           )}
         </div>
 
+        {/* Filter / sort toolbar */}
+        <div className="mb-8 flex flex-wrap items-center gap-2 text-sm">
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="px-3 py-1.5 border border-gray-200 rounded-lg text-gray-700 bg-white"
+          >
+            <option value="all">All categories</option>
+            {categoryList.map((c) => (
+              <option key={c.id} value={c.name}>{c.name}</option>
+            ))}
+          </select>
+
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as SortBy)}
+            className="px-3 py-1.5 border border-gray-200 rounded-lg text-gray-700 bg-white"
+          >
+            <option value="category">Sort: Category</option>
+            <option value="series">Sort: Series</option>
+          </select>
+
+          <button
+            onClick={() => setSortDirection((d) => (d === 'asc' ? 'desc' : 'asc'))}
+            className="flex items-center gap-1 px-3 py-1.5 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50"
+          >
+            {sortDirection === 'asc' ? 'Ascending' : 'Descending'}
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" className={sortDirection === 'desc' ? 'rotate-180' : ''}>
+              <path d="M5 12l5-5 5 5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        </div>
+
         {loading ? (
           <div className="min-h-[50vh] flex items-center justify-center">
             <LoadingSpinner label="Loading..." />
           </div>
-        ) : sortedBearbricks.length === 0 ? (
+        ) : filteredBearbricks.length === 0 ? (
           <div className="text-center py-24">
             <p className="text-gray-400">No bearbricks registered yet</p>
             {isAdmin && (
@@ -215,7 +303,7 @@ export default function HomePage() {
           </div>
         ) : (
           <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-            {sortedBearbricks.map((bearbrick) => (
+            {filteredBearbricks.map((bearbrick) => (
               <Link
                 key={bearbrick.id}
                 href={`/bearbricks/${bearbrick.id}`}
