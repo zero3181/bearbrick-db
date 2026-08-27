@@ -49,9 +49,7 @@ export async function GET(request: NextRequest) {
       images: b.images,
     }))
 
-    return NextResponse.json(mapped, {
-      headers: { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=300' },
-    })
+    return NextResponse.json(mapped)
   } catch (error) {
     console.error('Failed to fetch bearbricks:', error)
     // Return empty array instead of error object to prevent client-side crashes
