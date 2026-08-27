@@ -39,13 +39,8 @@ interface Category {
   name: string
 }
 
-type SortBy = 'category' | 'series'
-type SortDirection = 'asc' | 'desc'
-
 const SERIES_STORAGE_KEY = 'gombrick:selectedSeries'
-const CATEGORY_STORAGE_KEY = 'gombrick:selectedCategory'
-const SORT_BY_STORAGE_KEY = 'gombrick:sortBy'
-const SORT_DIRECTION_STORAGE_KEY = 'gombrick:sortDirection'
+const CATEGORY_FILTER_STORAGE_KEY = 'gombrick:categoryFilter'
 
 export default function HomePage() {
   const { data: session } = useSession()
@@ -54,12 +49,12 @@ export default function HomePage() {
   const [allSeries, setAllSeries] = useState<Series[]>([])
   const [categoryList, setCategoryList] = useState<Category[]>([])
   const [selectedSeries, setSelectedSeries] = useState<string>('')
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
-  const [sortBy, setSortBy] = useState<SortBy>('category')
-  const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [seriesMenuOpen, setSeriesMenuOpen] = useState(false)
+  const [categoryMenuOpen, setCategoryMenuOpen] = useState(false)
   const seriesMenuRef = useRef<HTMLDivElement>(null)
+  const categoryMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -74,12 +69,15 @@ export default function HomePage() {
     loadInitialData()
     fetchCategories()
 
-    const savedCategory = sessionStorage.getItem(CATEGORY_STORAGE_KEY)
-    if (savedCategory) setSelectedCategory(savedCategory)
-    const savedSortBy = sessionStorage.getItem(SORT_BY_STORAGE_KEY)
-    if (savedSortBy === 'category' || savedSortBy === 'series') setSortBy(savedSortBy)
-    const savedSortDirection = sessionStorage.getItem(SORT_DIRECTION_STORAGE_KEY)
-    if (savedSortDirection === 'asc' || savedSortDirection === 'desc') setSortDirection(savedSortDirection)
+    const savedCategories = sessionStorage.getItem(CATEGORY_FILTER_STORAGE_KEY)
+    if (savedCategories) {
+      try {
+        const parsed = JSON.parse(savedCategories)
+        if (Array.isArray(parsed)) setSelectedCategories(parsed)
+      } catch {
+        // ignore malformed cache entry
+      }
+    }
   }, [])
 
   useEffect(() => {
@@ -93,26 +91,21 @@ export default function HomePage() {
   }, [selectedSeries])
 
   useEffect(() => {
-    sessionStorage.setItem(CATEGORY_STORAGE_KEY, selectedCategory)
-  }, [selectedCategory])
-
-  useEffect(() => {
-    sessionStorage.setItem(SORT_BY_STORAGE_KEY, sortBy)
-  }, [sortBy])
-
-  useEffect(() => {
-    sessionStorage.setItem(SORT_DIRECTION_STORAGE_KEY, sortDirection)
-  }, [sortDirection])
+    sessionStorage.setItem(CATEGORY_FILTER_STORAGE_KEY, JSON.stringify(selectedCategories))
+  }, [selectedCategories])
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (seriesMenuRef.current && !seriesMenuRef.current.contains(e.target as Node)) {
         setSeriesMenuOpen(false)
       }
+      if (categoryMenuRef.current && !categoryMenuRef.current.contains(e.target as Node)) {
+        setCategoryMenuOpen(false)
+      }
     }
-    if (seriesMenuOpen) document.addEventListener('mousedown', handleClickOutside)
+    if (seriesMenuOpen || categoryMenuOpen) document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [seriesMenuOpen])
+  }, [seriesMenuOpen, categoryMenuOpen])
 
   const fetchSeries = async () => {
     try {
@@ -175,34 +168,36 @@ export default function HomePage() {
     setSeriesMenuOpen(false)
   }
 
+  const toggleCategory = (name: string) => {
+    setSelectedCategories((prev) =>
+      prev.includes(name) ? prev.filter((c) => c !== name) : [...prev, name]
+    )
+  }
+
   const getPrimaryImage = (bearbrick: Bearbrick) => {
     const primary = bearbrick.images.find(img => img.isPrimary)
     return primary?.url || bearbrick.images[0]?.url || '/bearbrick-placeholder.svg'
   }
 
-  // "Category" sort applies the direction to the official category order
-  // (and secret-last) directly; "Series" sort applies the direction to
-  // series recency instead, while items within a series always keep the
-  // normal forward category order so the direction toggle only ever
-  // reverses the one axis the user actually picked.
-  const baseSortedBearbricks = collapseBasicGroup(
-    sortBearbricks(bearbricks, sortBy === 'category' ? sortDirection : 'asc')
-  )
-  // allSeries is already ordered newest-first (API returns number: 'desc')
+  const baseSortedBearbricks = collapseBasicGroup(sortBearbricks(bearbricks))
+  // allSeries is already ordered newest-first (API returns number: 'desc'),
+  // so grouping "All" by that index keeps series clustered together with
+  // the latest series at the top, while a stable sort preserves each
+  // series's own category/secret ordering within its group.
   const seriesRank = new Map(allSeries.map((s, i) => [s.id, i]))
   const sortedBearbricks =
-    sortBy === 'series'
-      ? [...baseSortedBearbricks].sort((a, b) => {
-          const rankA = a.series ? seriesRank.get(a.series.id) ?? allSeries.length : allSeries.length
-          const rankB = b.series ? seriesRank.get(b.series.id) ?? allSeries.length : allSeries.length
-          return (sortDirection === 'desc' ? -1 : 1) * (rankA - rankB)
-        })
+    selectedSeries === 'all'
+      ? [...baseSortedBearbricks].sort(
+          (a, b) =>
+            (a.series ? seriesRank.get(a.series.id) ?? allSeries.length : allSeries.length) -
+            (b.series ? seriesRank.get(b.series.id) ?? allSeries.length : allSeries.length)
+        )
       : baseSortedBearbricks
 
   const filteredBearbricks =
-    selectedCategory === 'all'
+    selectedCategories.length === 0
       ? sortedBearbricks
-      : sortedBearbricks.filter((b) => b.category?.name === selectedCategory)
+      : sortedBearbricks.filter((b) => b.category && selectedCategories.includes(b.category.name))
 
   return (
     <div className="min-h-screen bg-white">
@@ -216,73 +211,90 @@ export default function HomePage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 pt-1 pb-8">
-        {/* Series title / selector */}
-        <div className="mb-4 relative inline-block" ref={seriesMenuRef}>
-          <button
-            onClick={() => setSeriesMenuOpen((v) => !v)}
-            className="flex items-center gap-2 text-3xl md:text-4xl text-gray-900 hover:text-gray-500 transition-colors"
-          >
-            <span className="font-agency-wide inline-block">
-              {selectedSeries === 'all' ? 'All' : selectedSeries}
-            </span>
-            <svg width="22" height="22" viewBox="0 0 20 20" fill="none" className="mt-1 text-gray-400">
-              <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
+        {/* Series title / selector + category filter */}
+        <div className="mb-8 flex items-center gap-2">
+          <div className="relative inline-block" ref={seriesMenuRef}>
+            <button
+              onClick={() => setSeriesMenuOpen((v) => !v)}
+              className="flex items-center gap-2 text-3xl md:text-4xl text-gray-900 hover:text-gray-500 transition-colors"
+            >
+              <span className="font-agency-wide inline-block">
+                {selectedSeries === 'all' ? 'All' : selectedSeries}
+              </span>
+              <svg width="22" height="22" viewBox="0 0 20 20" fill="none" className="mt-1 text-gray-400">
+                <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
 
-          {seriesMenuOpen && (
-            <div className="absolute left-0 mt-2 w-72 max-h-96 overflow-y-auto bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-40">
-              <button
-                onClick={() => handleSeriesChange('all')}
-                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === 'all' ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
-              >
-                All
-              </button>
-              {allSeries.map((series) => (
+            {seriesMenuOpen && (
+              <div className="absolute left-0 mt-2 w-72 max-h-96 overflow-y-auto bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-40">
                 <button
-                  key={series.id}
-                  onClick={() => handleSeriesChange(series.name)}
-                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === series.name ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
+                  onClick={() => handleSeriesChange('all')}
+                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === 'all' ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
                 >
-                  {series.name}
-                  {series._count && <span className="text-gray-400"> ({series._count.bearbricks})</span>}
+                  All
                 </button>
-              ))}
-            </div>
-          )}
-        </div>
+                {allSeries.map((series) => (
+                  <button
+                    key={series.id}
+                    onClick={() => handleSeriesChange(series.name)}
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === series.name ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
+                  >
+                    {series.name}
+                    {series._count && <span className="text-gray-400"> ({series._count.bearbricks})</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
-        {/* Filter / sort toolbar */}
-        <div className="mb-8 flex flex-wrap items-center gap-2 text-sm">
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-3 py-1.5 border border-gray-200 rounded-lg text-gray-700 bg-white"
-          >
-            <option value="all">All categories</option>
-            {categoryList.map((c) => (
-              <option key={c.id} value={c.name}>{c.name}</option>
-            ))}
-          </select>
+          {/* Category filter */}
+          <div className="relative inline-block" ref={categoryMenuRef}>
+            <button
+              onClick={() => setCategoryMenuOpen((v) => !v)}
+              aria-label="Filter by category"
+              className={`relative p-2 rounded-full hover:bg-gray-100 transition-colors ${
+                selectedCategories.length > 0 ? 'text-blue-600' : 'text-gray-400'
+              }`}
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M2.5 4h15M5.5 10h9M8.5 16h3" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+              </svg>
+              {selectedCategories.length > 0 && (
+                <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-blue-600 rounded-full" />
+              )}
+            </button>
 
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as SortBy)}
-            className="px-3 py-1.5 border border-gray-200 rounded-lg text-gray-700 bg-white"
-          >
-            <option value="category">Sort: Category</option>
-            <option value="series">Sort: Series</option>
-          </select>
-
-          <button
-            onClick={() => setSortDirection((d) => (d === 'asc' ? 'desc' : 'asc'))}
-            className="flex items-center gap-1 px-3 py-1.5 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50"
-          >
-            {sortDirection === 'asc' ? 'Ascending' : 'Descending'}
-            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" className={sortDirection === 'desc' ? 'rotate-180' : ''}>
-              <path d="M5 12l5-5 5 5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
+            {categoryMenuOpen && (
+              <div className="absolute left-0 mt-2 w-56 max-h-96 overflow-y-auto bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-40">
+                <div className="flex items-center justify-between px-4 py-2 border-b border-gray-100">
+                  <span className="text-xs font-semibold text-gray-500 uppercase">Categories</span>
+                  {selectedCategories.length > 0 && (
+                    <button
+                      onClick={() => setSelectedCategories([])}
+                      className="text-xs text-blue-600 hover:underline"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+                {categoryList.map((category) => (
+                  <label
+                    key={category.id}
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedCategories.includes(category.name)}
+                      onChange={() => toggleCategory(category.name)}
+                      className="w-4 h-4"
+                    />
+                    {category.name}
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {loading ? (
