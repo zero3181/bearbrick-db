@@ -42,15 +42,19 @@ interface Category {
   name: string
 }
 
+const COLLECTION_CACHE_KEY = 'gombrick:collectionIds'
+
 export default function BearbrickDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const { data: session } = useSession()
+  const { data: session, status: sessionStatus } = useSession()
   const isAdmin = session?.user?.role === 'ADMIN' || session?.user?.role === 'OWNER'
   const [bearbrick, setBearbrick] = useState<Bearbrick | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState<string>('')
   const [basicVariants, setBasicVariants] = useState<{ id: string; name: string }[]>([])
+  const [collectionIds, setCollectionIds] = useState<Set<string>>(new Set())
+  const [collectionLoaded, setCollectionLoaded] = useState(false)
 
   const [seriesList, setSeriesList] = useState<Series[]>([])
   const [categoryList, setCategoryList] = useState<Category[]>([])
@@ -99,6 +103,73 @@ export default function BearbrickDetailPage() {
       console.error('Failed to fetch bearbrick:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (sessionStatus === 'authenticated') {
+      fetchCollection()
+    } else if (sessionStatus === 'unauthenticated') {
+      setCollectionIds(new Set())
+      setCollectionLoaded(true)
+    }
+  }, [sessionStatus])
+
+  const fetchCollection = async () => {
+    const cached = sessionStorage.getItem(COLLECTION_CACHE_KEY)
+    if (cached) {
+      try {
+        setCollectionIds(new Set(JSON.parse(cached)))
+        setCollectionLoaded(true)
+      } catch {
+        // ignore malformed cache entry
+      }
+    }
+
+    try {
+      const res = await fetch('/api/collection')
+      if (!res.ok) return
+      const ids = await res.json()
+      const idsArray = Array.isArray(ids) ? ids : []
+      setCollectionIds(new Set(idsArray))
+      sessionStorage.setItem(COLLECTION_CACHE_KEY, JSON.stringify(idsArray))
+    } catch (error) {
+      console.error('Failed to fetch collection:', error)
+    } finally {
+      setCollectionLoaded(true)
+    }
+  }
+
+  const handleToggleCollection = async (e: React.MouseEvent, bearbrickId: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (!session) {
+      signIn('google')
+      return
+    }
+
+    const wasInCollection = collectionIds.has(bearbrickId)
+    setCollectionIds((prev) => {
+      const next = new Set(prev)
+      wasInCollection ? next.delete(bearbrickId) : next.add(bearbrickId)
+      return next
+    })
+
+    try {
+      const res = await fetch('/api/collection/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bearbrickId }),
+      })
+      if (!res.ok) throw new Error('Toggle failed')
+    } catch (error) {
+      console.error('Failed to toggle collection item:', error)
+      setCollectionIds((prev) => {
+        const next = new Set(prev)
+        wasInCollection ? next.add(bearbrickId) : next.delete(bearbrickId)
+        return next
+      })
     }
   }
 
@@ -316,6 +387,18 @@ export default function BearbrickDetailPage() {
                           onChange={() => router.push(`/bearbricks/${variant.id}`)}
                           className="sr-only"
                         />
+                        {collectionLoaded && (
+                          <button
+                            type="button"
+                            onClick={(e) => handleToggleCollection(e, variant.id)}
+                            aria-label={collectionIds.has(variant.id) ? 'Remove from my collection' : 'Add to my collection'}
+                            className="flex-shrink-0"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 20 20" fill={collectionIds.has(variant.id) ? '#16a34a' : 'none'}>
+                              <path d="M5 3h10a1 1 0 0 1 1 1v13l-6-3.5L4 17V4a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                            </svg>
+                          </button>
+                        )}
                         {variant.name}
                       </label>
                     ))}

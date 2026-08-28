@@ -41,6 +41,7 @@ interface Category {
 
 const SERIES_STORAGE_KEY = 'gombrick:selectedSeries'
 const CATEGORY_FILTER_STORAGE_KEY = 'gombrick:categoryFilter'
+const COLLECTION_CACHE_KEY = 'gombrick:collectionIds'
 
 export default function HomePage() {
   const { data: session, status: sessionStatus } = useSession()
@@ -51,6 +52,7 @@ export default function HomePage() {
   const [selectedSeries, setSelectedSeries] = useState<string>('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [collectionIds, setCollectionIds] = useState<Set<string>>(new Set())
+  const [collectionLoaded, setCollectionLoaded] = useState(false)
   const [myCollectionOnly, setMyCollectionOnly] = useState(false)
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState<string | null>(null)
@@ -97,6 +99,7 @@ export default function HomePage() {
     } else if (sessionStatus === 'unauthenticated') {
       setCollectionIds(new Set())
       setMyCollectionOnly(false)
+      setCollectionLoaded(true)
     }
   }, [sessionStatus])
 
@@ -170,13 +173,30 @@ export default function HomePage() {
   }
 
   const fetchCollection = async () => {
+    // Show cached membership instantly (if any) so the bookmark doesn't
+    // flash "not saved" while the real fetch is in flight; still fetch
+    // fresh data underneath and reconcile once it lands.
+    const cached = sessionStorage.getItem(COLLECTION_CACHE_KEY)
+    if (cached) {
+      try {
+        setCollectionIds(new Set(JSON.parse(cached)))
+        setCollectionLoaded(true)
+      } catch {
+        // ignore malformed cache entry
+      }
+    }
+
     try {
       const res = await fetch('/api/collection')
       if (!res.ok) return
       const ids = await res.json()
-      setCollectionIds(new Set(Array.isArray(ids) ? ids : []))
+      const idsArray = Array.isArray(ids) ? ids : []
+      setCollectionIds(new Set(idsArray))
+      sessionStorage.setItem(COLLECTION_CACHE_KEY, JSON.stringify(idsArray))
     } catch (error) {
       console.error('Failed to fetch collection:', error)
+    } finally {
+      setCollectionLoaded(true)
     }
   }
 
@@ -251,6 +271,19 @@ export default function HomePage() {
             (b.series ? seriesRank.get(b.series.id) ?? allSeries.length : allSeries.length)
         )
       : baseSortedBearbricks
+
+  // Basic is collapsed to one representative card per series (see
+  // collapseBasicGroup), so its collection state can't be a simple
+  // saved/unsaved toggle - instead show how many of the 9 pieces in that
+  // series are saved. Built from the raw (pre-collapse) bearbricks list.
+  const basicIdsBySeriesId = new Map<string, string[]>()
+  for (const b of bearbricks) {
+    if (b.category?.name === 'Basic') {
+      const key = b.series?.id ?? 'none'
+      if (!basicIdsBySeriesId.has(key)) basicIdsBySeriesId.set(key, [])
+      basicIdsBySeriesId.get(key)!.push(b.id)
+    }
+  }
 
   const filteredBearbricks = sortedBearbricks
     .filter((b) => {
@@ -399,20 +432,34 @@ export default function HomePage() {
                     className="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gray-900/[0.04] pointer-events-none" />
-                  <button
-                    onClick={(e) => handleToggleCollection(e, bearbrick.id)}
-                    aria-label={collectionIds.has(bearbrick.id) ? 'Remove from my collection' : 'Add to my collection'}
-                    className="absolute top-0 right-0 z-10 pt-0 pr-2 pb-3 pl-3 transition-transform hover:scale-105"
-                  >
-                    <svg width="22" height="32" viewBox="0 0 20 30" fill={collectionIds.has(bearbrick.id) ? '#2563eb' : 'white'} className="drop-shadow-md">
-                      <path
-                        d="M0 0h20v22l-10 8-10-8z"
-                        stroke={collectionIds.has(bearbrick.id) ? '#2563eb' : '#374151'}
-                        strokeWidth="1.5"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
+                  {collectionLoaded && (
+                    bearbrick.category?.name === 'Basic' ? (
+                      (() => {
+                        const ids = basicIdsBySeriesId.get(bearbrick.series?.id ?? 'none') ?? []
+                        const owned = ids.filter((id) => collectionIds.has(id)).length
+                        return (
+                          <span className="absolute top-2 right-2 z-10 px-1.5 py-0.5 text-[10px] md:text-xs font-semibold rounded-full bg-gray-900/80 text-white">
+                            {owned}/{ids.length}
+                          </span>
+                        )
+                      })()
+                    ) : (
+                      <button
+                        onClick={(e) => handleToggleCollection(e, bearbrick.id)}
+                        aria-label={collectionIds.has(bearbrick.id) ? 'Remove from my collection' : 'Add to my collection'}
+                        className="absolute top-0 right-0 z-10 pt-0 pr-2 pb-3 pl-3 transition-transform hover:scale-105"
+                      >
+                        <svg width="22" height="32" viewBox="0 0 20 30" fill={collectionIds.has(bearbrick.id) ? '#2563eb' : 'white'} className="drop-shadow-md">
+                          <path
+                            d="M0 0h20v22l-10 8-10-8z"
+                            stroke={collectionIds.has(bearbrick.id) ? '#2563eb' : '#374151'}
+                            strokeWidth="1.5"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    )
+                  )}
                 </div>
                 <div className="pt-2 px-1">
                   <h3 className="font-medium text-xs md:text-sm line-clamp-2 text-gray-900">
