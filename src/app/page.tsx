@@ -437,10 +437,25 @@ export default function HomePage() {
                       (() => {
                         const ids = basicIdsBySeriesId.get(bearbrick.series?.id ?? 'none') ?? []
                         const owned = ids.filter((id) => collectionIds.has(id)).length
+                        // Purely informational for the collapsed Basic card - no
+                        // per-piece toggle here, so the click passes through to
+                        // the card's Link and opens the chips inside instead.
                         return (
-                          <span className="absolute top-2 right-2 z-10 px-1.5 py-0.5 text-[10px] md:text-xs font-semibold rounded-full bg-gray-900/80 text-white">
-                            {owned}/{ids.length}
-                          </span>
+                          <div className="absolute top-0 right-2 z-10 pointer-events-none">
+                            <svg width="22" height="32" viewBox="0 0 20 30" fill={owned > 0 ? '#2563eb' : 'white'} className="drop-shadow-md">
+                              <path
+                                d="M0 0h20v22l-10 8-10-8z"
+                                stroke={owned > 0 ? '#2563eb' : '#374151'}
+                                strokeWidth="1.5"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                            {owned > 0 && (
+                              <span className="absolute top-0 right-0 w-[22px] h-6 flex items-center justify-center text-white text-xs font-bold">
+                                {owned}
+                              </span>
+                            )}
+                          </div>
                         )
                       })()
                     ) : (

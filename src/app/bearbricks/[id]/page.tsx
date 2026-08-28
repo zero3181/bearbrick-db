@@ -368,39 +368,23 @@ export default function BearbrickDetailPage() {
 
               {basicVariants.length > 0 && (
                 <div className="mb-6">
-                  <span className="block font-semibold w-24 mb-2">Variant:</span>
+                  <span className="block font-semibold w-24 mb-2">Collected:</span>
                   <div className="flex flex-wrap gap-2">
                     {basicVariants.map((variant) => (
-                      <label
+                      <button
                         key={variant.id}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border cursor-pointer text-sm font-medium ${
-                          variant.id === bearbrick.id
+                        type="button"
+                        disabled={!collectionLoaded}
+                        onClick={(e) => handleToggleCollection(e, variant.id)}
+                        aria-label={collectionIds.has(variant.id) ? `${variant.name}: remove from my collection` : `${variant.name}: add to my collection`}
+                        className={`px-3 py-1.5 rounded-full border text-sm font-medium transition-colors ${
+                          collectionIds.has(variant.id)
                             ? 'bg-blue-600 border-blue-600 text-white'
                             : 'bg-white border-gray-300 text-gray-700 hover:border-blue-400'
                         }`}
                       >
-                        <input
-                          type="radio"
-                          name="basic-variant"
-                          value={variant.id}
-                          checked={variant.id === bearbrick.id}
-                          onChange={() => router.push(`/bearbricks/${variant.id}`)}
-                          className="sr-only"
-                        />
-                        {collectionLoaded && (
-                          <button
-                            type="button"
-                            onClick={(e) => handleToggleCollection(e, variant.id)}
-                            aria-label={collectionIds.has(variant.id) ? 'Remove from my collection' : 'Add to my collection'}
-                            className="flex-shrink-0"
-                          >
-                            <svg width="14" height="14" viewBox="0 0 20 20" fill={collectionIds.has(variant.id) ? '#16a34a' : 'none'}>
-                              <path d="M5 3h10a1 1 0 0 1 1 1v13l-6-3.5L4 17V4a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-                            </svg>
-                          </button>
-                        )}
                         {variant.name}
-                      </label>
+                      </button>
                     ))}
                   </div>
                 </div>

@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { upload } from '@vercel/blob/client'
 import TopMenu from '@/components/TopMenu'
-import { sortBearbricks } from '@/lib/sortBearbricks'
+import { sortBearbricks, collapseBasicGroup } from '@/lib/sortBearbricks'
 import { compressImage } from '@/lib/compressImage'
 
 interface Bearbrick {
@@ -399,7 +399,7 @@ function AdminManagePageInner() {
     setImportPreview(null)
   }
 
-  const sortedBearbricks = sortBearbricks(bearbricks)
+  const sortedBearbricks = collapseBasicGroup(sortBearbricks(bearbricks))
 
   return (
     <div className="min-h-screen bg-white">
@@ -699,7 +699,7 @@ function AdminManagePageInner() {
                       {bearbrick.category && (
                         <span className="text-gray-400">[{bearbrick.category.name}] </span>
                       )}
-                      {bearbrick.name}
+                      {bearbrick.category?.name === 'Basic' ? 'BE@RBRICK' : bearbrick.name}
                     </td>
                     <td className="px-6 py-4 text-gray-500">{bearbrick.series?.name || '-'}</td>
                     <td className="px-6 py-4">
