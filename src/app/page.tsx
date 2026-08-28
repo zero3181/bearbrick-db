@@ -41,6 +41,7 @@ interface Category {
 
 const SERIES_STORAGE_KEY = 'gombrick:selectedSeries'
 const CATEGORY_FILTER_STORAGE_KEY = 'gombrick:categoryFilter'
+const SECRET_FILTER_STORAGE_KEY = 'gombrick:secretFilter'
 
 export default function HomePage() {
   const { data: session } = useSession()
@@ -49,7 +50,8 @@ export default function HomePage() {
   const [allSeries, setAllSeries] = useState<Series[]>([])
   const [categoryList, setCategoryList] = useState<Category[]>([])
   const [selectedSeries, setSelectedSeries] = useState<string>('')
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [secretOnly, setSecretOnly] = useState(false)
   const [loading, setLoading] = useState(true)
   const [seriesMenuOpen, setSeriesMenuOpen] = useState(false)
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false)
@@ -69,15 +71,10 @@ export default function HomePage() {
     loadInitialData()
     fetchCategories()
 
-    const savedCategories = sessionStorage.getItem(CATEGORY_FILTER_STORAGE_KEY)
-    if (savedCategories) {
-      try {
-        const parsed = JSON.parse(savedCategories)
-        if (Array.isArray(parsed)) setSelectedCategories(parsed)
-      } catch {
-        // ignore malformed cache entry
-      }
-    }
+    const savedCategory = sessionStorage.getItem(CATEGORY_FILTER_STORAGE_KEY)
+    if (savedCategory) setSelectedCategory(savedCategory)
+    const savedSecretOnly = sessionStorage.getItem(SECRET_FILTER_STORAGE_KEY)
+    if (savedSecretOnly) setSecretOnly(savedSecretOnly === 'true')
   }, [])
 
   useEffect(() => {
@@ -91,8 +88,12 @@ export default function HomePage() {
   }, [selectedSeries])
 
   useEffect(() => {
-    sessionStorage.setItem(CATEGORY_FILTER_STORAGE_KEY, JSON.stringify(selectedCategories))
-  }, [selectedCategories])
+    sessionStorage.setItem(CATEGORY_FILTER_STORAGE_KEY, selectedCategory)
+  }, [selectedCategory])
+
+  useEffect(() => {
+    sessionStorage.setItem(SECRET_FILTER_STORAGE_KEY, String(secretOnly))
+  }, [secretOnly])
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -168,10 +169,9 @@ export default function HomePage() {
     setSeriesMenuOpen(false)
   }
 
-  const toggleCategory = (name: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(name) ? prev.filter((c) => c !== name) : [...prev, name]
-    )
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category)
+    setCategoryMenuOpen(false)
   }
 
   const getPrimaryImage = (bearbrick: Bearbrick) => {
@@ -194,10 +194,9 @@ export default function HomePage() {
         )
       : baseSortedBearbricks
 
-  const filteredBearbricks =
-    selectedCategories.length === 0
-      ? sortedBearbricks
-      : sortedBearbricks.filter((b) => b.category && selectedCategories.includes(b.category.name))
+  const filteredBearbricks = sortedBearbricks
+    .filter((b) => selectedCategory === 'all' || b.category?.name === selectedCategory)
+    .filter((b) => !secretOnly || b.isSecret)
 
   return (
     <div className="min-h-screen bg-white">
@@ -252,49 +251,47 @@ export default function HomePage() {
           <div className="relative inline-block" ref={categoryMenuRef}>
             <button
               onClick={() => setCategoryMenuOpen((v) => !v)}
-              aria-label="Filter by category"
-              className={`relative p-2 rounded-full hover:bg-gray-100 transition-colors ${
-                selectedCategories.length > 0 ? 'text-blue-600' : 'text-gray-400'
-              }`}
+              className="flex items-center gap-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
             >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M2.5 4h15M5.5 10h9M8.5 16h3" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+              {selectedCategory === 'all' ? 'All categories' : selectedCategory}
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" className="text-gray-400">
+                <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              {selectedCategories.length > 0 && (
-                <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-blue-600 rounded-full" />
-              )}
             </button>
 
             {categoryMenuOpen && (
               <div className="absolute left-0 mt-2 w-56 max-h-96 overflow-y-auto bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-40">
-                <div className="flex items-center justify-between px-4 py-2 border-b border-gray-100">
-                  <span className="text-xs font-semibold text-gray-500 uppercase">Categories</span>
-                  {selectedCategories.length > 0 && (
+                <button
+                  onClick={() => handleCategoryChange('all')}
+                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedCategory === 'all' ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
+                >
+                  All
+                </button>
+                {categoryList
+                  .filter((category) => category.name !== 'Secret')
+                  .map((category) => (
                     <button
-                      onClick={() => setSelectedCategories([])}
-                      className="text-xs text-blue-600 hover:underline"
+                      key={category.id}
+                      onClick={() => handleCategoryChange(category.name)}
+                      className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedCategory === category.name ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
                     >
-                      Clear
+                      {category.name}
                     </button>
-                  )}
-                </div>
-                {categoryList.map((category) => (
-                  <label
-                    key={category.id}
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedCategories.includes(category.name)}
-                      onChange={() => toggleCategory(category.name)}
-                      className="w-4 h-4"
-                    />
-                    {category.name}
-                  </label>
-                ))}
+                  ))}
               </div>
             )}
           </div>
+
+          {/* Secret filter */}
+          <label className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-700 cursor-pointer hover:bg-gray-50 transition-colors">
+            <input
+              type="checkbox"
+              checked={secretOnly}
+              onChange={(e) => setSecretOnly(e.target.checked)}
+              className="w-4 h-4"
+            />
+            Secret
+          </label>
         </div>
 
         {loading ? (
