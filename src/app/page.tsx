@@ -207,77 +207,73 @@ export default function HomePage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 pt-1 pb-8">
-        {/* Series title / selector + category filter */}
-        <div className="mb-8 flex flex-wrap items-center gap-x-3 gap-y-1">
-          <div className="relative inline-block" ref={seriesMenuRef}>
-            <button
-              onClick={() => setSeriesMenuOpen((v) => !v)}
-              className="flex items-center gap-2 text-3xl md:text-4xl text-gray-900 hover:text-gray-500 transition-colors"
-            >
-              <span className="font-agency-wide inline-block">
-                {selectedSeries === 'all' ? 'All' : selectedSeries}
-              </span>
-              <svg width="22" height="22" viewBox="0 0 20 20" fill="none" className="mt-1 text-gray-400">
-                <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
+        {/* Series title / selector */}
+        <div className="mb-3 relative inline-block" ref={seriesMenuRef}>
+          <button
+            onClick={() => setSeriesMenuOpen((v) => !v)}
+            className="flex items-center gap-2 text-3xl md:text-4xl text-gray-900 hover:text-gray-500 transition-colors"
+          >
+            <span className="font-agency-wide inline-block">
+              {selectedSeries === 'all' ? 'All' : selectedSeries}
+            </span>
+            <svg width="22" height="22" viewBox="0 0 20 20" fill="none" className="mt-1 text-gray-400">
+              <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
 
-            {seriesMenuOpen && (
-              <div className="absolute left-0 mt-2 w-72 max-h-96 overflow-y-auto bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-40">
+          {seriesMenuOpen && (
+            <div className="absolute left-0 mt-2 w-72 max-h-96 overflow-y-auto bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-40">
+              <button
+                onClick={() => handleSeriesChange('all')}
+                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === 'all' ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
+              >
+                All
+              </button>
+              {allSeries.map((series) => (
                 <button
-                  onClick={() => handleSeriesChange('all')}
-                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === 'all' ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
+                  key={series.id}
+                  onClick={() => handleSeriesChange(series.name)}
+                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === series.name ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
                 >
-                  All
+                  {series.name}
+                  {series._count && <span className="text-gray-400"> ({series._count.bearbricks})</span>}
                 </button>
-                {allSeries.map((series) => (
-                  <button
-                    key={series.id}
-                    onClick={() => handleSeriesChange(series.name)}
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === series.name ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
-                  >
-                    {series.name}
-                    {series._count && <span className="text-gray-400"> ({series._count.bearbricks})</span>}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+              ))}
+            </div>
+          )}
+        </div>
 
-          {/* Category filter, styled to read as part of the same title line */}
-          <div className="relative inline-block" ref={categoryMenuRef}>
-            <button
-              onClick={() => setCategoryMenuOpen((v) => !v)}
-              className="flex items-center gap-1 text-3xl md:text-4xl text-gray-900 hover:text-gray-500 transition-colors"
-            >
-              <span className="font-category-title inline-block">
-                {selectedCategory === 'all' ? 'All' : selectedCategory}
-              </span>
-              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" className="mt-1 text-gray-400">
-                <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
+        {/* Category filter */}
+        <div className="mb-8 relative inline-block" ref={categoryMenuRef}>
+          <button
+            onClick={() => setCategoryMenuOpen((v) => !v)}
+            className="flex items-center gap-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            {selectedCategory === 'all' ? 'All categories' : selectedCategory}
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" className="text-gray-400">
+              <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
 
-            {categoryMenuOpen && (
-              <div className="absolute left-0 mt-2 w-56 max-h-96 overflow-y-auto bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-40">
+          {categoryMenuOpen && (
+            <div className="absolute left-0 mt-2 w-56 max-h-96 overflow-y-auto bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-40">
+              <button
+                onClick={() => handleCategoryChange('all')}
+                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedCategory === 'all' ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
+              >
+                All
+              </button>
+              {categoryList.map((category) => (
                 <button
-                  onClick={() => handleCategoryChange('all')}
-                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedCategory === 'all' ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
+                  key={category.id}
+                  onClick={() => handleCategoryChange(category.name)}
+                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedCategory === category.name ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
                 >
-                  All
+                  {category.name}
                 </button>
-                {categoryList.map((category) => (
-                  <button
-                    key={category.id}
-                    onClick={() => handleCategoryChange(category.name)}
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedCategory === category.name ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
-                  >
-                    {category.name}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {loading ? (
