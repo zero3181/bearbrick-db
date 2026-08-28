@@ -402,18 +402,19 @@ export default function HomePage() {
                   <button
                     onClick={(e) => handleToggleCollection(e, bearbrick.id)}
                     aria-label={collectionIds.has(bearbrick.id) ? 'Remove from my collection' : 'Add to my collection'}
-                    className={`absolute top-2 right-2 z-10 p-1 rounded-full transition-colors ${
-                      collectionIds.has(bearbrick.id)
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-white/90 text-gray-500 hover:bg-white'
-                    }`}
+                    className="absolute top-1.5 right-1.5 z-10 transition-transform hover:scale-110"
                   >
-                    <svg width="18" height="18" viewBox="0 0 20 20" fill={collectionIds.has(bearbrick.id) ? 'currentColor' : 'none'}>
-                      <path d="M5 3h10a1 1 0 0 1 1 1v13l-6-3.5L4 17V4a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                    <svg width="30" height="30" viewBox="0 0 20 20" fill={collectionIds.has(bearbrick.id) ? '#2563eb' : 'white'} className="drop-shadow-md">
+                      <path
+                        d="M5 3h10a1 1 0 0 1 1 1v13l-6-3.5L4 17V4a1 1 0 0 1 1-1z"
+                        stroke={collectionIds.has(bearbrick.id) ? '#2563eb' : '#374151'}
+                        strokeWidth="1.5"
+                        strokeLinejoin="round"
+                      />
                       {collectionIds.has(bearbrick.id) ? (
                         <path d="M7 8h6" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
                       ) : (
-                        <path d="M7 8h6M10 5v6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                        <path d="M7 8h6M10 5v6" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" />
                       )}
                     </svg>
                   </button>
