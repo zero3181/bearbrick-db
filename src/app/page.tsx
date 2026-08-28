@@ -247,7 +247,7 @@ export default function HomePage() {
         <div className="mb-8 relative inline-block" ref={categoryMenuRef}>
           <button
             onClick={() => setCategoryMenuOpen((v) => !v)}
-            className="flex items-center gap-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
           >
             {selectedCategory === 'all' ? 'All categories' : selectedCategory}
             <svg width="16" height="16" viewBox="0 0 20 20" fill="none" className="text-gray-400">
