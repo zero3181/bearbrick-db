@@ -402,20 +402,15 @@ export default function HomePage() {
                   <button
                     onClick={(e) => handleToggleCollection(e, bearbrick.id)}
                     aria-label={collectionIds.has(bearbrick.id) ? 'Remove from my collection' : 'Add to my collection'}
-                    className="absolute top-1.5 right-1.5 z-10 transition-transform hover:scale-110"
+                    className="absolute top-0 right-2 z-10 transition-transform hover:scale-105"
                   >
-                    <svg width="30" height="30" viewBox="0 0 20 20" fill={collectionIds.has(bearbrick.id) ? '#2563eb' : 'white'} className="drop-shadow-md">
+                    <svg width="22" height="36" viewBox="0 0 20 34" fill={collectionIds.has(bearbrick.id) ? '#2563eb' : 'white'} className="drop-shadow-md">
                       <path
-                        d="M5 3h10a1 1 0 0 1 1 1v13l-6-3.5L4 17V4a1 1 0 0 1 1-1z"
+                        d="M0 0h20v26l-10 8-10-8z"
                         stroke={collectionIds.has(bearbrick.id) ? '#2563eb' : '#374151'}
                         strokeWidth="1.5"
                         strokeLinejoin="round"
                       />
-                      {collectionIds.has(bearbrick.id) ? (
-                        <path d="M7 8h6" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-                      ) : (
-                        <path d="M7 8h6M10 5v6" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" />
-                      )}
                     </svg>
                   </button>
                 </div>
