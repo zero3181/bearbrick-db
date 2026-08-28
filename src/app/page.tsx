@@ -383,7 +383,7 @@ export default function HomePage() {
                 href={`/bearbricks/${bearbrick.id}`}
                 className="group"
               >
-                <div className="relative aspect-square bg-gray-50 rounded-2xl overflow-hidden">
+                <div className="relative aspect-[3/4] bg-gray-50 rounded-2xl overflow-hidden">
                   {bearbrick.isSecret && (
                     <span
                       className={`absolute top-2 left-2 px-2 py-1 text-[10px] md:text-xs font-semibold rounded-full z-10 ${
@@ -402,11 +402,11 @@ export default function HomePage() {
                   <button
                     onClick={(e) => handleToggleCollection(e, bearbrick.id)}
                     aria-label={collectionIds.has(bearbrick.id) ? 'Remove from my collection' : 'Add to my collection'}
-                    className="absolute top-0 right-2 z-10 transition-transform hover:scale-105"
+                    className="absolute top-0 right-0 z-10 pt-0 pr-2 pb-3 pl-3 transition-transform hover:scale-105"
                   >
-                    <svg width="22" height="36" viewBox="0 0 20 34" fill={collectionIds.has(bearbrick.id) ? '#2563eb' : 'white'} className="drop-shadow-md">
+                    <svg width="22" height="32" viewBox="0 0 20 30" fill={collectionIds.has(bearbrick.id) ? '#2563eb' : 'white'} className="drop-shadow-md">
                       <path
-                        d="M0 0h20v26l-10 8-10-8z"
+                        d="M0 0h20v22l-10 8-10-8z"
                         stroke={collectionIds.has(bearbrick.id) ? '#2563eb' : '#374151'}
                         strokeWidth="1.5"
                         strokeLinejoin="round"
