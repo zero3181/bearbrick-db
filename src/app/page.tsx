@@ -53,6 +53,8 @@ export default function HomePage() {
   const [collectionIds, setCollectionIds] = useState<Set<string>>(new Set())
   const [myCollectionOnly, setMyCollectionOnly] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [toast, setToast] = useState<string | null>(null)
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [seriesMenuOpen, setSeriesMenuOpen] = useState(false)
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false)
   const seriesMenuRef = useRef<HTMLDivElement>(null)
@@ -178,6 +180,12 @@ export default function HomePage() {
     }
   }
 
+  const showToast = (message: string) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
+    setToast(message)
+    toastTimerRef.current = setTimeout(() => setToast(null), 2000)
+  }
+
   const handleToggleCollection = async (e: React.MouseEvent, bearbrickId: string) => {
     e.preventDefault()
     e.stopPropagation()
@@ -194,6 +202,7 @@ export default function HomePage() {
       wasInCollection ? next.delete(bearbrickId) : next.add(bearbrickId)
       return next
     })
+    showToast(wasInCollection ? 'Removed from My Collection' : 'Added to My Collection')
 
     try {
       const res = await fetch('/api/collection/toggle', {
@@ -209,6 +218,7 @@ export default function HomePage() {
         wasInCollection ? next.add(bearbrickId) : next.delete(bearbrickId)
         return next
       })
+      showToast('Failed to update - try again')
     }
   }
 
@@ -392,13 +402,20 @@ export default function HomePage() {
                   <button
                     onClick={(e) => handleToggleCollection(e, bearbrick.id)}
                     aria-label={collectionIds.has(bearbrick.id) ? 'Remove from my collection' : 'Add to my collection'}
-                    className={`absolute top-2 right-2 z-10 w-6 h-6 rounded-full flex items-center justify-center text-base font-bold leading-none transition-colors ${
+                    className={`absolute top-2 right-2 z-10 p-1 rounded-full transition-colors ${
                       collectionIds.has(bearbrick.id)
                         ? 'bg-blue-600 text-white'
                         : 'bg-white/90 text-gray-500 hover:bg-white'
                     }`}
                   >
-                    {collectionIds.has(bearbrick.id) ? '−' : '+'}
+                    <svg width="18" height="18" viewBox="0 0 20 20" fill={collectionIds.has(bearbrick.id) ? 'currentColor' : 'none'}>
+                      <path d="M5 3h10a1 1 0 0 1 1 1v13l-6-3.5L4 17V4a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                      {collectionIds.has(bearbrick.id) ? (
+                        <path d="M7 8h6" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+                      ) : (
+                        <path d="M7 8h6M10 5v6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      )}
+                    </svg>
                   </button>
                 </div>
                 <div className="pt-2 px-1">
@@ -415,6 +432,12 @@ export default function HomePage() {
           </div>
         )}
       </main>
+
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-gray-900 text-white text-sm rounded-full shadow-lg">
+          {toast}
+        </div>
+      )}
     </div>
   )
 }
