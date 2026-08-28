@@ -259,7 +259,22 @@ export default function HomePage() {
       <header className="border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <img src="/logo-gombrick.png" alt="GomBrick" className="h-9 md:h-[42px] w-auto" />
-          <TopMenu />
+          <div className="flex items-center gap-1">
+            {session && (
+              <button
+                onClick={() => setMyCollectionOnly((v) => !v)}
+                aria-label="My Collection"
+                className={`p-2 rounded-full transition-colors ${
+                  myCollectionOnly ? 'bg-blue-50 text-blue-600' : 'text-gray-500 hover:bg-gray-100'
+                }`}
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill={myCollectionOnly ? 'currentColor' : 'none'}>
+                  <path d="M5 3h10a1 1 0 0 1 1 1v13l-6-3.5L4 17V4a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                </svg>
+              </button>
+            )}
+            <TopMenu />
+          </div>
         </div>
       </header>
 
@@ -301,9 +316,8 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* Category filter + My Collection filter */}
-        <div className="mb-8 flex flex-wrap items-center gap-2">
-        <div className="relative inline-block" ref={categoryMenuRef}>
+        {/* Category filter */}
+        <div className="mb-8 relative inline-block" ref={categoryMenuRef}>
           <button
             onClick={() => setCategoryMenuOpen((v) => !v)}
             className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
@@ -333,18 +347,6 @@ export default function HomePage() {
               ))}
             </div>
           )}
-        </div>
-
-        {session && (
-          <button
-            onClick={() => setMyCollectionOnly((v) => !v)}
-            className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-              myCollectionOnly ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            My Collection
-          </button>
-        )}
         </div>
 
         {loading ? (
@@ -390,16 +392,13 @@ export default function HomePage() {
                   <button
                     onClick={(e) => handleToggleCollection(e, bearbrick.id)}
                     aria-label={collectionIds.has(bearbrick.id) ? 'Remove from my collection' : 'Add to my collection'}
-                    className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors"
+                    className={`absolute top-2 right-2 z-10 w-6 h-6 rounded-full flex items-center justify-center text-base font-bold leading-none transition-colors ${
+                      collectionIds.has(bearbrick.id)
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white/90 text-gray-500 hover:bg-white'
+                    }`}
                   >
-                    <svg width="16" height="16" viewBox="0 0 20 20" fill={collectionIds.has(bearbrick.id) ? '#dc2626' : 'none'}>
-                      <path
-                        d="M10 17.3s-6.5-4.35-8-8.1C.8 5.7 3 3.3 5.6 3.3 7.4 3.3 8.8 4.2 10 5.7c1.2-1.5 2.6-2.4 4.4-2.4 2.6 0 4.8 2.4 3.6 5.9-1.5 3.75-8 8.1-8 8.1z"
-                        stroke={collectionIds.has(bearbrick.id) ? '#dc2626' : '#6b7280'}
-                        strokeWidth="1.5"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
+                    {collectionIds.has(bearbrick.id) ? '−' : '+'}
                   </button>
                 </div>
                 <div className="pt-2 px-1">
