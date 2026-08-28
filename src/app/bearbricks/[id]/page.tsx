@@ -16,13 +16,14 @@ interface Bearbrick {
   series: {
     id: string
     name: string
+    season: string
+    releaseYear: number
   } | null
   category: {
     id: string
     name: string
   } | null
   size: number
-  releaseDate: string | null
   description: string | null
   isSecret: boolean
   images: {
@@ -63,7 +64,6 @@ export default function BearbrickDetailPage() {
     name: '',
     seriesId: '',
     categoryId: '',
-    releaseDate: '',
     description: '',
     isSecret: false,
   })
@@ -214,7 +214,6 @@ export default function BearbrickDetailPage() {
       name: bearbrick.name,
       seriesId: bearbrick.series?.id || '',
       categoryId: bearbrick.category?.id || '',
-      releaseDate: bearbrick.releaseDate ? bearbrick.releaseDate.split('T')[0] : '',
       description: bearbrick.description || '',
       isSecret: bearbrick.isSecret,
     })
@@ -259,7 +258,6 @@ export default function BearbrickDetailPage() {
             name: requestData.name,
             seriesId: requestData.seriesId || null,
             categoryId: requestData.categoryId || null,
-            releaseDate: requestData.releaseDate || null,
             description: requestData.description || null,
             isSecret: requestData.isSecret,
             imageUrl,
@@ -397,10 +395,10 @@ export default function BearbrickDetailPage() {
                     <span>{bearbrick.series.name}</span>
                   </div>
                 )}
-                {bearbrick.releaseDate && (
+                {bearbrick.series && (
                   <div className="flex">
                     <span className="font-semibold w-24">Released:</span>
-                    <span>{new Date(bearbrick.releaseDate).toLocaleDateString('en-US')}</span>
+                    <span>{bearbrick.series.season} {bearbrick.series.releaseYear}</span>
                   </div>
                 )}
               </div>
@@ -511,15 +509,6 @@ export default function BearbrickDetailPage() {
                   />
                   Secret
                 </label>
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">Release Date</label>
-                <input
-                  type="date"
-                  value={requestData.releaseDate}
-                  onChange={(e) => setRequestData({ ...requestData, releaseDate: e.target.value })}
-                  className="w-full px-4 py-2 border rounded"
-                />
               </div>
               <div>
                 <label className="block font-semibold mb-1">Description</label>

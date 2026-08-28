@@ -203,7 +203,6 @@ async function main() {
             id: item.id,
             name: item.figure,
             sizePercentage: 100,
-            releaseDate: new Date(`${item.releaseYear}-01-01`),
             rarityPercentage: item.probability,
             estimatedQuantity: Math.floor((100 / item.probability) * 1000),
             description: `${item.figure} from Series ${item.series} (${item.releaseYear})`,

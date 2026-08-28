@@ -10,7 +10,6 @@ interface ExistingBearbrick {
   name: string
   seriesId: string
   categoryId: string | null
-  releaseDate: Date | null
   description: string | null
   isSecret: boolean
 }
@@ -18,26 +17,12 @@ interface ExistingBearbrick {
 type ClassifiedRow =
   | { kind: 'error'; rowNum: number; reason: string }
   | { kind: 'unchanged'; rowNum: number }
-  | { kind: 'update'; rowNum: number; id: string; name: string; seriesId: string; categoryId: string | null; releaseDate: Date | null; description: string | null; isSecret: boolean }
-  | { kind: 'create'; rowNum: number; id: string | null; name: string; seriesId: string; categoryId: string | null; releaseDate: Date | null; description: string | null; isSecret: boolean }
+  | { kind: 'update'; rowNum: number; id: string; name: string; seriesId: string; categoryId: string | null; description: string | null; isSecret: boolean }
+  | { kind: 'create'; rowNum: number; id: string | null; name: string; seriesId: string; categoryId: string | null; description: string | null; isSecret: boolean }
 
 function parseSecret(value: unknown): boolean {
   const normalized = String(value ?? '').trim().toUpperCase()
   return ['Y', 'YES', 'TRUE', '1', 'O'].includes(normalized)
-}
-
-function parseDate(value: unknown): { ok: true; date: Date | null } | { ok: false } {
-  if (value === '' || value === null || value === undefined) return { ok: true, date: null }
-  if (value instanceof Date) return { ok: true, date: value }
-  const parsed = new Date(String(value))
-  if (isNaN(parsed.getTime())) return { ok: false }
-  return { ok: true, date: parsed }
-}
-
-function sameDate(a: Date | null, b: Date | null) {
-  if (a === null && b === null) return true
-  if (a === null || b === null) return false
-  return a.toISOString().split('T')[0] === b.toISOString().split('T')[0]
 }
 
 function getCurrentSeason() {
@@ -106,34 +91,28 @@ function classifyRow(
     categoryId = found
   }
 
-  const dateResult = parseDate(row['ReleaseDate'])
-  if (!dateResult.ok) {
-    return { kind: 'error', rowNum, reason: `Invalid release date format: "${row['ReleaseDate']}"` }
-  }
-
   if (id) {
     const current = existingById.get(id)
     if (!current) {
       // Not an existing ID - treat as a new row using this as its ID
       // (this app's original data uses human-readable IDs like "S50-033",
       // not auto-generated ones, so a typed-in ID for a new row is expected)
-      return { kind: 'create', rowNum, id, name, seriesId, categoryId, releaseDate: dateResult.date, description, isSecret }
+      return { kind: 'create', rowNum, id, name, seriesId, categoryId, description, isSecret }
     }
 
     const unchanged =
       current.name === name &&
       current.seriesId === seriesId &&
       current.categoryId === categoryId &&
-      sameDate(current.releaseDate, dateResult.date) &&
       (current.description || null) === description &&
       current.isSecret === isSecret
 
     if (unchanged) return { kind: 'unchanged', rowNum }
 
-    return { kind: 'update', rowNum, id, name, seriesId, categoryId, releaseDate: dateResult.date, description, isSecret }
+    return { kind: 'update', rowNum, id, name, seriesId, categoryId, description, isSecret }
   }
 
-  return { kind: 'create', rowNum, id: null, name, seriesId, categoryId, releaseDate: dateResult.date, description, isSecret }
+  return { kind: 'create', rowNum, id: null, name, seriesId, categoryId, description, isSecret }
 }
 
 async function readRows(file: File) {
@@ -147,7 +126,7 @@ async function fetchExistingByIds(ids: string[]) {
   if (ids.length === 0) return new Map<string, ExistingBearbrick>()
   const rows = await prisma.bearbrick.findMany({
     where: { id: { in: ids } },
-    select: { id: true, name: true, seriesId: true, categoryId: true, releaseDate: true, description: true, isSecret: true },
+    select: { id: true, name: true, seriesId: true, categoryId: true, description: true, isSecret: true },
   })
   return new Map(rows.map((r) => [r.id, r]))
 }
@@ -262,7 +241,6 @@ export async function POST(request: NextRequest) {
               name: u.name,
               seriesId: u.seriesId,
               categoryId: u.categoryId,
-              releaseDate: u.releaseDate,
               description: u.description,
               isSecret: u.isSecret,
             },
@@ -276,7 +254,6 @@ export async function POST(request: NextRequest) {
               seriesId: c.seriesId,
               categoryId: c.categoryId,
               sizePercentage: 100,
-              releaseDate: c.releaseDate,
               description: c.description,
               isSecret: c.isSecret,
               createdById: session.user.id,

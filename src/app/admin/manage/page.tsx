@@ -60,7 +60,6 @@ function AdminManagePageInner() {
     name: '',
     seriesId: '',
     categoryId: '',
-    releaseDate: '',
     description: '',
     isSecret: false,
   })
@@ -157,10 +156,7 @@ function AdminManagePageInner() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...formData,
-          releaseDate: formData.releaseDate || null,
-        }),
+        body: JSON.stringify(formData),
       })
 
       if (!res.ok) {
@@ -204,7 +200,7 @@ function AdminManagePageInner() {
       alert('Added')
       setShowAddForm(false)
       router.replace('/admin/manage')
-      setFormData({ name: '', seriesId: '', categoryId: '', releaseDate: '', description: '', isSecret: false })
+      setFormData({ name: '', seriesId: '', categoryId: '', description: '', isSecret: false })
       setImageFile(null)
       setImagePreview('')
       fetchBearbricks(selectedSeries)
@@ -589,15 +585,6 @@ function AdminManagePageInner() {
                   />
                   Secret
                 </label>
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">Release Date</label>
-                <input
-                  type="date"
-                  value={formData.releaseDate}
-                  onChange={(e) => setFormData({ ...formData, releaseDate: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg"
-                />
               </div>
               <div>
                 <label className="block font-semibold mb-1">Description</label>

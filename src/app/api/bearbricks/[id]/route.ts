@@ -20,6 +20,8 @@ export async function GET(
           select: {
             id: true,
             name: true,
+            season: true,
+            releaseYear: true,
           },
         },
         categories: {
@@ -45,7 +47,6 @@ export async function GET(
       series: bearbrick.series || null,
       category: bearbrick.categories || null,
       size: bearbrick.sizePercentage,
-      releaseDate: bearbrick.releaseDate,
       description: bearbrick.description,
       isSecret: bearbrick.isSecret,
       images: bearbrick.images,

@@ -21,7 +21,6 @@ interface Bearbrick {
     name: string
   } | null
   size: number
-  releaseDate: string | null
   description: string | null
   isSecret: boolean
   images: {
@@ -53,7 +52,6 @@ export default function EditBearbrickPage() {
     name: '',
     seriesId: '',
     categoryId: '',
-    releaseDate: '',
     description: '',
     isSecret: false,
   })
@@ -106,7 +104,6 @@ export default function EditBearbrickPage() {
           name: data.name,
           seriesId: data.series?.id || '',
           categoryId: data.category?.id || '',
-          releaseDate: data.releaseDate ? data.releaseDate.split('T')[0] : '',
           description: data.description || '',
           isSecret: Boolean(data.isSecret),
         })
@@ -128,7 +125,6 @@ export default function EditBearbrickPage() {
         body: JSON.stringify({
           id: params.id,
           ...formData,
-          releaseDate: formData.releaseDate || null,
         }),
       })
 
@@ -311,15 +307,6 @@ export default function EditBearbrickPage() {
                 />
                 Secret
               </label>
-            </div>
-            <div>
-              <label className="block font-semibold mb-1">Release Date</label>
-              <input
-                type="date"
-                value={formData.releaseDate}
-                onChange={(e) => setFormData({ ...formData, releaseDate: e.target.value })}
-                className="w-full px-4 py-2 border rounded"
-              />
             </div>
             <div>
               <label className="block font-semibold mb-1">Description</label>

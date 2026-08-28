@@ -6,7 +6,6 @@ interface NewData {
   name?: string
   seriesId?: string | null
   categoryId?: string | null
-  releaseDate?: string | null
   description?: string | null
   isSecret?: boolean
   imageUrl?: string | null
@@ -51,7 +50,6 @@ export async function POST(
   if (newData.name) bearbrickUpdate.name = newData.name
   if (newData.seriesId) bearbrickUpdate.seriesId = newData.seriesId
   bearbrickUpdate.categoryId = newData.categoryId || null
-  bearbrickUpdate.releaseDate = newData.releaseDate ? new Date(newData.releaseDate) : null
   bearbrickUpdate.description = newData.description || null
   bearbrickUpdate.isSecret = Boolean(newData.isSecret)
 

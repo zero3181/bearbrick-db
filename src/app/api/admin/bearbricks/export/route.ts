@@ -11,7 +11,7 @@ export async function GET() {
 
   const bearbricks = await prisma.bearbrick.findMany({
     include: {
-      series: { select: { name: true } },
+      series: { select: { name: true, season: true, releaseYear: true } },
       categories: { select: { name: true } },
     },
     orderBy: { createdAt: 'desc' },
@@ -23,7 +23,7 @@ export async function GET() {
     Series: b.series?.name || '',
     Category: b.categories?.name || '',
     Secret: b.isSecret ? 'Y' : 'N',
-    ReleaseDate: b.releaseDate ? b.releaseDate.toISOString().split('T')[0] : '',
+    Released: b.series ? `${b.series.season} ${b.series.releaseYear}` : '',
     Description: b.description || '',
   }))
 
@@ -34,7 +34,7 @@ export async function GET() {
     { wch: 14 }, // Series
     { wch: 12 }, // Category
     { wch: 8 },  // Secret
-    { wch: 12 }, // ReleaseDate
+    { wch: 14 }, // Released
     { wch: 40 }, // Description
   ]
 

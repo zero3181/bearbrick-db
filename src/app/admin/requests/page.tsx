@@ -11,7 +11,6 @@ interface RequestData {
   name?: string
   seriesId?: string | null
   categoryId?: string | null
-  releaseDate?: string | null
   description?: string | null
   isSecret?: boolean
   imageUrl?: string | null
@@ -181,7 +180,6 @@ export default function AdminRequestsPage() {
                   oldVal={categoryName(req.oldData.categoryId)}
                   newVal={categoryName(req.newData.categoryId)}
                 />
-                <Field label="Released" oldVal={req.oldData.releaseDate || ''} newVal={req.newData.releaseDate || ''} />
                 <Field label="Description" oldVal={req.oldData.description || ''} newVal={req.newData.description || ''} />
                 <Field
                   label="Secret"

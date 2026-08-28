@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, seriesId, categoryId, releaseDate, description, isSecret } = body
+    const { name, seriesId, categoryId, description, isSecret } = body
 
     if (!name || !seriesId) {
       return NextResponse.json(
@@ -26,7 +26,6 @@ export async function POST(request: NextRequest) {
         categoryId: categoryId || null,
         createdById: session.user.id,
         sizePercentage: 100,
-        releaseDate: releaseDate ? new Date(releaseDate) : null,
         description: description || null,
         isSecret: Boolean(isSecret),
       },

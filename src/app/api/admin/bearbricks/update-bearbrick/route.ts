@@ -10,7 +10,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { id, name, seriesId, categoryId, releaseDate, description, isSecret } = body
+    const { id, name, seriesId, categoryId, description, isSecret } = body
 
     if (!id || !name) {
       return NextResponse.json(
@@ -26,7 +26,6 @@ export async function PUT(request: NextRequest) {
         name,
         seriesId: seriesId || null,
         categoryId: categoryId || null,
-        releaseDate: releaseDate ? new Date(releaseDate) : null,
         description,
         isSecret: Boolean(isSecret),
       },

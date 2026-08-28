@@ -12,7 +12,6 @@ model Bearbrick {
   id                String            @id @default(cuid())
   name              String
   sizePercentage    Int
-  releaseDate       DateTime?
   rarityPercentage  Float?
   estimatedQuantity Int?
   materialType      String?           @default("ABS Plastic")
