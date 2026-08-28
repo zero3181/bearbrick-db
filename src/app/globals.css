@@ -28,6 +28,17 @@ body {
   letter-spacing: 0.12em;
 }
 
+/* Category title next to the series title. Conthrax's wide tracking
+   makes long category names overflow on mobile, so this uses Pretendard
+   with tightened tracking instead to stay compact while still reading
+   as part of the same all-caps title line. */
+.font-category-title {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+
 @keyframes brick-bounce {
   0%, 80%, 100% { transform: translateY(0); opacity: 0.5; }
   40% { transform: translateY(-10px); opacity: 1; }

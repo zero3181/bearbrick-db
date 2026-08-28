@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import TopMenu from '@/components/TopMenu'
 import LoadingSpinner from '@/components/LoadingSpinner'
-import { sortBearbricks, collapseBasicGroup } from '@/lib/sortBearbricks'
+import { sortBearbricks, collapseBasicGroup, sortCategoriesOfficial } from '@/lib/sortBearbricks'
 
 interface Bearbrick {
   id: string
@@ -41,7 +41,6 @@ interface Category {
 
 const SERIES_STORAGE_KEY = 'gombrick:selectedSeries'
 const CATEGORY_FILTER_STORAGE_KEY = 'gombrick:categoryFilter'
-const SECRET_FILTER_STORAGE_KEY = 'gombrick:secretFilter'
 
 export default function HomePage() {
   const { data: session } = useSession()
@@ -51,7 +50,6 @@ export default function HomePage() {
   const [categoryList, setCategoryList] = useState<Category[]>([])
   const [selectedSeries, setSelectedSeries] = useState<string>('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
-  const [secretOnly, setSecretOnly] = useState(false)
   const [loading, setLoading] = useState(true)
   const [seriesMenuOpen, setSeriesMenuOpen] = useState(false)
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false)
@@ -73,8 +71,6 @@ export default function HomePage() {
 
     const savedCategory = sessionStorage.getItem(CATEGORY_FILTER_STORAGE_KEY)
     if (savedCategory) setSelectedCategory(savedCategory)
-    const savedSecretOnly = sessionStorage.getItem(SECRET_FILTER_STORAGE_KEY)
-    if (savedSecretOnly) setSecretOnly(savedSecretOnly === 'true')
   }, [])
 
   useEffect(() => {
@@ -90,10 +86,6 @@ export default function HomePage() {
   useEffect(() => {
     sessionStorage.setItem(CATEGORY_FILTER_STORAGE_KEY, selectedCategory)
   }, [selectedCategory])
-
-  useEffect(() => {
-    sessionStorage.setItem(SECRET_FILTER_STORAGE_KEY, String(secretOnly))
-  }, [secretOnly])
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -126,7 +118,7 @@ export default function HomePage() {
     try {
       const res = await fetch('/api/categories')
       const data = await res.json()
-      setCategoryList(Array.isArray(data) ? data : [])
+      setCategoryList(sortCategoriesOfficial(Array.isArray(data) ? data : []))
     } catch (error) {
       console.error('Failed to fetch categories:', error)
       setCategoryList([])
@@ -194,9 +186,14 @@ export default function HomePage() {
         )
       : baseSortedBearbricks
 
-  const filteredBearbricks = sortedBearbricks
-    .filter((b) => selectedCategory === 'all' || b.category?.name === selectedCategory)
-    .filter((b) => !secretOnly || b.isSecret)
+  const filteredBearbricks = sortedBearbricks.filter((b) => {
+    if (selectedCategory === 'all') return true
+    // "Secret" filters by the isSecret flag across every category, not
+    // just the category-less "Secret" bucket, so Hero/Artist/etc secrets
+    // show up here too.
+    if (selectedCategory === 'Secret') return b.isSecret
+    return b.category?.name === selectedCategory
+  })
 
   return (
     <div className="min-h-screen bg-white">
@@ -211,7 +208,7 @@ export default function HomePage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 pt-1 pb-8">
         {/* Series title / selector + category filter */}
-        <div className="mb-8 flex items-center gap-2">
+        <div className="mb-8 flex flex-wrap items-center gap-x-3 gap-y-1">
           <div className="relative inline-block" ref={seriesMenuRef}>
             <button
               onClick={() => setSeriesMenuOpen((v) => !v)}
@@ -247,14 +244,16 @@ export default function HomePage() {
             )}
           </div>
 
-          {/* Category filter */}
+          {/* Category filter, styled to read as part of the same title line */}
           <div className="relative inline-block" ref={categoryMenuRef}>
             <button
               onClick={() => setCategoryMenuOpen((v) => !v)}
-              className="flex items-center gap-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-1 text-3xl md:text-4xl text-gray-900 hover:text-gray-500 transition-colors"
             >
-              {selectedCategory === 'all' ? 'All categories' : selectedCategory}
-              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" className="text-gray-400">
+              <span className="font-category-title inline-block">
+                {selectedCategory === 'all' ? 'All' : selectedCategory}
+              </span>
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" className="mt-1 text-gray-400">
                 <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
@@ -267,31 +266,18 @@ export default function HomePage() {
                 >
                   All
                 </button>
-                {categoryList
-                  .filter((category) => category.name !== 'Secret')
-                  .map((category) => (
-                    <button
-                      key={category.id}
-                      onClick={() => handleCategoryChange(category.name)}
-                      className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedCategory === category.name ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
-                    >
-                      {category.name}
-                    </button>
-                  ))}
+                {categoryList.map((category) => (
+                  <button
+                    key={category.id}
+                    onClick={() => handleCategoryChange(category.name)}
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedCategory === category.name ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
+                  >
+                    {category.name}
+                  </button>
+                ))}
               </div>
             )}
           </div>
-
-          {/* Secret filter */}
-          <label className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-700 cursor-pointer hover:bg-gray-50 transition-colors">
-            <input
-              type="checkbox"
-              checked={secretOnly}
-              onChange={(e) => setSecretOnly(e.target.checked)}
-              className="w-4 h-4"
-            />
-            Secret
-          </label>
         </div>
 
         {loading ? (

@@ -47,6 +47,17 @@ export function sortBearbricks<T extends SortableBearbrick>(items: T[]): T[] {
   })
 }
 
+// Orders a category list to match the official Medicom Toy listing order
+// (Basic first, Secret always last), for use in filter dropdowns.
+export function sortCategoriesOfficial<T extends { name: string }>(categories: T[]): T[] {
+  const rank = (name: string) => {
+    if (name === 'Secret') return Number.MAX_SAFE_INTEGER
+    const idx = CATEGORY_ORDER.indexOf(name)
+    return idx === -1 ? CATEGORY_ORDER.length : idx
+  }
+  return [...categories].sort((a, b) => rank(a.name) - rank(b.name))
+}
+
 interface BasicGroupable extends SortableBearbrick {
   id: string
   series: { id: string } | null
