@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
             createdBearbricks: true,
             uploadedImages: true,
             editRequests: true,
-            recommendations: true,
+            collectionItems: true,
             submittedImages: true
           }
         }

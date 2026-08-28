@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { useSession } from 'next-auth/react'
+import { useSession, signIn } from 'next-auth/react'
 import TopMenu from '@/components/TopMenu'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import { sortBearbricks, collapseBasicGroup, sortCategoriesOfficial } from '@/lib/sortBearbricks'
@@ -43,13 +43,15 @@ const SERIES_STORAGE_KEY = 'gombrick:selectedSeries'
 const CATEGORY_FILTER_STORAGE_KEY = 'gombrick:categoryFilter'
 
 export default function HomePage() {
-  const { data: session } = useSession()
+  const { data: session, status: sessionStatus } = useSession()
   const isAdmin = session?.user?.role === 'ADMIN' || session?.user?.role === 'OWNER'
   const [bearbricks, setBearbricks] = useState<Bearbrick[]>([])
   const [allSeries, setAllSeries] = useState<Series[]>([])
   const [categoryList, setCategoryList] = useState<Category[]>([])
   const [selectedSeries, setSelectedSeries] = useState<string>('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [collectionIds, setCollectionIds] = useState<Set<string>>(new Set())
+  const [myCollectionOnly, setMyCollectionOnly] = useState(false)
   const [loading, setLoading] = useState(true)
   const [seriesMenuOpen, setSeriesMenuOpen] = useState(false)
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false)
@@ -86,6 +88,15 @@ export default function HomePage() {
   useEffect(() => {
     sessionStorage.setItem(CATEGORY_FILTER_STORAGE_KEY, selectedCategory)
   }, [selectedCategory])
+
+  useEffect(() => {
+    if (sessionStatus === 'authenticated') {
+      fetchCollection()
+    } else if (sessionStatus === 'unauthenticated') {
+      setCollectionIds(new Set())
+      setMyCollectionOnly(false)
+    }
+  }, [sessionStatus])
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -156,6 +167,51 @@ export default function HomePage() {
     }
   }
 
+  const fetchCollection = async () => {
+    try {
+      const res = await fetch('/api/collection')
+      if (!res.ok) return
+      const ids = await res.json()
+      setCollectionIds(new Set(Array.isArray(ids) ? ids : []))
+    } catch (error) {
+      console.error('Failed to fetch collection:', error)
+    }
+  }
+
+  const handleToggleCollection = async (e: React.MouseEvent, bearbrickId: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (!session) {
+      signIn('google')
+      return
+    }
+
+    // Optimistic update, reverted if the request fails
+    const wasInCollection = collectionIds.has(bearbrickId)
+    setCollectionIds((prev) => {
+      const next = new Set(prev)
+      wasInCollection ? next.delete(bearbrickId) : next.add(bearbrickId)
+      return next
+    })
+
+    try {
+      const res = await fetch('/api/collection/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bearbrickId }),
+      })
+      if (!res.ok) throw new Error('Toggle failed')
+    } catch (error) {
+      console.error('Failed to toggle collection item:', error)
+      setCollectionIds((prev) => {
+        const next = new Set(prev)
+        wasInCollection ? next.add(bearbrickId) : next.delete(bearbrickId)
+        return next
+      })
+    }
+  }
+
   const handleSeriesChange = (series: string) => {
     setSelectedSeries(series)
     setSeriesMenuOpen(false)
@@ -186,14 +242,16 @@ export default function HomePage() {
         )
       : baseSortedBearbricks
 
-  const filteredBearbricks = sortedBearbricks.filter((b) => {
-    if (selectedCategory === 'all') return true
-    // "Secret" filters by the isSecret flag across every category, not
-    // just the category-less "Secret" bucket, so Hero/Artist/etc secrets
-    // show up here too.
-    if (selectedCategory === 'Secret') return b.isSecret
-    return b.category?.name === selectedCategory
-  })
+  const filteredBearbricks = sortedBearbricks
+    .filter((b) => {
+      if (selectedCategory === 'all') return true
+      // "Secret" filters by the isSecret flag across every category, not
+      // just the category-less "Secret" bucket, so Hero/Artist/etc secrets
+      // show up here too.
+      if (selectedCategory === 'Secret') return b.isSecret
+      return b.category?.name === selectedCategory
+    })
+    .filter((b) => !myCollectionOnly || collectionIds.has(b.id))
 
   return (
     <div className="min-h-screen bg-white">
@@ -243,8 +301,9 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* Category filter */}
-        <div className="mb-8 relative inline-block" ref={categoryMenuRef}>
+        {/* Category filter + My Collection filter */}
+        <div className="mb-8 flex flex-wrap items-center gap-2">
+        <div className="relative inline-block" ref={categoryMenuRef}>
           <button
             onClick={() => setCategoryMenuOpen((v) => !v)}
             className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
@@ -274,6 +333,18 @@ export default function HomePage() {
               ))}
             </div>
           )}
+        </div>
+
+        {session && (
+          <button
+            onClick={() => setMyCollectionOnly((v) => !v)}
+            className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+              myCollectionOnly ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            My Collection
+          </button>
+        )}
         </div>
 
         {loading ? (
@@ -316,6 +387,20 @@ export default function HomePage() {
                     className="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gray-900/[0.04] pointer-events-none" />
+                  <button
+                    onClick={(e) => handleToggleCollection(e, bearbrick.id)}
+                    aria-label={collectionIds.has(bearbrick.id) ? 'Remove from my collection' : 'Add to my collection'}
+                    className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill={collectionIds.has(bearbrick.id) ? '#dc2626' : 'none'}>
+                      <path
+                        d="M10 17.3s-6.5-4.35-8-8.1C.8 5.7 3 3.3 5.6 3.3 7.4 3.3 8.8 4.2 10 5.7c1.2-1.5 2.6-2.4 4.4-2.4 2.6 0 4.8 2.4 3.6 5.9-1.5 3.75-8 8.1-8 8.1z"
+                        stroke={collectionIds.has(bearbrick.id) ? '#dc2626' : '#6b7280'}
+                        strokeWidth="1.5"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
                 </div>
                 <div className="pt-2 px-1">
                   <h3 className="font-medium text-xs md:text-sm line-clamp-2 text-gray-900">

@@ -31,7 +31,7 @@ model Bearbrick {
   series            series            @relation(fields: [seriesId], references: [id])
   edit_requests     edit_requests[]
   image_requests    image_requests[]
-  recommendations   recommendations[]
+  collectionItems   CollectionItem[]
 
   @@map("bearbricks")
 }
@@ -137,15 +137,16 @@ model image_requests {
   users         User          @relation(fields: [requestedById], references: [id])
 }
 
-model recommendations {
-  id          String    @id
+model CollectionItem {
+  id          String    @id @default(cuid())
   createdAt   DateTime  @default(now())
   userId      String
   bearbrickId String
-  bearbricks  Bearbrick @relation(fields: [bearbrickId], references: [id], onDelete: Cascade)
-  users       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bearbrick   Bearbrick @relation(fields: [bearbrickId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, bearbrickId])
+  @@map("collection_items")
 }
 
 model series {
@@ -191,7 +192,7 @@ model User {
   bearbricks                                                       Bearbrick[]
   edit_requests                                                    edit_requests[]
   image_requests                                                   image_requests[]
-  recommendations                                                  recommendations[]
+  collectionItems                                                  CollectionItem[]
   user_submitted_images_user_submitted_images_reviewedByIdTousers  user_submitted_images[] @relation("user_submitted_images_reviewedByIdTousers")
   user_submitted_images_user_submitted_images_submittedByIdTousers user_submitted_images[] @relation("user_submitted_images_submittedByIdTousers")
 
