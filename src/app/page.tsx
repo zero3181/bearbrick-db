@@ -59,6 +59,7 @@ export default function HomePage() {
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [seriesMenuOpen, setSeriesMenuOpen] = useState(false)
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false)
+  const [showScrollTop, setShowScrollTop] = useState(false)
   const seriesMenuRef = useRef<HTMLDivElement>(null)
   const categoryMenuRef = useRef<HTMLDivElement>(null)
 
@@ -102,6 +103,12 @@ export default function HomePage() {
       setCollectionLoaded(true)
     }
   }, [sessionStatus])
+
+  useEffect(() => {
+    const handleScroll = () => setShowScrollTop(window.scrollY > 800)
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -277,11 +284,16 @@ export default function HomePage() {
   // saved/unsaved toggle - instead show how many of the 9 pieces in that
   // series are saved. Built from the raw (pre-collapse) bearbricks list.
   const basicIdsBySeriesId = new Map<string, string[]>()
+  // Toggling collection membership from the home grid can't know which of
+  // the 9 Basic pieces the user actually owns, so it always targets "B" as
+  // a stand-in - the detail page lets them correct it to the real piece.
+  const basicBIdBySeriesId = new Map<string, string>()
   for (const b of bearbricks) {
     if (b.category?.name === 'Basic') {
       const key = b.series?.id ?? 'none'
       if (!basicIdsBySeriesId.has(key)) basicIdsBySeriesId.set(key, [])
       basicIdsBySeriesId.get(key)!.push(b.id)
+      if (b.name === 'B') basicBIdBySeriesId.set(key, b.id)
     }
   }
 
@@ -437,11 +449,13 @@ export default function HomePage() {
                       (() => {
                         const ids = basicIdsBySeriesId.get(bearbrick.series?.id ?? 'none') ?? []
                         const owned = ids.filter((id) => collectionIds.has(id)).length
-                        // Purely informational for the collapsed Basic card - no
-                        // per-piece toggle here, so the click passes through to
-                        // the card's Link and opens the chips inside instead.
+                        const bId = basicBIdBySeriesId.get(bearbrick.series?.id ?? 'none') ?? ids[0]
                         return (
-                          <div className="absolute top-0 right-2 z-10 pointer-events-none">
+                          <button
+                            onClick={(e) => bId && handleToggleCollection(e, bId)}
+                            aria-label={owned > 0 ? 'Remove from my collection' : 'Add to my collection'}
+                            className="absolute top-0 right-0 z-10 pt-0 pr-2 pb-3 pl-3 transition-transform hover:scale-105"
+                          >
                             <svg width="22" height="32" viewBox="0 0 20 30" fill={owned > 0 ? '#2563eb' : 'white'} className="drop-shadow-md">
                               <path
                                 d="M0 0h20v22l-10 8-10-8z"
@@ -455,7 +469,7 @@ export default function HomePage() {
                                 {owned}
                               </span>
                             )}
-                          </div>
+                          </button>
                         )
                       })()
                     ) : (
@@ -495,6 +509,18 @@ export default function HomePage() {
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-gray-900 text-white text-sm rounded-full shadow-lg">
           {toast}
         </div>
+      )}
+
+      {showScrollTop && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          aria-label="Scroll to top"
+          className="fixed bottom-6 right-6 z-50 w-11 h-11 flex items-center justify-center bg-gray-900 text-white rounded-full shadow-lg hover:bg-gray-700 transition-colors"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 15l-6-6-6 6" />
+          </svg>
+        </button>
       )}
     </div>
   )
