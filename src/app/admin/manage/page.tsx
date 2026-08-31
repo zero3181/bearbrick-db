@@ -677,7 +677,7 @@ function AdminManagePageInner() {
                       {bearbrick.isSecret && (
                         <span
                           className={`inline-block px-2 py-0.5 mr-2 text-xs font-semibold rounded-full ${
-                            bearbrick.category?.name === 'Secret' ? 'bg-yellow-50 text-yellow-700' : 'bg-blue-50 text-blue-700'
+                            bearbrick.category?.name === 'Super Secret' ? 'bg-yellow-50 text-yellow-700' : 'bg-blue-50 text-blue-700'
                           }`}
                         >
                           Secret

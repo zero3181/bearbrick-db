@@ -1,4 +1,4 @@
-// Official Bearbrick category order (Secret always last, per official series listings)
+// Official Bearbrick category order (Super Secret always last, per official series listings)
 const CATEGORY_ORDER = [
   'Basic',
   'Jelly Bean',
@@ -11,7 +11,7 @@ const CATEGORY_ORDER = [
   'Hero',
   'Artist',
   'Villain',
-  'Secret',
+  'Super Secret',
 ]
 
 // Within the Basic category, items follow this fixed code order
@@ -48,10 +48,10 @@ export function sortBearbricks<T extends SortableBearbrick>(items: T[]): T[] {
 }
 
 // Orders a category list to match the official Medicom Toy listing order
-// (Basic first, Secret always last), for use in filter dropdowns.
+// (Basic first, Super Secret always last), for use in filter dropdowns.
 export function sortCategoriesOfficial<T extends { name: string }>(categories: T[]): T[] {
   const rank = (name: string) => {
-    if (name === 'Secret') return Number.MAX_SAFE_INTEGER
+    if (name === 'Super Secret') return Number.MAX_SAFE_INTEGER
     const idx = CATEGORY_ORDER.indexOf(name)
     return idx === -1 ? CATEGORY_ORDER.length : idx
   }

@@ -300,10 +300,10 @@ export default function HomePage() {
   const filteredBearbricks = sortedBearbricks
     .filter((b) => {
       if (selectedCategory === 'all') return true
-      // "Secret" filters by the isSecret flag across every category, not
-      // just the category-less "Secret" bucket, so Hero/Artist/etc secrets
+      // "Super Secret" filters by the isSecret flag across every category, not
+      // just the category-less "Super Secret" bucket, so Hero/Artist/etc secrets
       // show up here too.
-      if (selectedCategory === 'Secret') return b.isSecret
+      if (selectedCategory === 'Super Secret') return b.isSecret
       return b.category?.name === selectedCategory
     })
     .filter((b) => !myCollectionOnly || collectionIds.has(b.id))
@@ -432,7 +432,7 @@ export default function HomePage() {
                   {bearbrick.isSecret && (
                     <span
                       className={`absolute top-2 left-2 px-2 py-1 text-[10px] md:text-xs font-semibold rounded-full z-10 ${
-                        bearbrick.category?.name === 'Secret' ? 'bg-yellow-400 text-gray-900' : 'bg-blue-600 text-white'
+                        bearbrick.category?.name === 'Super Secret' ? 'bg-yellow-400 text-gray-900' : 'bg-blue-600 text-white'
                       }`}
                     >
                       Secret

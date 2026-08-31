@@ -353,7 +353,7 @@ export default function BearbrickDetailPage() {
                 {bearbrick.isSecret && (
                   <span
                     className={`inline-block align-middle mr-2 px-2 py-1 text-sm font-semibold rounded ${
-                      bearbrick.category?.name === 'Secret' ? 'bg-yellow-400 text-gray-900' : 'bg-blue-600 text-white'
+                      bearbrick.category?.name === 'Super Secret' ? 'bg-yellow-400 text-gray-900' : 'bg-blue-600 text-white'
                     }`}
                   >
                     Secret
