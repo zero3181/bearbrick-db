@@ -40,6 +40,16 @@ export async function GET(
       )
     }
 
+    const latestApprovedEdit = await prisma.edit_requests.findFirst({
+      where: { bearbrickId: params.id, status: 'APPROVED' },
+      orderBy: { reviewedAt: 'desc' },
+      select: { users: { select: { nickname: true, showCredit: true } } },
+    })
+    const contributor =
+      latestApprovedEdit?.users.showCredit && latestApprovedEdit.users.nickname
+        ? latestApprovedEdit.users.nickname
+        : null
+
     // Map to simpler structure
     const mapped = {
       id: bearbrick.id,
@@ -50,6 +60,7 @@ export async function GET(
       description: bearbrick.description,
       isSecret: bearbrick.isSecret,
       images: bearbrick.images,
+      contributor,
     }
 
     return NextResponse.json(mapped)

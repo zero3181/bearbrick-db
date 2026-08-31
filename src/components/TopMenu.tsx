@@ -18,6 +18,9 @@ export default function TopMenu() {
   const [open, setOpen] = useState(false)
   const [exporting, setExporting] = useState(false)
   const [pendingCount, setPendingCount] = useState(0)
+  const [nickname, setNickname] = useState('')
+  const [showCredit, setShowCredit] = useState(false)
+  const [savingProfile, setSavingProfile] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
   const fetchPendingCount = async () => {
@@ -32,9 +35,47 @@ export default function TopMenu() {
     }
   }
 
+  const fetchProfile = async () => {
+    try {
+      const res = await fetch('/api/profile')
+      if (res.ok) {
+        const data = await res.json()
+        setNickname(data.nickname || '')
+        setShowCredit(Boolean(data.showCredit))
+      }
+    } catch (error) {
+      console.error('Failed to fetch profile:', error)
+    }
+  }
+
+  const saveProfile = async (next: { nickname: string; showCredit: boolean }) => {
+    setSavingProfile(true)
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(next),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setNickname(data.nickname || '')
+        setShowCredit(Boolean(data.showCredit))
+      }
+    } catch (error) {
+      console.error('Failed to save profile:', error)
+    } finally {
+      setSavingProfile(false)
+    }
+  }
+
   useEffect(() => {
     if (isAdmin) fetchPendingCount()
   }, [isAdmin])
+
+  useEffect(() => {
+    if (session) fetchProfile()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.id])
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -94,14 +135,36 @@ export default function TopMenu() {
       {open && (
         <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50">
           {session && (
-            <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
-              {session.user.image && (
-                <img src={session.user.image} alt="" className="w-8 h-8 rounded-full" />
-              )}
-              <div className="min-w-0">
-                <p className="text-sm font-medium truncate">{session.user.name}</p>
-                <p className="text-xs text-gray-500 truncate">{session.user.email}</p>
+            <div className="px-4 py-3 border-b border-gray-100">
+              <div className="flex items-center gap-2 mb-3">
+                {session.user.image && (
+                  <img src={session.user.image} alt="" className="w-8 h-8 rounded-full" />
+                )}
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{session.user.name}</p>
+                  <p className="text-xs text-gray-500 truncate">{session.user.email}</p>
+                </div>
               </div>
+
+              <input
+                type="text"
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+                onBlur={() => saveProfile({ nickname, showCredit: nickname ? showCredit : false })}
+                placeholder="닉네임 (선택)"
+                maxLength={30}
+                disabled={savingProfile}
+                className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded-md mb-1.5"
+              />
+              <label className="flex items-center gap-2 text-xs text-gray-500">
+                <input
+                  type="checkbox"
+                  checked={showCredit}
+                  disabled={!nickname || savingProfile}
+                  onChange={(e) => saveProfile({ nickname, showCredit: e.target.checked })}
+                />
+                제보 시 닉네임 공개
+              </label>
             </div>
           )}
 

@@ -31,6 +31,7 @@ interface Bearbrick {
     url: string
     isPrimary: boolean
   }[]
+  contributor: string | null
 }
 
 interface Series {
@@ -408,6 +409,10 @@ export default function BearbrickDetailPage() {
                   <h3 className="font-semibold mb-2">Description</h3>
                   <p className="text-gray-700 whitespace-pre-wrap">{bearbrick.description}</p>
                 </div>
+              )}
+
+              {bearbrick.contributor && (
+                <p className="text-xs text-gray-400 mb-6">제보: {bearbrick.contributor}</p>
               )}
 
               {/* Admin Actions */}
