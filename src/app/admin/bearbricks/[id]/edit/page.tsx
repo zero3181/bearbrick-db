@@ -113,6 +113,20 @@ export default function EditBearbrickPage() {
     }
   }
 
+  // Used after image actions (upload/set-primary/delete) to refresh the
+  // image list without clobbering in-progress, unsaved edits in formData.
+  const refreshImages = async () => {
+    try {
+      const res = await fetch(`/api/bearbricks/${params.id}`)
+      if (res.ok) {
+        const data = await res.json()
+        setBearbrick(data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch:', error)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -177,7 +191,7 @@ export default function EditBearbrickPage() {
 
       if (res.ok) {
         alert('Image uploaded')
-        fetchBearbrick()
+        refreshImages()
       } else {
         alert('Failed to save the image')
       }
@@ -201,7 +215,7 @@ export default function EditBearbrickPage() {
       })
 
       if (res.ok) {
-        fetchBearbrick()
+        refreshImages()
       }
     } catch (error) {
       console.error('Failed to set primary:', error)
@@ -221,7 +235,7 @@ export default function EditBearbrickPage() {
       })
 
       if (res.ok) {
-        fetchBearbrick()
+        refreshImages()
       } else {
         alert('Delete failed')
       }
@@ -246,6 +260,8 @@ export default function EditBearbrickPage() {
       alert('Delete failed')
     }
   }
+
+  const isSuperSecretCategory = categoryList.find((c) => c.id === formData.categoryId)?.name === 'Super Secret'
 
   if (!bearbrick) {
     return (
@@ -302,7 +318,11 @@ export default function EditBearbrickPage() {
               <label className="block font-semibold mb-1">Category</label>
               <select
                 value={formData.categoryId}
-                onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+                onChange={(e) => {
+                  const categoryId = e.target.value
+                  const isSuperSecret = categoryList.find((c) => c.id === categoryId)?.name === 'Super Secret'
+                  setFormData({ ...formData, categoryId, isSecret: isSuperSecret ? true : formData.isSecret })
+                }}
                 className="w-full px-4 py-2 border rounded"
               >
                 <option value="">No category</option>
@@ -314,10 +334,11 @@ export default function EditBearbrickPage() {
               </select>
             </div>
             <div>
-              <label className="flex items-center gap-2 font-semibold">
+              <label className={`flex items-center gap-2 font-semibold ${isSuperSecretCategory ? 'opacity-50' : ''}`}>
                 <input
                   type="checkbox"
-                  checked={formData.isSecret}
+                  checked={isSuperSecretCategory ? true : formData.isSecret}
+                  disabled={isSuperSecretCategory}
                   onChange={(e) => setFormData({ ...formData, isSecret: e.target.checked })}
                   className="w-4 h-4"
                 />

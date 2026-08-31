@@ -396,6 +396,7 @@ function AdminManagePageInner() {
   }
 
   const sortedBearbricks = collapseBasicGroup(sortBearbricks(bearbricks))
+  const isSuperSecretCategory = categoryList.find((c) => c.id === formData.categoryId)?.name === 'Super Secret'
 
   return (
     <div className="min-h-screen bg-white">
@@ -564,7 +565,11 @@ function AdminManagePageInner() {
                 <label className="block font-semibold mb-1">Category</label>
                 <select
                   value={formData.categoryId}
-                  onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+                  onChange={(e) => {
+                    const categoryId = e.target.value
+                    const isSuperSecret = categoryList.find((c) => c.id === categoryId)?.name === 'Super Secret'
+                    setFormData({ ...formData, categoryId, isSecret: isSuperSecret ? true : formData.isSecret })
+                  }}
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg"
                 >
                   <option value="">No category</option>
@@ -576,10 +581,11 @@ function AdminManagePageInner() {
                 </select>
               </div>
               <div>
-                <label className="flex items-center gap-2 font-semibold">
+                <label className={`flex items-center gap-2 font-semibold ${isSuperSecretCategory ? 'opacity-50' : ''}`}>
                   <input
                     type="checkbox"
-                    checked={formData.isSecret}
+                    checked={isSuperSecretCategory ? true : formData.isSecret}
+                    disabled={isSuperSecretCategory}
                     onChange={(e) => setFormData({ ...formData, isSecret: e.target.checked })}
                     className="w-4 h-4"
                   />
