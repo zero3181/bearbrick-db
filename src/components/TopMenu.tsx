@@ -151,7 +151,7 @@ export default function TopMenu() {
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
                 onBlur={() => saveProfile({ nickname, showCredit: nickname ? showCredit : false })}
-                placeholder="닉네임 (선택)"
+                placeholder="Nickname (optional)"
                 maxLength={30}
                 disabled={savingProfile}
                 className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded-md mb-1.5"
@@ -163,7 +163,7 @@ export default function TopMenu() {
                   disabled={!nickname || savingProfile}
                   onChange={(e) => saveProfile({ nickname, showCredit: e.target.checked })}
                 />
-                제보 시 닉네임 공개
+                Show my nickname on submissions
               </label>
             </div>
           )}

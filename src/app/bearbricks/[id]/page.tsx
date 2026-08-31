@@ -412,7 +412,7 @@ export default function BearbrickDetailPage() {
               )}
 
               {bearbrick.contributor && (
-                <p className="text-xs text-gray-400 mb-6">제보: {bearbrick.contributor}</p>
+                <p className="text-xs text-gray-400 mb-6">Submitted by {bearbrick.contributor}</p>
               )}
 
               {/* Admin Actions */}
