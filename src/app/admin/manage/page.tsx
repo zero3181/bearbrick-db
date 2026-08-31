@@ -395,22 +395,6 @@ function AdminManagePageInner() {
     setImportPreview(null)
   }
 
-  const handleDelete = async (bearbrick: Bearbrick) => {
-    const label = bearbrick.category?.name === 'Basic' ? 'BE@RBRICK' : bearbrick.name
-    if (!confirm(`Delete "${label}"? This cannot be undone.`)) return
-    try {
-      const res = await fetch(`/api/admin/bearbricks/${bearbrick.id}`, { method: 'DELETE' })
-      if (!res.ok) {
-        alert('Delete failed')
-        return
-      }
-      fetchBearbricks(selectedSeries)
-    } catch (error) {
-      console.error('Failed to delete:', error)
-      alert('Delete failed')
-    }
-  }
-
   const sortedBearbricks = collapseBasicGroup(sortBearbricks(bearbricks))
 
   return (
@@ -712,12 +696,6 @@ function AdminManagePageInner() {
                       >
                         Edit
                       </Link>
-                      <button
-                        onClick={() => handleDelete(bearbrick)}
-                        className="ml-4 text-red-600 hover:underline"
-                      >
-                        Delete
-                      </button>
                     </td>
                   </tr>
                 )

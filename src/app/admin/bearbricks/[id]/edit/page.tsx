@@ -231,6 +231,22 @@ export default function EditBearbrickPage() {
     }
   }
 
+  const handleDelete = async () => {
+    if (!confirm(`Delete "${bearbrick?.name}"? This cannot be undone.`)) return
+
+    try {
+      const res = await fetch(`/api/admin/bearbricks/${params.id}`, { method: 'DELETE' })
+      if (res.ok) {
+        router.push('/admin/manage')
+      } else {
+        alert('Delete failed')
+      }
+    } catch (error) {
+      console.error('Failed to delete:', error)
+      alert('Delete failed')
+    }
+  }
+
   if (!bearbrick) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -395,6 +411,16 @@ export default function EditBearbrickPage() {
         >
           Save
         </button>
+
+        <div className="mt-8 pt-6 border-t border-gray-100">
+          <h2 className="text-sm font-semibold text-red-600 mb-2">Danger Zone</h2>
+          <button
+            onClick={handleDelete}
+            className="w-full px-4 py-2 border border-red-200 text-red-600 rounded hover:bg-red-50"
+          >
+            Delete this Bearbrick
+          </button>
+        </div>
       </main>
     </div>
   )
