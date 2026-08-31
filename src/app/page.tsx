@@ -465,7 +465,7 @@ export default function HomePage() {
                               />
                             </svg>
                             {owned > 0 && (
-                              <span className="absolute top-0 right-0 w-[22px] h-6 flex items-center justify-center text-white text-xs font-bold">
+                              <span className="absolute top-0 right-2 w-[22px] h-6 flex items-center justify-center text-white text-xs font-bold">
                                 {owned}
                               </span>
                             )}
