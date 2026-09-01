@@ -18,6 +18,14 @@ const CATEGORY_ORDER = [
 // Within the Basic category, items follow this fixed code order
 export const BASIC_ORDER = ['B', 'E', '@', 'R', 'b', 'R(2)', 'I', 'C', 'K']
 
+// Some series also have a secret Basic sub-set that spells out a different
+// word (e.g. Series 5's GOODENOUGH secret). Each entry's own record acts as
+// the group's representative/label - it isn't itself one of the letters.
+export const SECRET_BASIC_ORDERS: Record<string, string[]> = {
+  'Series 5': ['G', 'O', 'O(2)', 'D', 'E', 'N', 'O(3)', 'U', 'G(2)', 'H'],
+}
+export const SECRET_BASIC_REPRESENTATIVE_NAMES = ['GOODENOUGH']
+
 interface SortableBearbrick {
   name: string
   isSecret: boolean
@@ -39,6 +47,10 @@ export function sortBearbricks<T extends SortableBearbrick>(items: T[]): T[] {
     if (rankA !== rankB) return rankA - rankB
 
     if (a.category?.name === 'Basic' && b.category?.name === 'Basic') {
+      const aIsRep = SECRET_BASIC_REPRESENTATIVE_NAMES.includes(a.name)
+      const bIsRep = SECRET_BASIC_REPRESENTATIVE_NAMES.includes(b.name)
+      if (aIsRep !== bIsRep) return aIsRep ? -1 : 1
+
       const basicIdxA = BASIC_ORDER.indexOf(a.name)
       const basicIdxB = BASIC_ORDER.indexOf(b.name)
       return (basicIdxA === -1 ? BASIC_ORDER.length : basicIdxA) - (basicIdxB === -1 ? BASIC_ORDER.length : basicIdxB)
@@ -67,14 +79,17 @@ interface BasicGroupable extends SortableBearbrick {
 // Basic items (B E @ R b R I C K) are 9 separate records per series.
 // On listing screens we only want to show one representative card per
 // series for the group; the detail page offers a selector for the rest.
+// A series can also have its own secret Basic sub-set (see
+// SECRET_BASIC_ORDERS), which collapses to its own separate representative
+// card since it's a distinct group, not more of the regular set.
 export function collapseBasicGroup<T extends BasicGroupable>(items: T[]): T[] {
-  const seenSeries = new Set<string>()
+  const seenGroups = new Set<string>()
   const result: T[] = []
   for (const item of items) {
     if (item.category?.name === 'Basic') {
-      const seriesKey = item.series?.id ?? 'none'
-      if (seenSeries.has(seriesKey)) continue
-      seenSeries.add(seriesKey)
+      const groupKey = `${item.series?.id ?? 'none'}:${item.isSecret}`
+      if (seenGroups.has(groupKey)) continue
+      seenGroups.add(groupKey)
     }
     result.push(item)
   }

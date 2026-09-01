@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import AuthProvider from "@/components/AuthProvider";
 import Footer from "@/components/Footer";
@@ -22,6 +23,7 @@ export default function RootLayout({
       <body className="antialiased bg-white text-gray-900">
         <AuthProvider>{children}</AuthProvider>
         <Footer />
+        <Analytics />
       </body>
     </html>
   );

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useSession, signIn } from 'next-auth/react'
 import TopMenu from '@/components/TopMenu'
 import LoadingSpinner from '@/components/LoadingSpinner'
-import { sortBearbricks, collapseBasicGroup, sortCategoriesOfficial } from '@/lib/sortBearbricks'
+import { sortBearbricks, collapseBasicGroup, sortCategoriesOfficial, SECRET_BASIC_ORDERS, SECRET_BASIC_REPRESENTATIVE_NAMES } from '@/lib/sortBearbricks'
 
 interface Bearbrick {
   id: string
@@ -279,27 +279,23 @@ export default function HomePage() {
         )
       : baseSortedBearbricks
 
-  // Basic is collapsed to one representative card per series (see
-  // collapseBasicGroup), so its collection state can't be a simple
-  // saved/unsaved toggle - instead show how many of the 9 pieces in that
-  // series are saved. Built from the raw (pre-collapse) bearbricks list.
-  const basicIdsBySeriesId = new Map<string, string[]>()
-  // Toggling collection membership from the home grid can't know which of
-  // the 9 Basic pieces the user actually owns, so it always targets "B" as
-  // a stand-in - the detail page lets them correct it to the real piece.
-  const basicBIdBySeriesId = new Map<string, string>()
-  // A series' Basic group can include a secret variant (e.g. Series 5's
-  // "GOODENOUGH"); the collapsed representative card is usually a non-secret
-  // piece, so its own isSecret flag can't be used to decide whether to show
-  // the Secret badge - this tracks it per series instead.
-  const basicHasSecretBySeriesId = new Set<string>()
+  // Basic is collapsed to one representative card per series+secret-status
+  // (see collapseBasicGroup - a series' secret Basic sub-set, like Series 5's
+  // GOODENOUGH, is its own group), so its collection state can't be a simple
+  // saved/unsaved toggle - instead show how many pieces in that group are
+  // saved. Built from the raw (pre-collapse) bearbricks list.
+  const basicIdsByGroupKey = new Map<string, string[]>()
+  // Toggling collection membership from the home grid can't know which piece
+  // the user actually owns, so it always targets a stand-in (the group's
+  // first letter) - the detail page lets them correct it to the real piece.
+  const basicStandInIdByGroupKey = new Map<string, string>()
   for (const b of bearbricks) {
-    if (b.category?.name === 'Basic') {
-      const key = b.series?.id ?? 'none'
-      if (!basicIdsBySeriesId.has(key)) basicIdsBySeriesId.set(key, [])
-      basicIdsBySeriesId.get(key)!.push(b.id)
-      if (b.name === 'B') basicBIdBySeriesId.set(key, b.id)
-      if (b.isSecret) basicHasSecretBySeriesId.add(key)
+    if (b.category?.name === 'Basic' && !SECRET_BASIC_REPRESENTATIVE_NAMES.includes(b.name)) {
+      const key = `${b.series?.id ?? 'none'}:${b.isSecret}`
+      if (!basicIdsByGroupKey.has(key)) basicIdsByGroupKey.set(key, [])
+      basicIdsByGroupKey.get(key)!.push(b.id)
+      const standInName = b.isSecret ? SECRET_BASIC_ORDERS[b.series?.name ?? '']?.[0] : 'B'
+      if (b.name === standInName) basicStandInIdByGroupKey.set(key, b.id)
     }
   }
 
@@ -435,9 +431,7 @@ export default function HomePage() {
                 className="group"
               >
                 <div className="relative aspect-[3/4] bg-gray-50 rounded-2xl overflow-hidden">
-                  {(bearbrick.category?.name === 'Basic'
-                    ? basicHasSecretBySeriesId.has(bearbrick.series?.id ?? 'none')
-                    : bearbrick.isSecret) && (
+                  {bearbrick.isSecret && (
                     <span
                       className={`absolute top-2 left-2 px-2 py-1 text-[10px] md:text-xs font-semibold rounded-full z-10 ${
                         bearbrick.category?.name === 'Super Secret' ? 'bg-yellow-400 text-gray-900' : 'bg-blue-600 text-white'
@@ -455,9 +449,10 @@ export default function HomePage() {
                   {collectionLoaded && (
                     bearbrick.category?.name === 'Basic' ? (
                       (() => {
-                        const ids = basicIdsBySeriesId.get(bearbrick.series?.id ?? 'none') ?? []
+                        const groupKey = `${bearbrick.series?.id ?? 'none'}:${bearbrick.isSecret}`
+                        const ids = basicIdsByGroupKey.get(groupKey) ?? []
                         const owned = ids.filter((id) => collectionIds.has(id)).length
-                        const bId = basicBIdBySeriesId.get(bearbrick.series?.id ?? 'none') ?? ids[0]
+                        const bId = basicStandInIdByGroupKey.get(groupKey) ?? ids[0]
                         return (
                           <button
                             onClick={(e) => bId && handleToggleCollection(e, bId)}
@@ -501,7 +496,7 @@ export default function HomePage() {
                 <div className="pt-2 px-1">
                   <h3 className="font-medium text-xs md:text-sm line-clamp-2 text-gray-900">
                     {bearbrick.category && <span className="text-gray-400">[{bearbrick.category.name}] </span>}
-                    {bearbrick.category?.name === 'Basic' ? 'BE@RBRICK' : bearbrick.name}
+                    {bearbrick.category?.name === 'Basic' && !bearbrick.isSecret ? 'BE@RBRICK' : bearbrick.name}
                   </h3>
                   {bearbrick.series && (
                     <p className="text-xs text-gray-400 mt-0.5">{bearbrick.series.name}</p>

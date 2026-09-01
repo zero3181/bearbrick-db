@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { upload } from '@vercel/blob/client'
 import TopMenu from '@/components/TopMenu'
 import LoadingSpinner from '@/components/LoadingSpinner'
-import { BASIC_ORDER } from '@/lib/sortBearbricks'
+import { BASIC_ORDER, SECRET_BASIC_ORDERS, SECRET_BASIC_REPRESENTATIVE_NAMES } from '@/lib/sortBearbricks'
 import { compressImage } from '@/lib/compressImage'
 
 interface Bearbrick {
@@ -95,7 +95,7 @@ export default function BearbrickDetailPage() {
         setSelectedImage(primary?.url || data.images[0]?.url || '/bearbrick-placeholder.svg')
 
         if (data.category?.name === 'Basic' && data.series?.name) {
-          fetchBasicVariants(data.series.name)
+          fetchBasicVariants(data.series.name, Boolean(data.isSecret))
         } else {
           setBasicVariants([])
         }
@@ -174,17 +174,19 @@ export default function BearbrickDetailPage() {
     }
   }
 
-  const fetchBasicVariants = async (seriesName: string) => {
+  const fetchBasicVariants = async (seriesName: string, isSecret: boolean) => {
     try {
       const res = await fetch(`/api/bearbricks?series=${encodeURIComponent(seriesName)}`)
       if (!res.ok) return
       const data = await res.json()
+      const order = isSecret ? (SECRET_BASIC_ORDERS[seriesName] ?? []) : BASIC_ORDER
       const rank = (name: string) => {
-        const idx = BASIC_ORDER.indexOf(name)
-        return idx === -1 ? BASIC_ORDER.length : idx
+        const idx = order.indexOf(name)
+        return idx === -1 ? order.length : idx
       }
       const variants = (Array.isArray(data) ? data : [])
-        .filter((b: Bearbrick) => b.category?.name === 'Basic')
+        .filter((b: Bearbrick) => b.category?.name === 'Basic' && b.isSecret === isSecret)
+        .filter((b: Bearbrick) => !SECRET_BASIC_REPRESENTATIVE_NAMES.includes(b.name))
         .sort((a: Bearbrick, b: Bearbrick) => rank(a.name) - rank(b.name))
         .map((b: Bearbrick) => ({ id: b.id, name: b.name }))
       setBasicVariants(variants)
