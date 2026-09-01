@@ -9,9 +9,7 @@ const CATEGORY_ORDER = [
   'Cute',
   'Animal',
   'Hero',
-  'Game',
   'Artist',
-  'Villain',
   'Super Secret',
 ]
 
