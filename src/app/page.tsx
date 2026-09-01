@@ -288,12 +288,18 @@ export default function HomePage() {
   // the 9 Basic pieces the user actually owns, so it always targets "B" as
   // a stand-in - the detail page lets them correct it to the real piece.
   const basicBIdBySeriesId = new Map<string, string>()
+  // A series' Basic group can include a secret variant (e.g. Series 5's
+  // "GOODENOUGH"); the collapsed representative card is usually a non-secret
+  // piece, so its own isSecret flag can't be used to decide whether to show
+  // the Secret badge - this tracks it per series instead.
+  const basicHasSecretBySeriesId = new Set<string>()
   for (const b of bearbricks) {
     if (b.category?.name === 'Basic') {
       const key = b.series?.id ?? 'none'
       if (!basicIdsBySeriesId.has(key)) basicIdsBySeriesId.set(key, [])
       basicIdsBySeriesId.get(key)!.push(b.id)
       if (b.name === 'B') basicBIdBySeriesId.set(key, b.id)
+      if (b.isSecret) basicHasSecretBySeriesId.add(key)
     }
   }
 
@@ -429,7 +435,9 @@ export default function HomePage() {
                 className="group"
               >
                 <div className="relative aspect-[3/4] bg-gray-50 rounded-2xl overflow-hidden">
-                  {bearbrick.isSecret && (
+                  {(bearbrick.category?.name === 'Basic'
+                    ? basicHasSecretBySeriesId.has(bearbrick.series?.id ?? 'none')
+                    : bearbrick.isSecret) && (
                     <span
                       className={`absolute top-2 left-2 px-2 py-1 text-[10px] md:text-xs font-semibold rounded-full z-10 ${
                         bearbrick.category?.name === 'Super Secret' ? 'bg-yellow-400 text-gray-900' : 'bg-blue-600 text-white'

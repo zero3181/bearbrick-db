@@ -398,6 +398,17 @@ function AdminManagePageInner() {
   const sortedBearbricks = collapseBasicGroup(sortBearbricks(bearbricks))
   const isSuperSecretCategory = categoryList.find((c) => c.id === formData.categoryId)?.name === 'Super Secret'
 
+  // A series' Basic group can include a secret variant (e.g. Series 5's
+  // "GOODENOUGH"); the collapsed representative row is usually a non-secret
+  // piece, so its own isSecret flag can't be used to decide whether to show
+  // the Secret badge - this tracks it per series instead.
+  const basicHasSecretBySeriesId = new Set<string>()
+  for (const b of bearbricks) {
+    if (b.category?.name === 'Basic' && b.isSecret) {
+      basicHasSecretBySeriesId.add(b.series?.id ?? 'none')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-white">
       <header className="border-b border-gray-100">
@@ -680,7 +691,9 @@ function AdminManagePageInner() {
                       </div>
                     </td>
                     <td className="px-6 py-4 font-medium">
-                      {bearbrick.isSecret && (
+                      {(bearbrick.category?.name === 'Basic'
+                        ? basicHasSecretBySeriesId.has(bearbrick.series?.id ?? 'none')
+                        : bearbrick.isSecret) && (
                         <span
                           className={`inline-block px-2 py-0.5 mr-2 text-xs font-semibold rounded-full ${
                             bearbrick.category?.name === 'Super Secret' ? 'bg-yellow-50 text-yellow-700' : 'bg-blue-50 text-blue-700'

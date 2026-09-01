@@ -179,9 +179,13 @@ export default function BearbrickDetailPage() {
       const res = await fetch(`/api/bearbricks?series=${encodeURIComponent(seriesName)}`)
       if (!res.ok) return
       const data = await res.json()
+      const rank = (name: string) => {
+        const idx = BASIC_ORDER.indexOf(name)
+        return idx === -1 ? BASIC_ORDER.length : idx
+      }
       const variants = (Array.isArray(data) ? data : [])
         .filter((b: Bearbrick) => b.category?.name === 'Basic')
-        .sort((a: Bearbrick, b: Bearbrick) => BASIC_ORDER.indexOf(a.name) - BASIC_ORDER.indexOf(b.name))
+        .sort((a: Bearbrick, b: Bearbrick) => rank(a.name) - rank(b.name))
         .map((b: Bearbrick) => ({ id: b.id, name: b.name }))
       setBasicVariants(variants)
     } catch (error) {

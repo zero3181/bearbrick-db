@@ -433,15 +433,12 @@ export default function EditBearbrickPage() {
           Save
         </button>
 
-        <div className="mt-8 pt-6 border-t border-gray-100">
-          <h2 className="text-sm font-semibold text-red-600 mb-2">Danger Zone</h2>
-          <button
-            onClick={handleDelete}
-            className="w-full px-4 py-2 border border-red-200 text-red-600 rounded hover:bg-red-50"
-          >
-            Delete this Bearbrick
-          </button>
-        </div>
+        <button
+          onClick={handleDelete}
+          className="w-full mt-3 px-4 py-2 border border-red-200 text-red-600 rounded hover:bg-red-50"
+        >
+          Delete
+        </button>
       </main>
     </div>
   )
