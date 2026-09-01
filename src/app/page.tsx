@@ -52,6 +52,7 @@ export default function HomePage() {
   const [selectedSeries, setSelectedSeries] = useState<string>('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [collectionIds, setCollectionIds] = useState<Set<string>>(new Set())
+  const pendingToggleIdsRef = useRef<Set<string>>(new Set())
   const [collectionLoaded, setCollectionLoaded] = useState(false)
   const [myCollectionOnly, setMyCollectionOnly] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -222,6 +223,11 @@ export default function HomePage() {
       return
     }
 
+    // A request for this item is already in flight - ignore rapid re-clicks
+    // on the same item instead of firing an overlapping toggle.
+    if (pendingToggleIdsRef.current.has(bearbrickId)) return
+    pendingToggleIdsRef.current.add(bearbrickId)
+
     // Optimistic update, reverted if the request fails
     const wasInCollection = collectionIds.has(bearbrickId)
     setCollectionIds((prev) => {
@@ -246,6 +252,8 @@ export default function HomePage() {
         return next
       })
       showToast('Failed to update - try again')
+    } finally {
+      pendingToggleIdsRef.current.delete(bearbrickId)
     }
   }
 

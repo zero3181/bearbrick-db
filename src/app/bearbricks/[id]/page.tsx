@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useSession, signIn } from 'next-auth/react'
 import Link from 'next/link'
@@ -57,6 +57,7 @@ export default function BearbrickDetailPage() {
   const [basicVariants, setBasicVariants] = useState<{ id: string; name: string }[]>([])
   const [collectionIds, setCollectionIds] = useState<Set<string>>(new Set())
   const [collectionLoaded, setCollectionLoaded] = useState(false)
+  const pendingToggleIdsRef = useRef<Set<string>>(new Set())
 
   const [seriesList, setSeriesList] = useState<Series[]>([])
   const [categoryList, setCategoryList] = useState<Category[]>([])
@@ -150,6 +151,11 @@ export default function BearbrickDetailPage() {
       return
     }
 
+    // A request for this item is already in flight - ignore rapid re-clicks
+    // on the same item instead of firing an overlapping toggle.
+    if (pendingToggleIdsRef.current.has(bearbrickId)) return
+    pendingToggleIdsRef.current.add(bearbrickId)
+
     const wasInCollection = collectionIds.has(bearbrickId)
     setCollectionIds((prev) => {
       const next = new Set(prev)
@@ -171,6 +177,8 @@ export default function BearbrickDetailPage() {
         wasInCollection ? next.add(bearbrickId) : next.delete(bearbrickId)
         return next
       })
+    } finally {
+      pendingToggleIdsRef.current.delete(bearbrickId)
     }
   }
 
