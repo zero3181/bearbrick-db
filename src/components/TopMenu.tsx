@@ -189,7 +189,9 @@ export default function TopMenu() {
             </>
           )}
 
-          <MenuLink href="/suggest" onClick={() => setOpen(false)}>Suggest a Bearbrick</MenuLink>
+          {!isAdmin && (
+            <MenuLink href="/suggest" onClick={() => setOpen(false)}>Suggest a Bearbrick</MenuLink>
+          )}
           <MenuLink href="/about" onClick={() => setOpen(false)}>About</MenuLink>
 
           {session ? (
