@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAdmin } from '@/lib/serverAuth'
+import { normalizeImageInBackground } from '@/lib/normalizeImage'
 
 interface NewData {
   name?: string
@@ -51,6 +52,8 @@ export async function POST(
       return NextResponse.json({ error: 'Suggestion is missing a name or series' }, { status: 400 })
     }
 
+    let createdImage: { id: string; bearbrickId: string } | null = null
+
     try {
       await prisma.$transaction(async (tx) => {
         const created = await tx.bearbrick.create({
@@ -66,7 +69,7 @@ export async function POST(
         })
 
         if (newData.imageUrl) {
-          await tx.bearbrickImage.create({
+          const image = await tx.bearbrickImage.create({
             data: {
               url: newData.imageUrl,
               isPrimary: true,
@@ -74,6 +77,7 @@ export async function POST(
               uploadedById: editRequest.requestedById,
             },
           })
+          createdImage = { id: image.id, bearbrickId: created.id }
         }
 
         // Point this request at the bearbrick it created so the existing
@@ -89,6 +93,11 @@ export async function POST(
       return NextResponse.json({ error: 'Failed to create bearbrick' }, { status: 500 })
     }
 
+    if (createdImage) {
+      const img: { id: string; bearbrickId: string } = createdImage
+      after(() => normalizeImageInBackground(img.id, newData.imageUrl!, img.bearbrickId))
+    }
+
     return NextResponse.json({ success: true })
   }
 
@@ -98,6 +107,8 @@ export async function POST(
   bearbrickUpdate.categoryId = newData.categoryId || null
   bearbrickUpdate.description = newData.description || null
   bearbrickUpdate.isSecret = Boolean(newData.isSecret)
+
+  let updatedImageId: string | null = null
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -111,7 +122,7 @@ export async function POST(
           where: { bearbrickId: editRequest.bearbrickId! },
           data: { isPrimary: false },
         })
-        await tx.bearbrickImage.create({
+        const image = await tx.bearbrickImage.create({
           data: {
             url: newData.imageUrl,
             isPrimary: true,
@@ -119,6 +130,7 @@ export async function POST(
             uploadedById: editRequest.requestedById,
           },
         })
+        updatedImageId = image.id
       }
 
       await tx.edit_requests.update({
@@ -129,6 +141,11 @@ export async function POST(
   } catch (error) {
     console.error('Failed to approve edit request:', error)
     return NextResponse.json({ error: 'Failed to apply changes' }, { status: 500 })
+  }
+
+  if (updatedImageId) {
+    const imageId: string = updatedImageId
+    after(() => normalizeImageInBackground(imageId, newData.imageUrl!, editRequest.bearbrickId!))
   }
 
   return NextResponse.json({ success: true })

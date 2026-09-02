@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAdmin } from '@/lib/serverAuth'
+import { normalizeImageInBackground } from '@/lib/normalizeImage'
 
 export async function POST(
   request: NextRequest,
@@ -28,6 +29,10 @@ export async function POST(
         uploadedById: session.user.id,
       },
     })
+
+    // Respond immediately with the raw upload; swap in a background-cropped
+    // version once it's ready so the request doesn't wait on it.
+    after(() => normalizeImageInBackground(image.id, imageUrl, params.id))
 
     return NextResponse.json(image)
   } catch (error) {
