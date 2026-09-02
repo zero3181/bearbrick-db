@@ -112,12 +112,12 @@ model edit_requests {
   createdAt     DateTime        @default(now())
   updatedAt     DateTime @updatedAt
   reviewedAt    DateTime?
-  bearbrickId   String
+  bearbrickId   String?
   requestedById String
   reviewedById  String?
   type          EditRequestType
   status        RequestStatus   @default(PENDING)
-  bearbricks    Bearbrick       @relation(fields: [bearbrickId], references: [id])
+  bearbricks    Bearbrick?      @relation(fields: [bearbrickId], references: [id])
   users         User            @relation(fields: [requestedById], references: [id])
 }
 
@@ -204,6 +204,7 @@ enum EditRequestType {
   INFO_UPDATE
   CATEGORY_CHANGE
   SERIES_CORRECTION
+  NEW_ITEM
   OTHER
 }
 

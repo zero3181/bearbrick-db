@@ -46,6 +46,52 @@ export async function POST(
   // approve
   const newData = editRequest.newData as NewData
 
+  if (editRequest.type === 'NEW_ITEM') {
+    if (!newData.name || !newData.seriesId) {
+      return NextResponse.json({ error: 'Suggestion is missing a name or series' }, { status: 400 })
+    }
+
+    try {
+      await prisma.$transaction(async (tx) => {
+        const created = await tx.bearbrick.create({
+          data: {
+            name: newData.name!,
+            seriesId: newData.seriesId!,
+            categoryId: newData.categoryId || null,
+            description: newData.description || null,
+            isSecret: Boolean(newData.isSecret),
+            createdById: editRequest.requestedById,
+            sizePercentage: 100,
+          },
+        })
+
+        if (newData.imageUrl) {
+          await tx.bearbrickImage.create({
+            data: {
+              url: newData.imageUrl,
+              isPrimary: true,
+              bearbrickId: created.id,
+              uploadedById: editRequest.requestedById,
+            },
+          })
+        }
+
+        // Point this request at the bearbrick it created so the existing
+        // "who submitted this" credit lookup (latest approved edit_request
+        // per bearbrickId) picks it up with no extra plumbing.
+        await tx.edit_requests.update({
+          where: { id: params.id },
+          data: { status: 'APPROVED', reviewedById: session.user.id, reviewedAt: new Date(), bearbrickId: created.id },
+        })
+      })
+    } catch (error) {
+      console.error('Failed to approve new-item request:', error)
+      return NextResponse.json({ error: 'Failed to create bearbrick' }, { status: 500 })
+    }
+
+    return NextResponse.json({ success: true })
+  }
+
   const bearbrickUpdate: Record<string, unknown> = {}
   if (newData.name) bearbrickUpdate.name = newData.name
   if (newData.seriesId) bearbrickUpdate.seriesId = newData.seriesId
@@ -56,20 +102,20 @@ export async function POST(
   try {
     await prisma.$transaction(async (tx) => {
       await tx.bearbrick.update({
-        where: { id: editRequest.bearbrickId },
+        where: { id: editRequest.bearbrickId! },
         data: bearbrickUpdate,
       })
 
       if (newData.imageUrl) {
         await tx.bearbrickImage.updateMany({
-          where: { bearbrickId: editRequest.bearbrickId },
+          where: { bearbrickId: editRequest.bearbrickId! },
           data: { isPrimary: false },
         })
         await tx.bearbrickImage.create({
           data: {
             url: newData.imageUrl,
             isPrimary: true,
-            bearbrickId: editRequest.bearbrickId,
+            bearbrickId: editRequest.bearbrickId!,
             uploadedById: editRequest.requestedById,
           },
         })

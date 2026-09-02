@@ -19,10 +19,11 @@ interface RequestData {
 interface EditRequest {
   id: string
   description: string | null
-  oldData: RequestData
+  oldData: RequestData | null
   newData: RequestData
   createdAt: string
-  bearbricks: { id: string; name: string }
+  type: string
+  bearbricks: { id: string; name: string } | null
   users: { name: string | null; email: string }
 }
 
@@ -155,9 +156,20 @@ export default function AdminRequestsPage() {
             <div key={req.id} className="bg-white rounded-lg shadow p-6">
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <Link href={`/bearbricks/${req.bearbricks.id}`} className="text-lg font-bold text-blue-600 hover:underline">
-                    {req.bearbricks.name}
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    {req.type === 'NEW_ITEM' && (
+                      <span className="inline-block px-2 py-0.5 text-xs font-semibold rounded-full bg-green-50 text-green-700">
+                        New
+                      </span>
+                    )}
+                    {req.bearbricks ? (
+                      <Link href={`/bearbricks/${req.bearbricks.id}`} className="text-lg font-bold text-blue-600 hover:underline">
+                        {req.bearbricks.name}
+                      </Link>
+                    ) : (
+                      <span className="text-lg font-bold text-gray-900">New Bearbrick</span>
+                    )}
+                  </div>
                   <p className="text-sm text-gray-500 mt-1">
                     Requested by: {req.users.name || req.users.email} · {new Date(req.createdAt).toLocaleString('en-US')}
                   </p>
@@ -169,21 +181,21 @@ export default function AdminRequestsPage() {
               )}
 
               <div className="space-y-1 mb-4">
-                <Field label="Name" oldVal={req.oldData.name || ''} newVal={req.newData.name || ''} />
+                <Field label="Name" oldVal={req.oldData?.name || ''} newVal={req.newData.name || ''} />
                 <Field
                   label="Series"
-                  oldVal={seriesName(req.oldData.seriesId)}
+                  oldVal={seriesName(req.oldData?.seriesId)}
                   newVal={seriesName(req.newData.seriesId)}
                 />
                 <Field
                   label="Category"
-                  oldVal={categoryName(req.oldData.categoryId)}
+                  oldVal={categoryName(req.oldData?.categoryId)}
                   newVal={categoryName(req.newData.categoryId)}
                 />
-                <Field label="Description" oldVal={req.oldData.description || ''} newVal={req.newData.description || ''} />
+                <Field label="Description" oldVal={req.oldData?.description || ''} newVal={req.newData.description || ''} />
                 <Field
                   label="Secret"
-                  oldVal={req.oldData.isSecret ? 'Yes' : 'No'}
+                  oldVal={req.oldData?.isSecret ? 'Yes' : 'No'}
                   newVal={req.newData.isSecret ? 'Yes' : 'No'}
                 />
               </div>
