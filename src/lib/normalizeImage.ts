@@ -7,11 +7,21 @@ const TARGET_H = 1200
 const MARGIN_RATIO = 0.88
 const BG = { r: 249, g: 250, b: 251 } // matches Tailwind bg-gray-50
 
-// Trims each photo's background down to the figure, then pads back out to a
+// Trims a photo's background down to the figure, then pads back out to a
 // fixed frame at a fixed margin, so photos shot at very different zoom
 // levels end up showing the figure at roughly the same size on screen.
-async function normalize(buf: Buffer): Promise<Buffer> {
-  const trimmed = await sharp(buf).trim({ threshold: 15 }).toBuffer({ resolveWithObject: true })
+async function trimAndCenter(buf: Buffer): Promise<Buffer> {
+  // Some uploads are transparent PNGs saved under a .jpg name. JPEG has no
+  // alpha channel, so without flattening first, sharp silently composites
+  // any transparent pixels onto black when it encodes the final JPEG -
+  // flatten explicitly onto our own background color instead, both before
+  // trim (so trim sees our color, not stale transparent pixel data) and
+  // again right before the JPEG encode (in case .extend() or resize left
+  // any transparency behind).
+  const trimmed = await sharp(buf)
+    .flatten({ background: BG })
+    .trim({ threshold: 15 })
+    .toBuffer({ resolveWithObject: true })
   const scale = Math.min(
     (TARGET_W * MARGIN_RATIO) / trimmed.info.width,
     (TARGET_H * MARGIN_RATIO) / trimmed.info.height
@@ -27,8 +37,21 @@ async function normalize(buf: Buffer): Promise<Buffer> {
       right: Math.ceil((TARGET_W - w) / 2),
       background: BG,
     })
+    .flatten({ background: BG })
     .jpeg({ quality: 90 })
     .toBuffer()
+}
+
+// A real photo's background is rarely a perfectly flat color (soft studio
+// gradients, a faint drop shadow) - sharp's trim() compares against a single
+// reference pixel, so it can crop one edge tighter than the opposite one and
+// leave the figure off-center. Running the same trim+center pass again on
+// the *result* fixes this: that image's background is a color we chose
+// ourselves and painted on with .extend(), so it's perfectly flat and the
+// second trim finds the true, symmetric bounding box.
+async function normalize(buf: Buffer): Promise<Buffer> {
+  const once = await trimAndCenter(buf)
+  return trimAndCenter(once)
 }
 
 // Fire-and-forget from a route handler via next/server's `after()`, so the
