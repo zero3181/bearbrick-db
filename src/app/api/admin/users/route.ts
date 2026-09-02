@@ -1,57 +1,53 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { PrismaClient } from '@prisma/client'
+import { NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
+import { requireOwner } from '@/lib/serverAuth'
 
-const prisma = new PrismaClient()
+export async function GET() {
+  const session = await requireOwner()
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
-export async function GET(request: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Sign-in required.' }, { status: 401 })
-    }
-
-    // Only OWNER can list users
-    if (session.user.role !== 'OWNER') {
-      return NextResponse.json({ error: 'OWNER role required.' }, { status: 403 })
-    }
-
-    const users = await prisma.user.findMany({
+  const [users, requestCounts] = await Promise.all([
+    prisma.user.findMany({
       select: {
         id: true,
         name: true,
         email: true,
         image: true,
         role: true,
-        active: true,
         createdAt: true,
-        updatedAt: true,
         _count: {
-          select: {
-            createdBearbricks: true,
-            uploadedImages: true,
-            editRequests: true,
-            collectionItems: true,
-            submittedImages: true
-          }
-        }
+          select: { collectionItems: true },
+        },
       },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    })
+      orderBy: { createdAt: 'desc' },
+    }),
+    prisma.edit_requests.groupBy({
+      by: ['requestedById', 'type'],
+      _count: { _all: true },
+    }),
+  ])
 
-    return NextResponse.json({ users })
-
-  } catch (error) {
-    console.error('Users fetch error:', error)
-    return NextResponse.json(
-      { error: 'An error occurred while fetching the user list.' },
-      { status: 500 }
-    )
-  } finally {
-    await prisma.$disconnect()
+  const countsByUser = new Map<string, { total: number; newItem: number }>()
+  for (const row of requestCounts) {
+    const entry = countsByUser.get(row.requestedById) ?? { total: 0, newItem: 0 }
+    entry.total += row._count._all
+    if (row.type === 'NEW_ITEM') entry.newItem += row._count._all
+    countsByUser.set(row.requestedById, entry)
   }
+
+  const withStats = users.map((u) => ({
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    image: u.image,
+    role: u.role,
+    createdAt: u.createdAt,
+    collectionCount: u._count.collectionItems,
+    suggestionCount: countsByUser.get(u.id)?.newItem ?? 0,
+    correctionCount: (countsByUser.get(u.id)?.total ?? 0) - (countsByUser.get(u.id)?.newItem ?? 0),
+  }))
+
+  return NextResponse.json({ users: withStats })
 }

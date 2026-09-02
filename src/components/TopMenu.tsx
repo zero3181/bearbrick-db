@@ -15,6 +15,7 @@ function MenuLink({ href, onClick, children }: { href: string; onClick: () => vo
 export default function TopMenu() {
   const { data: session } = useSession()
   const isAdmin = session?.user?.role === 'ADMIN' || session?.user?.role === 'OWNER'
+  const isOwner = session?.user?.role === 'OWNER'
   const [open, setOpen] = useState(false)
   const [exporting, setExporting] = useState(false)
   const [pendingCount, setPendingCount] = useState(0)
@@ -181,6 +182,9 @@ export default function TopMenu() {
               </button>
               <MenuLink href="/admin/manage?action=import" onClick={() => setOpen(false)}>Import from Excel</MenuLink>
               <MenuLink href="/admin/manage?action=add" onClick={() => setOpen(false)}>Add Bearbrick</MenuLink>
+              {isOwner && (
+                <MenuLink href="/admin/users" onClick={() => setOpen(false)}>Manage Users</MenuLink>
+              )}
               <div className="my-1 border-t border-gray-100" />
             </>
           )}
