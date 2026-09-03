@@ -171,7 +171,8 @@ export default function AdminRarityPage() {
           Each row is the sourced pull-rate percentage for that specific figure (e.g. a 24-piece
           case has ~4.16% per figure). Leave blank when no sourced number exists for it — don&apos;t
           guess. The Secret badge turns yellow only at the community&apos;s &quot;Super Secret&quot;
-          tier (1/192 ≈ 0.52%); anything else stays blue.
+          tier (1/192 ≈ 0.52%); anything else stays blue. Basic is entered as one combined total
+          (the odds of pulling any of its letters) and split evenly across all of them.
         </p>
 
         {loading ? (
@@ -180,45 +181,97 @@ export default function AdminRarityPage() {
           </div>
         ) : (
           <div className="space-y-8">
-            {grouped.map((group) => (
-              <div key={group.category}>
+            {grouped.map((group, groupIdx) => (
+              <div key={`${group.category}-${groupIdx}`}>
                 <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
                   {group.category}
                 </h2>
                 <div className="border border-gray-100 rounded-xl overflow-hidden divide-y divide-gray-100">
-                  {group.items.map((item) => {
-                    const value = edits[item.id] ?? ''
-                    const parsed = value === '' ? null : parseFloat(value)
-                    return (
-                      <div key={item.id} className="flex items-center justify-between gap-4 px-4 py-2.5">
-                        <div className="flex items-center gap-2 min-w-0">
-                          {item.isSecret && (
-                            <span
-                              className={`shrink-0 px-2 py-0.5 text-xs font-semibold rounded-full ${
-                                isSuperSecretRarity(parsed) ? 'bg-yellow-50 text-yellow-700' : 'bg-blue-50 text-blue-700'
-                              }`}
-                            >
-                              Secret
+                  {group.category === 'Basic' ? (
+                    (() => {
+                      const values = group.items.map((it) => edits[it.id] ?? '')
+                      const allBlank = values.every((v) => v === '')
+                      const total = values.reduce((sum, v) => sum + (v === '' ? 0 : parseFloat(v)), 0)
+                      const totalValue = allBlank ? '' : String(Math.round(total * 100) / 100)
+                      const anySecret = group.items.some((it) => it.isSecret)
+                      return (
+                        <div className="flex items-center justify-between gap-4 px-4 py-2.5">
+                          <div className="flex items-center gap-2 min-w-0">
+                            {anySecret && (
+                              <span
+                                className={`shrink-0 px-2 py-0.5 text-xs font-semibold rounded-full ${
+                                  isSuperSecretRarity(allBlank ? null : total) ? 'bg-yellow-50 text-yellow-700' : 'bg-blue-50 text-blue-700'
+                                }`}
+                              >
+                                Secret
+                              </span>
+                            )}
+                            <span className="truncate text-sm text-gray-900">
+                              Basic ({group.items.length} letters, total)
                             </span>
-                          )}
-                          <span className="truncate text-sm text-gray-900">{item.name}</span>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              max="100"
+                              value={totalValue}
+                              onChange={(e) => {
+                                const raw = e.target.value
+                                const nextEdits = { ...edits }
+                                if (raw === '') {
+                                  for (const it of group.items) nextEdits[it.id] = ''
+                                } else {
+                                  const parsedTotal = parseFloat(raw)
+                                  const perItem = Number.isNaN(parsedTotal) ? 0 : parsedTotal / group.items.length
+                                  for (const it of group.items) nextEdits[it.id] = String(Math.round(perItem * 10000) / 10000)
+                                }
+                                setEdits(nextEdits)
+                              }}
+                              placeholder="—"
+                              className="w-20 px-2 py-1 border border-gray-200 rounded text-sm text-right"
+                            />
+                            <span className="text-sm text-gray-400">%</span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1 shrink-0">
-                          <input
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            max="100"
-                            value={value}
-                            onChange={(e) => setEdits({ ...edits, [item.id]: e.target.value })}
-                            placeholder="—"
-                            className="w-20 px-2 py-1 border border-gray-200 rounded text-sm text-right"
-                          />
-                          <span className="text-sm text-gray-400">%</span>
+                      )
+                    })()
+                  ) : (
+                    group.items.map((item) => {
+                      const value = edits[item.id] ?? ''
+                      const parsed = value === '' ? null : parseFloat(value)
+                      return (
+                        <div key={item.id} className="flex items-center justify-between gap-4 px-4 py-2.5">
+                          <div className="flex items-center gap-2 min-w-0">
+                            {item.isSecret && (
+                              <span
+                                className={`shrink-0 px-2 py-0.5 text-xs font-semibold rounded-full ${
+                                  isSuperSecretRarity(parsed) ? 'bg-yellow-50 text-yellow-700' : 'bg-blue-50 text-blue-700'
+                                }`}
+                              >
+                                Secret
+                              </span>
+                            )}
+                            <span className="truncate text-sm text-gray-900">{item.name}</span>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              max="100"
+                              value={value}
+                              onChange={(e) => setEdits({ ...edits, [item.id]: e.target.value })}
+                              placeholder="—"
+                              className="w-20 px-2 py-1 border border-gray-200 rounded text-sm text-right"
+                            />
+                            <span className="text-sm text-gray-400">%</span>
+                          </div>
                         </div>
-                      </div>
-                    )
-                  })}
+                      )
+                    })
+                  )}
                 </div>
               </div>
             ))}
