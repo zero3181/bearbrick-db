@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     url: "/",
     siteName: SITE_TITLE,
-    images: [{ url: "/logo-gombrick.png" }],
+    images: [{ url: "/og-image.jpg", width: 1200, height: 630 }],
     locale: "ko_KR",
     type: "website",
   },
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
-    images: ["/logo-gombrick.png"],
+    images: ["/og-image.jpg"],
   },
 };
 
