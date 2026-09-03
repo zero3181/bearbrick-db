@@ -4,12 +4,31 @@ import "./globals.css";
 import AuthProvider from "@/components/AuthProvider";
 import Footer from "@/components/Footer";
 
+const SITE_TITLE = "GomBrick";
+const SITE_DESCRIPTION = "Bearbrick database - a collection management platform";
+
 export const metadata: Metadata = {
-  title: "GomBrick",
-  description: "Bearbrick database - a collection management platform",
+  metadataBase: new URL("https://gom.favorite.kr"),
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
   icons: {
     // Versioned query string busts browsers' notoriously sticky favicon cache
     icon: "/favicon.ico?v=2",
+  },
+  openGraph: {
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    url: "/",
+    siteName: SITE_TITLE,
+    images: [{ url: "/logo-gombrick.png" }],
+    locale: "ko_KR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: ["/logo-gombrick.png"],
   },
 };
 
