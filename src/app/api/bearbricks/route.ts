@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
             name: true,
+            number: true,
           },
         },
         categories: {
@@ -46,6 +47,7 @@ export async function GET(request: NextRequest) {
       category: b.categories || null,
       size: b.sizePercentage,
       isSecret: b.isSecret,
+      rarityPercentage: b.rarityPercentage,
       images: b.images,
     }))
 

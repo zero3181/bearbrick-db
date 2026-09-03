@@ -6,6 +6,7 @@ import { useSession, signIn } from 'next-auth/react'
 import TopMenu from '@/components/TopMenu'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import { sortBearbricks, collapseBasicGroup, sortCategoriesOfficial, SECRET_BASIC_ORDERS, SECRET_BASIC_REPRESENTATIVE_NAMES } from '@/lib/sortBearbricks'
+import { isSuperSecretRarity } from '@/lib/rarity'
 
 interface Bearbrick {
   id: string
@@ -13,6 +14,7 @@ interface Bearbrick {
   series: {
     id: string
     name: string
+    number: number
   } | null
   category: {
     id: string
@@ -20,6 +22,7 @@ interface Bearbrick {
   } | null
   size: number
   isSecret: boolean
+  rarityPercentage: number | null
   images: {
     url: string
     isPrimary: boolean
@@ -310,10 +313,10 @@ export default function HomePage() {
   const filteredBearbricks = sortedBearbricks
     .filter((b) => {
       if (selectedCategory === 'all') return true
-      // "Super Secret" filters by the isSecret flag across every category, not
-      // just the category-less "Super Secret" bucket, so Hero/Artist/etc secrets
+      // "Secret" filters by the isSecret flag across every category, not
+      // just the category-less "Secret" bucket, so Hero/Artist/etc secrets
       // show up here too.
-      if (selectedCategory === 'Super Secret') return b.isSecret
+      if (selectedCategory === 'Secret') return b.isSecret
       return b.category?.name === selectedCategory
     })
     .filter((b) => !myCollectionOnly || collectionIds.has(b.id))
@@ -442,7 +445,7 @@ export default function HomePage() {
                   {bearbrick.isSecret && (
                     <span
                       className={`absolute top-2 left-2 px-2 py-1 text-[10px] md:text-xs font-semibold rounded-full z-10 ${
-                        bearbrick.category?.name === 'Super Secret' ? 'bg-yellow-400 text-gray-900' : 'bg-blue-600 text-white'
+                        isSuperSecretRarity(bearbrick.rarityPercentage) ? 'bg-yellow-400 text-gray-900' : 'bg-blue-600 text-white'
                       }`}
                     >
                       Secret
@@ -470,7 +473,7 @@ export default function HomePage() {
                             <svg width="22" height="32" viewBox="0 0 20 30" fill={owned > 0 ? '#2563eb' : 'white'} className="drop-shadow-md">
                               <path
                                 d="M0 0h20v22l-10 8-10-8z"
-                                stroke={owned > 0 ? '#2563eb' : '#374151'}
+                                stroke={owned > 0 ? '#2563eb' : '#9ca3af'}
                                 strokeWidth="1.5"
                                 strokeLinejoin="round"
                               />
@@ -492,7 +495,7 @@ export default function HomePage() {
                         <svg width="22" height="32" viewBox="0 0 20 30" fill={collectionIds.has(bearbrick.id) ? '#2563eb' : 'white'} className="drop-shadow-md">
                           <path
                             d="M0 0h20v22l-10 8-10-8z"
-                            stroke={collectionIds.has(bearbrick.id) ? '#2563eb' : '#374151'}
+                            stroke={collectionIds.has(bearbrick.id) ? '#2563eb' : '#9ca3af'}
                             strokeWidth="1.5"
                             strokeLinejoin="round"
                           />

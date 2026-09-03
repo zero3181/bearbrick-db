@@ -8,6 +8,7 @@ import { upload } from '@vercel/blob/client'
 import TopMenu from '@/components/TopMenu'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import { BASIC_ORDER, SECRET_BASIC_ORDERS, SECRET_BASIC_REPRESENTATIVE_NAMES } from '@/lib/sortBearbricks'
+import { isSuperSecretRarity } from '@/lib/rarity'
 import { compressImage } from '@/lib/compressImage'
 
 interface Bearbrick {
@@ -26,6 +27,7 @@ interface Bearbrick {
   size: number
   description: string | null
   isSecret: boolean
+  rarityPercentage: number | null
   images: {
     id: string
     url: string
@@ -367,7 +369,7 @@ export default function BearbrickDetailPage() {
                 {bearbrick.isSecret && (
                   <span
                     className={`inline-block align-middle mr-2 px-2 py-1 text-sm font-semibold rounded ${
-                      bearbrick.category?.name === 'Super Secret' ? 'bg-yellow-400 text-gray-900' : 'bg-blue-600 text-white'
+                      isSuperSecretRarity(bearbrick.rarityPercentage) ? 'bg-yellow-400 text-gray-900' : 'bg-blue-600 text-white'
                     }`}
                   >
                     Secret

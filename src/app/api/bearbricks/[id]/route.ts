@@ -59,6 +59,7 @@ export async function GET(
       size: bearbrick.sizePercentage,
       description: bearbrick.description,
       isSecret: bearbrick.isSecret,
+      rarityPercentage: bearbrick.rarityPercentage,
       images: bearbrick.images,
       contributor,
     }

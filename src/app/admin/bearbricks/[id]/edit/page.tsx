@@ -261,7 +261,7 @@ export default function EditBearbrickPage() {
     }
   }
 
-  const isSuperSecretCategory = categoryList.find((c) => c.id === formData.categoryId)?.name === 'Super Secret'
+  const isSecretCategory = categoryList.find((c) => c.id === formData.categoryId)?.name === 'Secret'
 
   if (!bearbrick) {
     return (
@@ -320,8 +320,8 @@ export default function EditBearbrickPage() {
                 value={formData.categoryId}
                 onChange={(e) => {
                   const categoryId = e.target.value
-                  const isSuperSecret = categoryList.find((c) => c.id === categoryId)?.name === 'Super Secret'
-                  setFormData({ ...formData, categoryId, isSecret: isSuperSecret ? true : formData.isSecret })
+                  const isSecretCat = categoryList.find((c) => c.id === categoryId)?.name === 'Secret'
+                  setFormData({ ...formData, categoryId, isSecret: isSecretCat ? true : formData.isSecret })
                 }}
                 className="w-full px-4 py-2 border rounded"
               >
@@ -334,11 +334,11 @@ export default function EditBearbrickPage() {
               </select>
             </div>
             <div>
-              <label className={`flex items-center gap-2 font-semibold ${isSuperSecretCategory ? 'opacity-50' : ''}`}>
+              <label className={`flex items-center gap-2 font-semibold ${isSecretCategory ? 'opacity-50' : ''}`}>
                 <input
                   type="checkbox"
-                  checked={isSuperSecretCategory ? true : formData.isSecret}
-                  disabled={isSuperSecretCategory}
+                  checked={isSecretCategory ? true : formData.isSecret}
+                  disabled={isSecretCategory}
                   onChange={(e) => setFormData({ ...formData, isSecret: e.target.checked })}
                   className="w-4 h-4"
                 />

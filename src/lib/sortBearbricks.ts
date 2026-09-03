@@ -1,4 +1,4 @@
-// Official Bearbrick category order (Super Secret always last, per official series listings)
+// Official Bearbrick category order (Secret always last, per official series listings)
 const CATEGORY_ORDER = [
   'Basic',
   'Jelly Bean',
@@ -10,7 +10,7 @@ const CATEGORY_ORDER = [
   'Animal',
   'Hero',
   'Artist',
-  'Super Secret',
+  'Secret',
 ]
 
 // Within the Basic category, items follow this fixed code order
@@ -28,6 +28,7 @@ interface SortableBearbrick {
   name: string
   isSecret: boolean
   category: { name: string } | null
+  series?: { number?: number } | null
 }
 
 function categoryRank(categoryName: string | undefined) {
@@ -44,6 +45,10 @@ export function sortBearbricks<T extends SortableBearbrick>(items: T[]): T[] {
     const rankB = categoryRank(b.category?.name)
     if (rankA !== rankB) return rankA - rankB
 
+    const seriesA = a.series?.number
+    const seriesB = b.series?.number
+    if (seriesA !== undefined && seriesB !== undefined && seriesA !== seriesB) return seriesB - seriesA
+
     if (a.category?.name === 'Basic' && b.category?.name === 'Basic') {
       const aIsRep = SECRET_BASIC_REPRESENTATIVE_NAMES.includes(a.name)
       const bIsRep = SECRET_BASIC_REPRESENTATIVE_NAMES.includes(b.name)
@@ -59,10 +64,10 @@ export function sortBearbricks<T extends SortableBearbrick>(items: T[]): T[] {
 }
 
 // Orders a category list to match the official Medicom Toy listing order
-// (Basic first, Super Secret always last), for use in filter dropdowns.
+// (Basic first, Secret always last), for use in filter dropdowns.
 export function sortCategoriesOfficial<T extends { name: string }>(categories: T[]): T[] {
   const rank = (name: string) => {
-    if (name === 'Super Secret') return Number.MAX_SAFE_INTEGER
+    if (name === 'Secret') return Number.MAX_SAFE_INTEGER
     const idx = CATEGORY_ORDER.indexOf(name)
     return idx === -1 ? CATEGORY_ORDER.length : idx
   }
@@ -71,7 +76,7 @@ export function sortCategoriesOfficial<T extends { name: string }>(categories: T
 
 interface BasicGroupable extends SortableBearbrick {
   id: string
-  series: { id: string } | null
+  series: { id: string; number?: number } | null
 }
 
 // Basic items (B E @ R b R I C K) are 9 separate records per series.

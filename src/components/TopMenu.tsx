@@ -173,6 +173,7 @@ export default function TopMenu() {
             <>
               <MenuLink href="/admin/manage" onClick={() => setOpen(false)}>Admin Home</MenuLink>
               <MenuLink href="/admin/requests" onClick={() => setOpen(false)}>Approve Edit Requests</MenuLink>
+              <MenuLink href="/admin/rarity" onClick={() => setOpen(false)}>Manage Rarity</MenuLink>
               <button
                 onClick={handleExport}
                 disabled={exporting}

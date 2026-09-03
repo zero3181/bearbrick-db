@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { upload } from '@vercel/blob/client'
 import TopMenu from '@/components/TopMenu'
 import { sortBearbricks, collapseBasicGroup } from '@/lib/sortBearbricks'
+import { isSuperSecretRarity } from '@/lib/rarity'
 import { compressImage } from '@/lib/compressImage'
 
 interface Bearbrick {
@@ -15,6 +16,7 @@ interface Bearbrick {
   series: {
     id: string
     name: string
+    number: number
   } | null
   category: {
     id: string
@@ -22,6 +24,7 @@ interface Bearbrick {
   } | null
   size: number
   isSecret: boolean
+  rarityPercentage: number | null
   images: { url: string; isPrimary: boolean }[]
 }
 
@@ -396,7 +399,7 @@ function AdminManagePageInner() {
   }
 
   const sortedBearbricks = collapseBasicGroup(sortBearbricks(bearbricks))
-  const isSuperSecretCategory = categoryList.find((c) => c.id === formData.categoryId)?.name === 'Super Secret'
+  const isSecretCategory = categoryList.find((c) => c.id === formData.categoryId)?.name === 'Secret'
 
   return (
     <div className="min-h-screen bg-white">
@@ -567,8 +570,8 @@ function AdminManagePageInner() {
                   value={formData.categoryId}
                   onChange={(e) => {
                     const categoryId = e.target.value
-                    const isSuperSecret = categoryList.find((c) => c.id === categoryId)?.name === 'Super Secret'
-                    setFormData({ ...formData, categoryId, isSecret: isSuperSecret ? true : formData.isSecret })
+                    const isSecretCat = categoryList.find((c) => c.id === categoryId)?.name === 'Secret'
+                    setFormData({ ...formData, categoryId, isSecret: isSecretCat ? true : formData.isSecret })
                   }}
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg"
                 >
@@ -581,11 +584,11 @@ function AdminManagePageInner() {
                 </select>
               </div>
               <div>
-                <label className={`flex items-center gap-2 font-semibold ${isSuperSecretCategory ? 'opacity-50' : ''}`}>
+                <label className={`flex items-center gap-2 font-semibold ${isSecretCategory ? 'opacity-50' : ''}`}>
                   <input
                     type="checkbox"
-                    checked={isSuperSecretCategory ? true : formData.isSecret}
-                    disabled={isSuperSecretCategory}
+                    checked={isSecretCategory ? true : formData.isSecret}
+                    disabled={isSecretCategory}
                     onChange={(e) => setFormData({ ...formData, isSecret: e.target.checked })}
                     className="w-4 h-4"
                   />
@@ -683,7 +686,7 @@ function AdminManagePageInner() {
                       {bearbrick.isSecret && (
                         <span
                           className={`inline-block px-2 py-0.5 mr-2 text-xs font-semibold rounded-full ${
-                            bearbrick.category?.name === 'Super Secret' ? 'bg-yellow-50 text-yellow-700' : 'bg-blue-50 text-blue-700'
+                            isSuperSecretRarity(bearbrick.rarityPercentage) ? 'bg-yellow-50 text-yellow-700' : 'bg-blue-50 text-blue-700'
                           }`}
                         >
                           Secret
