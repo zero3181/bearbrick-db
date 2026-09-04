@@ -64,6 +64,7 @@ export default function HomePage() {
   const [seriesMenuOpen, setSeriesMenuOpen] = useState(false)
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false)
   const [showScrollTop, setShowScrollTop] = useState(false)
+  const [compactHeader, setCompactHeader] = useState(false)
   const seriesMenuRef = useRef<HTMLDivElement>(null)
   const categoryMenuRef = useRef<HTMLDivElement>(null)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -115,7 +116,10 @@ export default function HomePage() {
   }, [sessionStatus])
 
   useEffect(() => {
-    const handleScroll = () => setShowScrollTop(window.scrollY > 800)
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 800)
+      setCompactHeader(window.scrollY > 48)
+    }
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
@@ -372,11 +376,66 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <img src="/logo-gombrick.png" alt="GomBrick" className="h-9 md:h-[42px] w-auto" />
-          <div className="flex items-center gap-1">
+      {/* Header - sticky, and morphs into a single compact row once scrolled */}
+      <header className="sticky top-0 z-30 bg-white border-b border-gray-100">
+        <div className={`max-w-7xl mx-auto px-4 flex items-center flex-wrap transition-[padding] duration-300 ${compactHeader ? 'py-2' : 'py-4'}`}>
+          {/* Clips down to just "G@M" once compact, instead of shrinking the whole wordmark */}
+          <div
+            className={`overflow-hidden order-1 transition-all duration-300 ${compactHeader ? 'h-6 w-[56px]' : 'h-9 md:h-[42px] w-[161px] md:w-[188px]'}`}
+          >
+            <img
+              src="/logo-gombrick.png"
+              alt="GomBrick"
+              className="h-full w-auto max-w-none"
+            />
+          </div>
+
+          {/* Series title / selector - same element throughout, just resized */}
+          <div
+            className={`relative transition-all duration-300 ${compactHeader ? 'order-2 ml-3' : 'order-4 basis-full mt-3'}`}
+            ref={seriesMenuRef}
+          >
+            <button
+              onClick={() => setSeriesMenuOpen((v) => !v)}
+              className={`flex items-center text-gray-900 hover:text-gray-500 transition-all duration-300 ${
+                compactHeader ? 'gap-1 text-sm' : 'gap-2 text-3xl md:text-4xl'
+              }`}
+            >
+              <span className="font-agency-wide inline-block">
+                {selectedSeries === 'all' ? 'All' : selectedSeries}
+              </span>
+              <svg
+                viewBox="0 0 20 20"
+                fill="none"
+                className={`text-gray-400 transition-all duration-300 ${compactHeader ? 'w-4 h-4' : 'w-[22px] h-[22px] mt-1'}`}
+              >
+                <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+
+            {seriesMenuOpen && (
+              <div className="absolute left-0 mt-2 w-72 max-h-96 overflow-y-auto bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-40">
+                <button
+                  onClick={() => handleSeriesChange('all')}
+                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === 'all' ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
+                >
+                  All
+                </button>
+                {allSeries.map((series) => (
+                  <button
+                    key={series.id}
+                    onClick={() => handleSeriesChange(series.name)}
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === series.name ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
+                  >
+                    {series.name}
+                    {series._count && <span className="text-gray-400"> ({series._count.bearbricks})</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="order-3 ml-auto flex items-center gap-1">
             <button
               onClick={() => {
                 if (!session) {
@@ -393,7 +452,11 @@ export default function HomePage() {
               <svg width="20" height="20" viewBox="0 0 20 20" fill={myCollectionOnly ? 'currentColor' : 'none'}>
                 <path d="M5 3h10a1 1 0 0 1 1 1v13l-6-3.5L4 17V4a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
               </svg>
-              My Collection
+              <span
+                className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${compactHeader ? 'max-w-0 opacity-0' : 'max-w-[8rem] opacity-100'}`}
+              >
+                My Collection
+              </span>
             </button>
             <div className="relative" ref={searchMenuRef}>
               <button
@@ -449,80 +512,49 @@ export default function HomePage() {
             </div>
             <TopMenu />
           </div>
+
+          {/* Category filter - collapses away in compact mode */}
+          <div
+            className={`relative order-5 basis-full overflow-hidden transition-all duration-300 ${
+              compactHeader ? 'max-h-0 opacity-0' : 'max-h-16 opacity-100 mt-2'
+            }`}
+            ref={categoryMenuRef}
+          >
+            <button
+              onClick={() => setCategoryMenuOpen((v) => !v)}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              {selectedCategory === 'all' ? 'All categories' : selectedCategory}
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" className="text-gray-400">
+                <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+
+            {categoryMenuOpen && (
+              <div className="absolute left-0 mt-2 w-56 max-h-96 overflow-y-auto bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-40">
+                <button
+                  onClick={() => handleCategoryChange('all')}
+                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedCategory === 'all' ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
+                >
+                  All
+                </button>
+                {categoryList.map((category) => (
+                  <button
+                    key={category.id}
+                    onClick={() => handleCategoryChange(category.name)}
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedCategory === category.name ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
+                  >
+                    {category.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 pt-1 pb-8">
-        {/* Series title / selector */}
-        <div className="mb-3 relative inline-block" ref={seriesMenuRef}>
-          <button
-            onClick={() => setSeriesMenuOpen((v) => !v)}
-            className="flex items-center gap-2 text-3xl md:text-4xl text-gray-900 hover:text-gray-500 transition-colors"
-          >
-            <span className="font-agency-wide inline-block">
-              {selectedSeries === 'all' ? 'All' : selectedSeries}
-            </span>
-            <svg width="22" height="22" viewBox="0 0 20 20" fill="none" className="mt-1 text-gray-400">
-              <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-
-          {seriesMenuOpen && (
-            <div className="absolute left-0 mt-2 w-72 max-h-96 overflow-y-auto bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-40">
-              <button
-                onClick={() => handleSeriesChange('all')}
-                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === 'all' ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
-              >
-                All
-              </button>
-              {allSeries.map((series) => (
-                <button
-                  key={series.id}
-                  onClick={() => handleSeriesChange(series.name)}
-                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === series.name ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
-                >
-                  {series.name}
-                  {series._count && <span className="text-gray-400"> ({series._count.bearbricks})</span>}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Category filter */}
-        <div className="mb-8 relative inline-block" ref={categoryMenuRef}>
-          <button
-            onClick={() => setCategoryMenuOpen((v) => !v)}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-          >
-            {selectedCategory === 'all' ? 'All categories' : selectedCategory}
-            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" className="text-gray-400">
-              <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-
-          {categoryMenuOpen && (
-            <div className="absolute left-0 mt-2 w-56 max-h-96 overflow-y-auto bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-40">
-              <button
-                onClick={() => handleCategoryChange('all')}
-                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedCategory === 'all' ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
-              >
-                All
-              </button>
-              {categoryList.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => handleCategoryChange(category.name)}
-                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedCategory === category.name ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
-                >
-                  {category.name}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
+      <main className="max-w-7xl mx-auto px-4 pt-4 pb-8">
         {loading ? (
           <div className="min-h-[50vh] flex items-center justify-center">
             <LoadingSpinner label="Loading..." />
