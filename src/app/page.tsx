@@ -66,6 +66,12 @@ export default function HomePage() {
   const [showScrollTop, setShowScrollTop] = useState(false)
   const seriesMenuRef = useRef<HTMLDivElement>(null)
   const categoryMenuRef = useRef<HTMLDivElement>(null)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchPool, setSearchPool] = useState<Bearbrick[]>([])
+  const [searchPoolLoaded, setSearchPoolLoaded] = useState(false)
+  const searchMenuRef = useRef<HTMLDivElement>(null)
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -122,10 +128,13 @@ export default function HomePage() {
       if (categoryMenuRef.current && !categoryMenuRef.current.contains(e.target as Node)) {
         setCategoryMenuOpen(false)
       }
+      if (searchMenuRef.current && !searchMenuRef.current.contains(e.target as Node)) {
+        setSearchOpen(false)
+      }
     }
-    if (seriesMenuOpen || categoryMenuOpen) document.addEventListener('mousedown', handleClickOutside)
+    if (seriesMenuOpen || categoryMenuOpen || searchOpen) document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [seriesMenuOpen, categoryMenuOpen])
+  }, [seriesMenuOpen, categoryMenuOpen, searchOpen])
 
   const fetchSeries = async () => {
     try {
@@ -182,6 +191,46 @@ export default function HomePage() {
       setLoading(false)
     }
   }
+
+  const ensureSearchPool = async () => {
+    if (searchPoolLoaded) return
+    // Reuses the same cache key the "All series" view warms, so search is
+    // instant for anyone who's already browsed with that filter active.
+    const cached = sessionStorage.getItem('gombrick:bearbricks:all')
+    if (cached) {
+      try {
+        setSearchPool(JSON.parse(cached))
+        setSearchPoolLoaded(true)
+      } catch {
+        // ignore malformed cache entry
+      }
+    }
+    try {
+      const res = await fetch('/api/bearbricks')
+      const data = await res.json()
+      const bearbricksArray = Array.isArray(data) ? data : []
+      setSearchPool(bearbricksArray)
+      sessionStorage.setItem('gombrick:bearbricks:all', JSON.stringify(bearbricksArray))
+    } catch (error) {
+      console.error('Failed to fetch bearbricks for search:', error)
+    } finally {
+      setSearchPoolLoaded(true)
+    }
+  }
+
+  const openSearch = () => {
+    setSearchOpen(true)
+    ensureSearchPool()
+    setTimeout(() => searchInputRef.current?.focus(), 0)
+  }
+
+  const searchResults = (() => {
+    const q = searchQuery.trim().toLowerCase()
+    if (!q) return []
+    return searchPool
+      .filter((b) => b.name.toLowerCase().includes(q) || b.series?.name.toLowerCase().includes(q))
+      .slice(0, 8)
+  })()
 
   const fetchCollection = async () => {
     // Show cached membership instantly (if any) so the bookmark doesn't
@@ -328,20 +377,76 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <img src="/logo-gombrick.png" alt="GomBrick" className="h-9 md:h-[42px] w-auto" />
           <div className="flex items-center gap-1">
-            {session && (
+            <button
+              onClick={() => {
+                if (!session) {
+                  signIn('google')
+                  return
+                }
+                setMyCollectionOnly((v) => !v)
+              }}
+              aria-label="My Collection"
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                myCollectionOnly ? 'bg-blue-50 text-blue-600' : 'text-gray-500 hover:bg-gray-100'
+              }`}
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill={myCollectionOnly ? 'currentColor' : 'none'}>
+                <path d="M5 3h10a1 1 0 0 1 1 1v13l-6-3.5L4 17V4a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+              </svg>
+              My Collection
+            </button>
+            <div className="relative" ref={searchMenuRef}>
               <button
-                onClick={() => setMyCollectionOnly((v) => !v)}
-                aria-label="My Collection"
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                  myCollectionOnly ? 'bg-blue-50 text-blue-600' : 'text-gray-500 hover:bg-gray-100'
-                }`}
+                onClick={() => (searchOpen ? setSearchOpen(false) : openSearch())}
+                aria-label="Search"
+                className="p-2.5 rounded-full hover:bg-gray-100 active:bg-gray-200 transition-colors text-gray-500"
               >
-                <svg width="20" height="20" viewBox="0 0 20 20" fill={myCollectionOnly ? 'currentColor' : 'none'}>
-                  <path d="M5 3h10a1 1 0 0 1 1 1v13l-6-3.5L4 17V4a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <circle cx="9" cy="9" r="6" stroke="currentColor" strokeWidth="1.5" />
+                  <path d="M13.5 13.5L17.5 17.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                 </svg>
-                My Collection
               </button>
-            )}
+              {searchOpen && (
+                <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-100 rounded-xl shadow-lg z-20 p-2">
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search bearbricks..."
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-400"
+                  />
+                  {searchQuery.trim() && (
+                    <div className="mt-2 max-h-96 overflow-y-auto divide-y divide-gray-50">
+                      {!searchPoolLoaded ? (
+                        <p className="text-sm text-gray-400 text-center py-4">Loading...</p>
+                      ) : searchResults.length === 0 ? (
+                        <p className="text-sm text-gray-400 text-center py-4">No matches</p>
+                      ) : (
+                        searchResults.map((item) => {
+                          const img = item.images.find((i) => i.isPrimary)?.url || item.images[0]?.url || '/bearbrick-placeholder.svg'
+                          const displayName = item.category?.name === 'Basic' && !item.isSecret ? 'BE@RBRICK' : item.name
+                          return (
+                            <Link
+                              key={item.id}
+                              href={`/bearbricks/${item.id}`}
+                              onClick={() => { setSearchOpen(false); setSearchQuery('') }}
+                              className="flex items-center gap-3 px-2 py-2 hover:bg-gray-50 rounded-lg"
+                            >
+                              <img src={img} alt="" className="w-10 h-10 object-cover object-top rounded bg-gray-50 shrink-0" />
+                              <div className="min-w-0">
+                                <p className="text-sm text-gray-900 truncate">{displayName}</p>
+                                {item.series && <p className="text-xs text-gray-400 truncate">{item.series.name}</p>}
+                              </div>
+                            </Link>
+                          )
+                        })
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
             <TopMenu />
           </div>
         </div>

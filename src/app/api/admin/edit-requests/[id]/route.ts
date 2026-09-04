@@ -9,6 +9,7 @@ interface NewData {
   categoryId?: string | null
   description?: string | null
   isSecret?: boolean
+  rarityPercentage?: number | null
   imageUrl?: string | null
 }
 
@@ -63,6 +64,7 @@ export async function POST(
             categoryId: newData.categoryId || null,
             description: newData.description || null,
             isSecret: Boolean(newData.isSecret),
+            rarityPercentage: newData.rarityPercentage ?? null,
             createdById: editRequest.requestedById,
             sizePercentage: 100,
           },
@@ -107,6 +109,7 @@ export async function POST(
   bearbrickUpdate.categoryId = newData.categoryId || null
   bearbrickUpdate.description = newData.description || null
   bearbrickUpdate.isSecret = Boolean(newData.isSecret)
+  if ('rarityPercentage' in newData) bearbrickUpdate.rarityPercentage = newData.rarityPercentage ?? null
 
   let updatedImageId: string | null = null
 

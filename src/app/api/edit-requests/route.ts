@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
         categoryId: true,
         description: true,
         isSecret: true,
+        rarityPercentage: true,
       },
     })
 
@@ -66,6 +67,7 @@ export async function POST(request: NextRequest) {
           categoryId: bearbrick.categoryId,
           description: bearbrick.description,
           isSecret: bearbrick.isSecret,
+          rarityPercentage: bearbrick.rarityPercentage,
         },
         newData,
         updatedAt: new Date(),

@@ -13,6 +13,7 @@ interface RequestData {
   categoryId?: string | null
   description?: string | null
   isSecret?: boolean
+  rarityPercentage?: number | null
   imageUrl?: string | null
 }
 
@@ -197,6 +198,11 @@ export default function AdminRequestsPage() {
                   label="Secret"
                   oldVal={req.oldData?.isSecret ? 'Yes' : 'No'}
                   newVal={req.newData.isSecret ? 'Yes' : 'No'}
+                />
+                <Field
+                  label="Rarity"
+                  oldVal={req.oldData?.rarityPercentage != null ? `${req.oldData.rarityPercentage}%` : ''}
+                  newVal={req.newData.rarityPercentage != null ? `${req.newData.rarityPercentage}%` : ''}
                 />
               </div>
 

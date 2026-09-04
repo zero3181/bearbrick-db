@@ -6,8 +6,8 @@ import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import TopMenu from '@/components/TopMenu'
 import LoadingSpinner from '@/components/LoadingSpinner'
-import { sortBearbricks } from '@/lib/sortBearbricks'
-import { isSuperSecretRarity } from '@/lib/rarity'
+import { sortBearbricks, SECRET_BASIC_REPRESENTATIVE_NAMES } from '@/lib/sortBearbricks'
+import { isSuperSecretRarity, toFraction } from '@/lib/rarity'
 
 interface Bearbrick {
   id: string
@@ -21,6 +21,19 @@ interface Series {
   id: string
   name: string
   number: number
+  season: string
+  releaseYear: number
+  _count?: { bearbricks: number }
+}
+
+const SEASONS = ['Spring', 'Summer', 'Fall', 'Winter']
+
+function getCurrentSeason() {
+  const month = new Date().getMonth() + 1
+  if (month >= 3 && month <= 5) return 'Spring'
+  if (month >= 6 && month <= 8) return 'Summer'
+  if (month >= 9 && month <= 11) return 'Fall'
+  return 'Winter'
 }
 
 export default function AdminRarityPage() {
@@ -30,8 +43,21 @@ export default function AdminRarityPage() {
   const [selectedSeries, setSelectedSeries] = useState<string>('')
   const [bearbricks, setBearbricks] = useState<Bearbrick[]>([])
   const [edits, setEdits] = useState<Record<string, string>>({})
+  const [nameEdits, setNameEdits] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [creatingSeries, setCreatingSeries] = useState(false)
+  const [deletingSeries, setDeletingSeries] = useState(false)
+  const [seasonEdit, setSeasonEdit] = useState('')
+  const [yearEdit, setYearEdit] = useState('')
+  const [savingSeriesInfo, setSavingSeriesInfo] = useState(false)
+
+  const fetchSeriesList = async () => {
+    const res = await fetch('/api/series')
+    const data = res.ok ? await res.json() : []
+    setSeriesList(Array.isArray(data) ? data : [])
+    return Array.isArray(data) ? data : []
+  }
 
   useEffect(() => {
     if (status === 'loading') return
@@ -40,13 +66,9 @@ export default function AdminRarityPage() {
       router.push('/')
       return
     }
-    fetch('/api/series')
-      .then((res) => (res.ok ? res.json() : []))
-      .then((data: Series[]) => {
-        setSeriesList(data)
-        if (data.length > 0) setSelectedSeries(data[0].name)
-      })
-      .catch(() => setSeriesList([]))
+    fetchSeriesList().then((data) => {
+      if (data.length > 0) setSelectedSeries(data[0].name)
+    })
   }, [status, session])
 
   useEffect(() => {
@@ -57,10 +79,13 @@ export default function AdminRarityPage() {
       .then((data: Bearbrick[]) => {
         setBearbricks(Array.isArray(data) ? data : [])
         const initialEdits: Record<string, string> = {}
+        const initialNameEdits: Record<string, string> = {}
         for (const b of data) {
           initialEdits[b.id] = b.rarityPercentage != null ? String(b.rarityPercentage) : ''
+          initialNameEdits[b.id] = b.name
         }
         setEdits(initialEdits)
+        setNameEdits(initialNameEdits)
       })
       .finally(() => setLoading(false))
   }, [selectedSeries])
@@ -80,23 +105,65 @@ export default function AdminRarityPage() {
     return groups
   }, [bearbricks])
 
-  const dirty = bearbricks.some((b) => {
-    const original = b.rarityPercentage != null ? String(b.rarityPercentage) : ''
-    return (edits[b.id] ?? '') !== original
-  })
+  const dirty =
+    bearbricks.some((b) => {
+      const original = b.rarityPercentage != null ? String(b.rarityPercentage) : ''
+      return (edits[b.id] ?? '') !== original
+    }) || bearbricks.some((b) => (nameEdits[b.id] ?? b.name) !== b.name)
+
+  const currentSeriesInfo = seriesList.find((s) => s.name === selectedSeries)
+  const canDeleteCurrentSeries = !loading && bearbricks.length === 0 && !!currentSeriesInfo
+
+  useEffect(() => {
+    if (!currentSeriesInfo) return
+    setSeasonEdit(currentSeriesInfo.season)
+    setYearEdit(String(currentSeriesInfo.releaseYear))
+  }, [currentSeriesInfo?.id])
+
+  const seriesInfoDirty =
+    !!currentSeriesInfo &&
+    (seasonEdit !== currentSeriesInfo.season || yearEdit !== String(currentSeriesInfo.releaseYear))
+
+  const handleSaveSeriesInfo = async () => {
+    if (!currentSeriesInfo) return
+    setSavingSeriesInfo(true)
+    try {
+      const res = await fetch(`/api/series/${currentSeriesInfo.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ season: seasonEdit, releaseYear: parseInt(yearEdit, 10) }),
+      })
+      if (!res.ok) throw new Error('Save failed')
+      await fetchSeriesList()
+    } catch (error) {
+      console.error('Failed to save series info:', error)
+      alert('Failed to save release info')
+    } finally {
+      setSavingSeriesInfo(false)
+    }
+  }
 
   const handleSave = async () => {
     setSaving(true)
     try {
       const updates = bearbricks
-        .filter((b) => {
-          const original = b.rarityPercentage != null ? String(b.rarityPercentage) : ''
-          return (edits[b.id] ?? '') !== original
+        .map((b) => {
+          const originalRarity = b.rarityPercentage != null ? String(b.rarityPercentage) : ''
+          const rarityChanged = (edits[b.id] ?? '') !== originalRarity
+          const nameChanged = (nameEdits[b.id] ?? b.name) !== b.name
+          if (!rarityChanged && !nameChanged) return null
+          const update: { id: string; rarityPercentage?: number | null; name?: string } = { id: b.id }
+          if (rarityChanged) {
+            update.rarityPercentage = edits[b.id] === '' || edits[b.id] === undefined ? null : parseFloat(edits[b.id])
+          }
+          if (nameChanged) {
+            update.name = nameEdits[b.id]
+          }
+          return update
         })
-        .map((b) => ({
-          id: b.id,
-          rarityPercentage: edits[b.id] === '' || edits[b.id] === undefined ? null : parseFloat(edits[b.id]),
-        }))
+        .filter((u): u is { id: string; rarityPercentage?: number | null; name?: string } => u !== null)
+
+      if (updates.length === 0) return
 
       const res = await fetch('/api/admin/bearbricks/update-rarity', {
         method: 'PUT',
@@ -108,14 +175,69 @@ export default function AdminRarityPage() {
       setBearbricks((prev) =>
         prev.map((b) => {
           const update = updates.find((u) => u.id === b.id)
-          return update ? { ...b, rarityPercentage: update.rarityPercentage } : b
+          if (!update) return b
+          return {
+            ...b,
+            rarityPercentage: 'rarityPercentage' in update ? update.rarityPercentage! : b.rarityPercentage,
+            name: update.name ?? b.name,
+          }
         })
       )
     } catch (error) {
-      console.error('Failed to save rarity changes:', error)
+      console.error('Failed to save changes:', error)
       alert('Failed to save changes')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleAddSeries = async () => {
+    setCreatingSeries(true)
+    try {
+      const nextNumber = seriesList.length > 0 ? Math.max(...seriesList.map((s) => s.number)) + 1 : 1
+      const res = await fetch('/api/series', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          number: nextNumber,
+          name: `Series ${nextNumber}`,
+          season: getCurrentSeason(),
+          releaseYear: new Date().getFullYear(),
+        }),
+      })
+      if (!res.ok) {
+        alert('Failed to add series')
+        return
+      }
+      const newSeries = await res.json()
+      await fetchSeriesList()
+      setSelectedSeries(newSeries.name)
+    } catch (error) {
+      console.error('Failed to add series:', error)
+      alert('Failed to add series')
+    } finally {
+      setCreatingSeries(false)
+    }
+  }
+
+  const handleDeleteSeries = async () => {
+    if (!currentSeriesInfo) return
+    if (!confirm(`Delete "${currentSeriesInfo.name}"? This can't be undone.`)) return
+    setDeletingSeries(true)
+    try {
+      const res = await fetch(`/api/series/${currentSeriesInfo.id}`, { method: 'DELETE' })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        alert(body.error || 'Failed to delete series')
+        return
+      }
+      const data = await fetchSeriesList()
+      setSelectedSeries(data.length > 0 ? data[0].name : '')
+    } catch (error) {
+      console.error('Failed to delete series:', error)
+      alert('Failed to delete series')
+    } finally {
+      setDeletingSeries(false)
     }
   }
 
@@ -145,9 +267,9 @@ export default function AdminRarityPage() {
           </Link>
         </div>
 
-        <div className="flex items-center justify-between mb-6 mt-2">
-          <h1 className="text-2xl font-bold text-gray-900">Manage Rarity</h1>
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between mb-6 mt-2 flex-wrap gap-3">
+          <h1 className="text-2xl font-bold text-gray-900">Manage Series</h1>
+          <div className="flex items-center gap-2 flex-wrap">
             <select
               value={selectedSeries}
               onChange={(e) => setSelectedSeries(e.target.value)}
@@ -158,6 +280,21 @@ export default function AdminRarityPage() {
               ))}
             </select>
             <button
+              onClick={handleAddSeries}
+              disabled={creatingSeries}
+              className="px-3 py-1.5 border border-gray-200 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 disabled:opacity-50"
+            >
+              {creatingSeries ? 'Adding...' : '+ Add Series'}
+            </button>
+            <button
+              onClick={handleDeleteSeries}
+              disabled={!canDeleteCurrentSeries || deletingSeries}
+              title={!canDeleteCurrentSeries ? 'Only an empty series (no bearbricks) can be deleted' : undefined}
+              className="px-3 py-1.5 border border-red-200 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {deletingSeries ? 'Deleting...' : 'Delete Series'}
+            </button>
+            <button
               onClick={handleSave}
               disabled={!dirty || saving}
               className="px-4 py-1.5 bg-blue-600 text-white text-sm font-semibold rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-700"
@@ -167,18 +304,42 @@ export default function AdminRarityPage() {
           </div>
         </div>
 
-        <p className="text-sm text-gray-500 mb-6">
-          Each row is the sourced pull-rate percentage for that specific figure (e.g. a 24-piece
-          case has ~4.16% per figure). Leave blank when no sourced number exists for it — don&apos;t
-          guess. The Secret badge turns yellow only at the community&apos;s &quot;Super Secret&quot;
-          tier (1/192 ≈ 0.52%); anything else stays blue. Basic is entered as one combined total
-          (the odds of pulling any of its letters) and split evenly across all of them.
-        </p>
+        {currentSeriesInfo && (
+          <div className="flex items-center gap-2 mb-6 -mt-2 flex-wrap">
+            <span className="text-sm text-gray-500">Released:</span>
+            <select
+              value={seasonEdit}
+              onChange={(e) => setSeasonEdit(e.target.value)}
+              className="px-2 py-1 border border-gray-200 rounded text-sm"
+            >
+              {SEASONS.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+            <input
+              type="number"
+              value={yearEdit}
+              onChange={(e) => setYearEdit(e.target.value)}
+              className="w-20 px-2 py-1 border border-gray-200 rounded text-sm"
+            />
+            <button
+              onClick={handleSaveSeriesInfo}
+              disabled={!seriesInfoDirty || savingSeriesInfo}
+              className="px-3 py-1 border border-gray-200 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {savingSeriesInfo ? 'Saving...' : 'Save'}
+            </button>
+          </div>
+        )}
 
         {loading ? (
           <div className="flex justify-center py-20">
             <LoadingSpinner />
           </div>
+        ) : bearbricks.length === 0 ? (
+          <p className="text-sm text-gray-400 py-10 text-center">
+            This series has no bearbricks yet.
+          </p>
         ) : (
           <div className="space-y-8">
             {grouped.map((group, groupIdx) => (
@@ -194,9 +355,14 @@ export default function AdminRarityPage() {
                       const total = values.reduce((sum, v) => sum + (v === '' ? 0 : parseFloat(v)), 0)
                       const totalValue = allBlank ? '' : String(Math.round(total * 100) / 100)
                       const anySecret = group.items.some((it) => it.isSecret)
+                      const representative = group.items.find((it) => SECRET_BASIC_REPRESENTATIVE_NAMES.includes(it.name))
+                      const editTargetId = representative?.id ?? group.items[0]?.id
+                      const displayName = representative
+                        ? (nameEdits[representative.id] ?? representative.name)
+                        : 'BE@RBRICK'
                       return (
                         <div className="flex items-center justify-between gap-4 px-4 py-2.5">
-                          <div className="flex items-center gap-2 min-w-0">
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
                             {anySecret && (
                               <span
                                 className={`shrink-0 px-2 py-0.5 text-xs font-semibold rounded-full ${
@@ -206,11 +372,30 @@ export default function AdminRarityPage() {
                                 Secret
                               </span>
                             )}
-                            <span className="truncate text-sm text-gray-900">
-                              Basic ({group.items.length} letters, total)
-                            </span>
+                            {representative ? (
+                              <input
+                                type="text"
+                                value={displayName}
+                                onChange={(e) => setNameEdits({ ...nameEdits, [representative.id]: e.target.value })}
+                                className="min-w-0 flex-1 text-sm text-gray-900 border-b border-transparent hover:border-gray-200 focus:border-blue-400 focus:outline-none bg-transparent"
+                              />
+                            ) : (
+                              <span className="truncate text-sm text-gray-900" title="Shown as BE@RBRICK on the collection page for every non-secret Basic set">
+                                {displayName}
+                              </span>
+                            )}
+                            {editTargetId && (
+                              <Link
+                                href={`/admin/bearbricks/${editTargetId}/edit`}
+                                className="shrink-0 text-gray-300 hover:text-blue-600"
+                                title="Open edit page"
+                              >
+                                ↗
+                              </Link>
+                            )}
                           </div>
-                          <div className="flex items-center gap-1 shrink-0">
+                          <div className="flex items-center gap-2 shrink-0">
+                            {!allBlank && <span className="text-xs text-gray-400 tabular-nums">{toFraction(total)}</span>}
                             <input
                               type="number"
                               step="0.01"
@@ -243,7 +428,7 @@ export default function AdminRarityPage() {
                       const parsed = value === '' ? null : parseFloat(value)
                       return (
                         <div key={item.id} className="flex items-center justify-between gap-4 px-4 py-2.5">
-                          <div className="flex items-center gap-2 min-w-0">
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
                             {item.isSecret && (
                               <span
                                 className={`shrink-0 px-2 py-0.5 text-xs font-semibold rounded-full ${
@@ -253,9 +438,22 @@ export default function AdminRarityPage() {
                                 Secret
                               </span>
                             )}
-                            <span className="truncate text-sm text-gray-900">{item.name}</span>
+                            <input
+                              type="text"
+                              value={nameEdits[item.id] ?? item.name}
+                              onChange={(e) => setNameEdits({ ...nameEdits, [item.id]: e.target.value })}
+                              className="min-w-0 flex-1 text-sm text-gray-900 border-b border-transparent hover:border-gray-200 focus:border-blue-400 focus:outline-none bg-transparent"
+                            />
+                            <Link
+                              href={`/admin/bearbricks/${item.id}/edit`}
+                              className="shrink-0 text-gray-300 hover:text-blue-600"
+                              title="Open edit page"
+                            >
+                              ↗
+                            </Link>
                           </div>
-                          <div className="flex items-center gap-1 shrink-0">
+                          <div className="flex items-center gap-2 shrink-0">
+                            {parsed != null && !Number.isNaN(parsed) && <span className="text-xs text-gray-400 tabular-nums">{toFraction(parsed)}</span>}
                             <input
                               type="number"
                               step="0.01"

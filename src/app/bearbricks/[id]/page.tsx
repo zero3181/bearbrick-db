@@ -8,7 +8,7 @@ import { upload } from '@vercel/blob/client'
 import TopMenu from '@/components/TopMenu'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import { BASIC_ORDER, SECRET_BASIC_ORDERS, SECRET_BASIC_REPRESENTATIVE_NAMES } from '@/lib/sortBearbricks'
-import { isSuperSecretRarity } from '@/lib/rarity'
+import { isSuperSecretRarity, toFraction } from '@/lib/rarity'
 import { compressImage } from '@/lib/compressImage'
 
 interface Bearbrick {
@@ -70,6 +70,7 @@ export default function BearbrickDetailPage() {
     categoryId: '',
     description: '',
     isSecret: false,
+    rarityPercentage: '',
   })
   const [requestReason, setRequestReason] = useState('')
   const [requestImageFile, setRequestImageFile] = useState<File | null>(null)
@@ -233,6 +234,7 @@ export default function BearbrickDetailPage() {
       categoryId: bearbrick.category?.id || '',
       description: bearbrick.description || '',
       isSecret: bearbrick.isSecret,
+      rarityPercentage: bearbrick.rarityPercentage != null ? String(bearbrick.rarityPercentage) : '',
     })
     setRequestReason('')
     setRequestImageFile(null)
@@ -277,6 +279,7 @@ export default function BearbrickDetailPage() {
             categoryId: requestData.categoryId || null,
             description: requestData.description || null,
             isSecret: requestData.isSecret,
+            rarityPercentage: requestData.rarityPercentage === '' ? null : parseFloat(requestData.rarityPercentage),
             imageUrl,
           },
         }),
@@ -418,6 +421,14 @@ export default function BearbrickDetailPage() {
                     <span>{bearbrick.series.season} {bearbrick.series.releaseYear}</span>
                   </div>
                 )}
+                <div className="flex">
+                  <span className="font-semibold w-24">Rarity:</span>
+                  <span>
+                    {bearbrick.rarityPercentage != null
+                      ? `${bearbrick.rarityPercentage}% (${toFraction(bearbrick.rarityPercentage)})`
+                      : '--%'}
+                  </span>
+                </div>
               </div>
 
               {bearbrick.description && (
@@ -530,6 +541,19 @@ export default function BearbrickDetailPage() {
                   />
                   Secret
                 </label>
+              </div>
+              <div>
+                <label className="block font-semibold mb-1">Rarity % (optional)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  value={requestData.rarityPercentage}
+                  onChange={(e) => setRequestData({ ...requestData, rarityPercentage: e.target.value })}
+                  placeholder="e.g. 4.16 for 1/24 in a 24-piece case"
+                  className="w-full px-4 py-2 border rounded"
+                />
               </div>
               <div>
                 <label className="block font-semibold mb-1">Description</label>

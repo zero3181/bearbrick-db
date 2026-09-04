@@ -4,7 +4,8 @@ import { requireAdmin } from '@/lib/serverAuth'
 
 interface RarityUpdate {
   id: string
-  rarityPercentage: number | null
+  rarityPercentage?: number | null
+  name?: string
 }
 
 export async function PUT(request: NextRequest) {
@@ -22,12 +23,12 @@ export async function PUT(request: NextRequest) {
     }
 
     await prisma.$transaction(
-      updates.map((u) =>
-        prisma.bearbrick.update({
-          where: { id: u.id },
-          data: { rarityPercentage: u.rarityPercentage },
-        })
-      )
+      updates.map((u) => {
+        const data: { rarityPercentage?: number | null; name?: string } = {}
+        if ('rarityPercentage' in u) data.rarityPercentage = u.rarityPercentage
+        if (u.name !== undefined) data.name = u.name
+        return prisma.bearbrick.update({ where: { id: u.id }, data })
+      })
     )
 
     return NextResponse.json({ success: true, count: updates.length })

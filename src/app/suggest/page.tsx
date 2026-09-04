@@ -27,6 +27,7 @@ export default function SuggestBearbrickPage() {
     categoryId: '',
     description: '',
     isSecret: false,
+    rarityPercentage: '',
   })
   const [note, setNote] = useState('')
   const [imageFile, setImageFile] = useState<File | null>(null)
@@ -78,6 +79,7 @@ export default function SuggestBearbrickPage() {
             categoryId: formData.categoryId || null,
             description: formData.description || null,
             isSecret: formData.isSecret,
+            rarityPercentage: formData.rarityPercentage === '' ? null : parseFloat(formData.rarityPercentage),
             imageUrl,
           },
         }),
@@ -188,6 +190,19 @@ export default function SuggestBearbrickPage() {
                 />
                 Secret
               </label>
+            </div>
+            <div>
+              <label className="block font-semibold mb-1">Rarity % (optional)</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                max="100"
+                value={formData.rarityPercentage}
+                onChange={(e) => setFormData({ ...formData, rarityPercentage: e.target.value })}
+                placeholder="e.g. 4.16 for 1/24 in a 24-piece case"
+                className="w-full px-4 py-2 border rounded"
+              />
             </div>
             <div>
               <label className="block font-semibold mb-1">Description</label>
