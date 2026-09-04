@@ -50,7 +50,7 @@ export default function AdminUsersPage() {
   }
 
   const handleRoleChange = async (user: UserRow, role: string) => {
-    if (!confirm(`Change ${user.name || user.email}'s role to ${role}?`)) return
+    if (!confirm(`${user.name || user.email}님의 권한을 ${role}(으)로 변경하시겠습니까?`)) return
 
     setSavingId(user.id)
     try {
@@ -63,11 +63,11 @@ export default function AdminUsersPage() {
         setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, role: role as UserRow['role'] } : u)))
       } else {
         const data = await res.json()
-        alert(data.error || 'Failed to update role')
+        alert(data.error || '권한 변경 실패')
       }
     } catch (error) {
       console.error('Failed to update role:', error)
-      alert('Failed to update role')
+      alert('권한 변경 실패')
     } finally {
       setSavingId(null)
     }
@@ -86,7 +86,7 @@ export default function AdminUsersPage() {
       <header className="border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/admin/manage" className="text-sm text-gray-500 hover:text-gray-900">
-            ← Back to admin
+            ← 관리자 홈으로
           </Link>
           <TopMenu />
         </div>
@@ -94,20 +94,20 @@ export default function AdminUsersPage() {
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex items-baseline gap-3 mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Manage Users</h1>
-          <span className="text-sm text-gray-500">{users.length} total</span>
+          <h1 className="text-2xl font-bold text-gray-900">사용자 관리</h1>
+          <span className="text-sm text-gray-500">전체 {users.length}명</span>
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Collection</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Suggestions</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Corrections</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Joined</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">사용자</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">권한</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">컬렉션</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">제안</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">수정 요청</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">가입일</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -122,7 +122,7 @@ export default function AdminUsersPage() {
                           <img src={user.image} alt="" className="w-8 h-8 rounded-full" />
                         )}
                         <div className="min-w-0">
-                          <p className="font-medium truncate">{user.name || '(no name)'}</p>
+                          <p className="font-medium truncate">{user.name || '(이름 없음)'}</p>
                           <p className="text-xs text-gray-500 truncate">{user.email}</p>
                         </div>
                       </div>
@@ -143,13 +143,13 @@ export default function AdminUsersPage() {
                           <option value="ADMIN">ADMIN</option>
                         </select>
                       )}
-                      {isSelf && <span className="ml-2 text-xs text-gray-400">(you)</span>}
+                      {isSelf && <span className="ml-2 text-xs text-gray-400">(나)</span>}
                     </td>
                     <td className="px-6 py-4 text-gray-700">{user.collectionCount}</td>
                     <td className="px-6 py-4 text-gray-700">{user.suggestionCount}</td>
                     <td className="px-6 py-4 text-gray-700">{user.correctionCount}</td>
                     <td className="px-6 py-4 text-gray-500 text-sm">
-                      {new Date(user.createdAt).toLocaleDateString('en-US')}
+                      {new Date(user.createdAt).toLocaleDateString('ko-KR')}
                     </td>
                   </tr>
                 )

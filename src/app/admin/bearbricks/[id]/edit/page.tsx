@@ -143,14 +143,14 @@ export default function EditBearbrickPage() {
       })
 
       if (res.ok) {
-        alert('Updated')
+        alert('수정되었습니다')
         router.push('/admin/manage')
       } else {
-        alert('Update failed')
+        alert('수정 실패')
       }
     } catch (error) {
       console.error('Failed to update:', error)
-      alert('Update failed')
+      alert('수정 실패')
     }
   }
 
@@ -190,14 +190,14 @@ export default function EditBearbrickPage() {
       })
 
       if (res.ok) {
-        alert('Image uploaded')
+        alert('이미지가 업로드되었습니다')
         refreshImages()
       } else {
-        alert('Failed to save the image')
+        alert('이미지 저장 실패')
       }
     } catch (error) {
       console.error('Upload failed:', error)
-      alert('Upload failed')
+      alert('업로드 실패')
     } finally {
       setUploading(false)
       setUploadProgress(0)
@@ -223,7 +223,7 @@ export default function EditBearbrickPage() {
   }
 
   const handleDeleteImage = async (imageId: string) => {
-    if (!confirm('Delete this image?')) return
+    if (!confirm('이 이미지를 삭제하시겠습니까?')) return
 
     try {
       const res = await fetch(`/api/admin/bearbricks/${params.id}/delete-image`, {
@@ -237,27 +237,27 @@ export default function EditBearbrickPage() {
       if (res.ok) {
         refreshImages()
       } else {
-        alert('Delete failed')
+        alert('삭제 실패')
       }
     } catch (error) {
       console.error('Failed to delete:', error)
-      alert('Delete failed')
+      alert('삭제 실패')
     }
   }
 
   const handleDelete = async () => {
-    if (!confirm(`Delete "${bearbrick?.name}"? This cannot be undone.`)) return
+    if (!confirm(`"${bearbrick?.name}"을(를) 삭제하시겠습니까? 되돌릴 수 없습니다.`)) return
 
     try {
       const res = await fetch(`/api/admin/bearbricks/${params.id}`, { method: 'DELETE' })
       if (res.ok) {
         router.push('/admin/manage')
       } else {
-        alert('Delete failed')
+        alert('삭제 실패')
       }
     } catch (error) {
       console.error('Failed to delete:', error)
-      alert('Delete failed')
+      alert('삭제 실패')
     }
   }
 
@@ -276,21 +276,21 @@ export default function EditBearbrickPage() {
       <header className="border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/admin/manage" className="text-sm text-gray-500 hover:text-gray-900">
-            ← Back to admin
+            ← 관리자 홈으로
           </Link>
           <TopMenu />
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">Edit Bearbrick</h1>
+        <h1 className="text-3xl font-bold mb-8">베어브릭 수정</h1>
 
         {/* Basic Info Form */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <h2 className="text-xl font-bold mb-4">Basic Info</h2>
+          <h2 className="text-xl font-bold mb-4">기본 정보</h2>
           <form id="edit-bearbrick-form" onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block font-semibold mb-1">Name *</label>
+              <label className="block font-semibold mb-1">이름 *</label>
               <input
                 type="text"
                 value={formData.name}
@@ -300,13 +300,13 @@ export default function EditBearbrickPage() {
               />
             </div>
             <div>
-              <label className="block font-semibold mb-1">Series</label>
+              <label className="block font-semibold mb-1">시리즈</label>
               <select
                 value={formData.seriesId}
                 onChange={(e) => setFormData({ ...formData, seriesId: e.target.value })}
                 className="w-full px-4 py-2 border rounded"
               >
-                <option value="">No series</option>
+                <option value="">시리즈 없음</option>
                 {seriesList.map((series) => (
                   <option key={series.id} value={series.id}>
                     {series.name}
@@ -315,7 +315,7 @@ export default function EditBearbrickPage() {
               </select>
             </div>
             <div>
-              <label className="block font-semibold mb-1">Category</label>
+              <label className="block font-semibold mb-1">카테고리</label>
               <select
                 value={formData.categoryId}
                 onChange={(e) => {
@@ -325,7 +325,7 @@ export default function EditBearbrickPage() {
                 }}
                 className="w-full px-4 py-2 border rounded"
               >
-                <option value="">No category</option>
+                <option value="">카테고리 없음</option>
                 {categoryList.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
@@ -342,11 +342,11 @@ export default function EditBearbrickPage() {
                   onChange={(e) => setFormData({ ...formData, isSecret: e.target.checked })}
                   className="w-4 h-4"
                 />
-                Secret
+                시크릿
               </label>
             </div>
             <div>
-              <label className="block font-semibold mb-1">Description</label>
+              <label className="block font-semibold mb-1">설명</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -359,7 +359,7 @@ export default function EditBearbrickPage() {
 
         {/* Images */}
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold mb-4">Manage Images</h2>
+          <h2 className="text-xl font-bold mb-4">이미지 관리</h2>
 
           {/* Upload */}
           <div className="mb-6">
@@ -372,9 +372,9 @@ export default function EditBearbrickPage() {
                   disabled={uploading}
                   className="hidden"
                 />
-                {uploading ? `Uploading... ${uploadProgress}%` : 'Upload Image'}
+                {uploading ? `업로드 중... ${uploadProgress}%` : '이미지 업로드'}
               </label>
-              <span className="text-xs text-gray-400">JPG, PNG, GIF (max 5MB)</span>
+              <span className="text-xs text-gray-400">JPG, PNG, GIF (최대 5MB)</span>
             </div>
             {uploading && (
               <div className="w-full max-w-xs bg-gray-200 rounded-full h-2 mt-2">
@@ -397,7 +397,7 @@ export default function EditBearbrickPage() {
                 />
                 {image.isPrimary && (
                   <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
-                    Primary
+                    대표 이미지
                   </div>
                 )}
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all rounded flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
@@ -406,14 +406,14 @@ export default function EditBearbrickPage() {
                       onClick={() => handleSetPrimary(image.id)}
                       className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
                     >
-                      Set as primary
+                      대표로 설정
                     </button>
                   )}
                   <button
                     onClick={() => handleDeleteImage(image.id)}
                     className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
                   >
-                    Delete
+                    삭제
                   </button>
                 </div>
               </div>
@@ -421,7 +421,7 @@ export default function EditBearbrickPage() {
           </div>
 
           {bearbrick.images.length === 0 && (
-            <p className="text-center text-gray-500 py-8">No images yet</p>
+            <p className="text-center text-gray-500 py-8">아직 이미지가 없습니다</p>
           )}
         </div>
 
@@ -430,14 +430,14 @@ export default function EditBearbrickPage() {
           form="edit-bearbrick-form"
           className="w-full mt-8 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
         >
-          Save
+          저장
         </button>
 
         <button
           onClick={handleDelete}
           className="w-full mt-3 px-4 py-2 border border-red-200 text-red-600 rounded hover:bg-red-50"
         >
-          Delete
+          삭제
         </button>
       </main>
     </div>

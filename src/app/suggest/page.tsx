@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useSession, signIn } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { upload } from '@vercel/blob/client'
 import TopMenu from '@/components/TopMenu'
@@ -18,6 +19,8 @@ interface Category {
 }
 
 export default function SuggestBearbrickPage() {
+  const t = useTranslations('suggest')
+  const tc = useTranslations('common')
   const { data: session, status } = useSession()
   const [seriesList, setSeriesList] = useState<Series[]>([])
   const [categoryList, setCategoryList] = useState<Category[]>([])
@@ -88,11 +91,11 @@ export default function SuggestBearbrickPage() {
       if (res.ok) {
         setSubmitted(true)
       } else {
-        alert('Submission failed')
+        alert(t('submissionFailed'))
       }
     } catch (error) {
       console.error('Failed to submit suggestion:', error)
-      alert('Submission failed')
+      alert(t('submissionFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -105,37 +108,35 @@ export default function SuggestBearbrickPage() {
       <header className="border-b border-gray-100">
         <div className="max-w-2xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/" className="text-sm text-gray-500 hover:text-gray-900">
-            ← Back
+            ← {tc('back')}
           </Link>
           <TopMenu />
         </div>
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-1">Suggest a Bearbrick</h1>
-        <p className="text-sm text-gray-500 mb-8">
-          Don&apos;t see a piece in the database? Suggest it here - an admin will review and add it.
-        </p>
+        <h1 className="text-2xl font-bold mb-1">{t('title')}</h1>
+        <p className="text-sm text-gray-500 mb-8">{t('subtitle')}</p>
 
         {status === 'loading' ? null : !session ? (
           <button
             onClick={() => signIn('google')}
             className="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
           >
-            Sign in to suggest a bearbrick
+            {t('signInToSuggest')}
           </button>
         ) : submitted ? (
           <div className="bg-gray-50 border rounded-lg p-6 text-center">
-            <p className="font-semibold mb-2">Thanks! Your suggestion has been submitted.</p>
-            <p className="text-sm text-gray-500 mb-4">It will appear once an admin approves it.</p>
+            <p className="font-semibold mb-2">{t('thanksMessage')}</p>
+            <p className="text-sm text-gray-500 mb-4">{t('thanksSubtext')}</p>
             <Link href="/" className="text-blue-600 hover:underline text-sm">
-              Back to the collection
+              {t('backToCollection')}
             </Link>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block font-semibold mb-1">Name *</label>
+              <label className="block font-semibold mb-1">{t('name')} *</label>
               <input
                 type="text"
                 value={formData.name}
@@ -145,14 +146,14 @@ export default function SuggestBearbrickPage() {
               />
             </div>
             <div>
-              <label className="block font-semibold mb-1">Series *</label>
+              <label className="block font-semibold mb-1">{t('seriesLabel')} *</label>
               <select
                 value={formData.seriesId}
                 onChange={(e) => setFormData({ ...formData, seriesId: e.target.value })}
                 className="w-full px-4 py-2 border rounded"
                 required
               >
-                <option value="">Select a series</option>
+                <option value="">{t('selectASeries')}</option>
                 {seriesList.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.name}
@@ -161,7 +162,7 @@ export default function SuggestBearbrickPage() {
               </select>
             </div>
             <div>
-              <label className="block font-semibold mb-1">Category</label>
+              <label className="block font-semibold mb-1">{t('categoryLabel')}</label>
               <select
                 value={formData.categoryId}
                 onChange={(e) => {
@@ -171,7 +172,7 @@ export default function SuggestBearbrickPage() {
                 }}
                 className="w-full px-4 py-2 border rounded"
               >
-                <option value="">No category</option>
+                <option value="">{t('noCategory')}</option>
                 {categoryList.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
@@ -188,11 +189,11 @@ export default function SuggestBearbrickPage() {
                   onChange={(e) => setFormData({ ...formData, isSecret: e.target.checked })}
                   className="w-4 h-4"
                 />
-                Secret
+                {tc('secret')}
               </label>
             </div>
             <div>
-              <label className="block font-semibold mb-1">Rarity % (optional)</label>
+              <label className="block font-semibold mb-1">{t('rarityLabel')}</label>
               <input
                 type="number"
                 step="0.01"
@@ -200,12 +201,12 @@ export default function SuggestBearbrickPage() {
                 max="100"
                 value={formData.rarityPercentage}
                 onChange={(e) => setFormData({ ...formData, rarityPercentage: e.target.value })}
-                placeholder="e.g. 4.16 for 1/24 in a 24-piece case"
+                placeholder={t('rarityPlaceholder')}
                 className="w-full px-4 py-2 border rounded"
               />
             </div>
             <div>
-              <label className="block font-semibold mb-1">Description</label>
+              <label className="block font-semibold mb-1">{t('descriptionLabel')}</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -214,11 +215,11 @@ export default function SuggestBearbrickPage() {
               />
             </div>
             <div>
-              <label className="block font-semibold mb-1">Image (optional)</label>
+              <label className="block font-semibold mb-1">{t('imageLabel')}</label>
               <div className="flex items-center gap-3">
                 <label className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 text-sm font-medium text-gray-700 transition-colors">
                   <input type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
-                  {imagePreview ? 'Change Image' : 'Attach Image'}
+                  {imagePreview ? t('changeImage') : t('attachImage')}
                 </label>
                 {imagePreview && (
                   <img src={imagePreview} alt="" className="w-12 h-12 object-cover object-top rounded" />
@@ -226,11 +227,11 @@ export default function SuggestBearbrickPage() {
               </div>
             </div>
             <div>
-              <label className="block font-semibold mb-1">Note for the admin (optional)</label>
+              <label className="block font-semibold mb-1">{t('noteLabel')}</label>
               <textarea
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                placeholder="Where did you find this? Anything else worth knowing?"
+                placeholder={t('notePlaceholder')}
                 className="w-full px-4 py-2 border rounded"
                 rows={2}
               />
@@ -240,7 +241,7 @@ export default function SuggestBearbrickPage() {
               disabled={submitting}
               className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
             >
-              {submitting ? 'Submitting...' : 'Submit Suggestion'}
+              {submitting ? t('submitting') : t('submit')}
             </button>
           </form>
         )}

@@ -2,7 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useSession, signIn, signOut } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
+import LanguageSwitcher from './LanguageSwitcher'
 
 function MenuLink({ href, onClick, children }: { href: string; onClick: () => void; children: React.ReactNode }) {
   return (
@@ -14,6 +16,8 @@ function MenuLink({ href, onClick, children }: { href: string; onClick: () => vo
 
 export default function TopMenu() {
   const { data: session } = useSession()
+  const t = useTranslations('topMenu')
+  const tc = useTranslations('common')
   const isAdmin = session?.user?.role === 'ADMIN' || session?.user?.role === 'OWNER'
   const isOwner = session?.user?.role === 'OWNER'
   const [open, setOpen] = useState(false)
@@ -93,7 +97,7 @@ export default function TopMenu() {
     try {
       const res = await fetch('/api/admin/bearbricks/export')
       if (!res.ok) {
-        alert('Export failed')
+        alert('내보내기 실패')
         return
       }
       const blob = await res.blob()
@@ -105,7 +109,7 @@ export default function TopMenu() {
       URL.revokeObjectURL(url)
     } catch (error) {
       console.error('Failed to export:', error)
-      alert('Export failed')
+      alert('내보내기 실패')
     } finally {
       setExporting(false)
       setOpen(false)
@@ -122,7 +126,7 @@ export default function TopMenu() {
             return next
           })
         }}
-        aria-label="Menu"
+        aria-label={t('menu')}
         className="relative p-2.5 rounded-full hover:bg-gray-100 active:bg-gray-200 transition-colors"
       >
         <svg width="26" height="26" viewBox="0 0 20 20" fill="none">
@@ -152,7 +156,7 @@ export default function TopMenu() {
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
                 onBlur={() => saveProfile({ nickname, showCredit: nickname ? showCredit : false })}
-                placeholder="Nickname (optional)"
+                placeholder={t('nicknamePlaceholder')}
                 maxLength={30}
                 disabled={savingProfile}
                 className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded-md mb-1.5"
@@ -164,36 +168,38 @@ export default function TopMenu() {
                   disabled={!nickname || savingProfile}
                   onChange={(e) => saveProfile({ nickname, showCredit: e.target.checked })}
                 />
-                Show my nickname on submissions
+                {t('showCreditOnSubmissions')}
               </label>
             </div>
           )}
 
+          <LanguageSwitcher />
+
           {isAdmin && (
             <>
-              <MenuLink href="/admin/manage" onClick={() => setOpen(false)}>Admin Home</MenuLink>
-              <MenuLink href="/admin/requests" onClick={() => setOpen(false)}>Approve Edit Requests</MenuLink>
-              <MenuLink href="/admin/rarity" onClick={() => setOpen(false)}>Manage Series</MenuLink>
+              <MenuLink href="/admin/manage" onClick={() => setOpen(false)}>관리자 홈</MenuLink>
+              <MenuLink href="/admin/requests" onClick={() => setOpen(false)}>수정 요청 승인</MenuLink>
+              <MenuLink href="/admin/rarity" onClick={() => setOpen(false)}>시리즈 관리</MenuLink>
               <button
                 onClick={handleExport}
                 disabled={exporting}
                 className="w-full text-left px-4 py-2 text-base text-gray-700 hover:bg-gray-50 disabled:opacity-50"
               >
-                {exporting ? 'Exporting...' : 'Export to Excel'}
+                {exporting ? '내보내는 중...' : '엑셀로 내보내기'}
               </button>
-              <MenuLink href="/admin/manage?action=import" onClick={() => setOpen(false)}>Import from Excel</MenuLink>
-              <MenuLink href="/admin/manage?action=add" onClick={() => setOpen(false)}>Add Bearbrick</MenuLink>
+              <MenuLink href="/admin/manage?action=import" onClick={() => setOpen(false)}>엑셀에서 가져오기</MenuLink>
+              <MenuLink href="/admin/manage?action=add" onClick={() => setOpen(false)}>베어브릭 추가</MenuLink>
               {isOwner && (
-                <MenuLink href="/admin/users" onClick={() => setOpen(false)}>Manage Users</MenuLink>
+                <MenuLink href="/admin/users" onClick={() => setOpen(false)}>사용자 관리</MenuLink>
               )}
               <div className="my-1 border-t border-gray-100" />
             </>
           )}
 
           {!isAdmin && (
-            <MenuLink href="/suggest" onClick={() => setOpen(false)}>Suggest a Bearbrick</MenuLink>
+            <MenuLink href="/suggest" onClick={() => setOpen(false)}>{t('suggestABearbrick')}</MenuLink>
           )}
-          <MenuLink href="/about" onClick={() => setOpen(false)}>About</MenuLink>
+          <MenuLink href="/about" onClick={() => setOpen(false)}>{t('about')}</MenuLink>
 
           {session ? (
             <button
@@ -203,7 +209,7 @@ export default function TopMenu() {
               }}
               className="w-full text-left px-4 py-2 text-base text-red-600 hover:bg-gray-50"
             >
-              Log out
+              {tc('logOut')}
             </button>
           ) : (
             <button
@@ -213,7 +219,7 @@ export default function TopMenu() {
               }}
               className="w-full text-left px-4 py-2 text-base text-gray-700 hover:bg-gray-50"
             >
-              Log in
+              {tc('logIn')}
             </button>
           )}
         </div>

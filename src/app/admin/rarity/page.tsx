@@ -27,6 +27,7 @@ interface Series {
 }
 
 const SEASONS = ['Spring', 'Summer', 'Fall', 'Winter']
+const SEASON_LABELS_KO: Record<string, string> = { Spring: '봄', Summer: '여름', Fall: '가을', Winter: '겨울' }
 
 function getCurrentSeason() {
   const month = new Date().getMonth() + 1
@@ -190,7 +191,7 @@ export default function AdminRarityPage() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ updates }),
           })
-          if (!res.ok) throw new Error('Save failed')
+          if (!res.ok) throw new Error('저장 실패')
 
           setBearbricks((prev) =>
             prev.map((b) => {
@@ -213,12 +214,12 @@ export default function AdminRarityPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ season: seasonEdit, releaseYear: parseInt(yearEdit, 10) }),
         })
-        if (!res.ok) throw new Error('Save failed')
+        if (!res.ok) throw new Error('저장 실패')
         await fetchSeriesList()
       }
     } catch (error) {
       console.error('Failed to save changes:', error)
-      alert('Failed to save changes')
+      alert('저장 실패')
     } finally {
       setSaving(false)
     }
@@ -239,7 +240,7 @@ export default function AdminRarityPage() {
         }),
       })
       if (!res.ok) {
-        alert('Failed to add series')
+        alert('시리즈 추가 실패')
         return
       }
       const newSeries = await res.json()
@@ -247,7 +248,7 @@ export default function AdminRarityPage() {
       setSelectedSeries(newSeries.name)
     } catch (error) {
       console.error('Failed to add series:', error)
-      alert('Failed to add series')
+      alert('시리즈 추가 실패')
     } finally {
       setCreatingSeries(false)
     }
@@ -255,20 +256,20 @@ export default function AdminRarityPage() {
 
   const handleDeleteSeries = async () => {
     if (!currentSeriesInfo) return
-    if (!confirm(`Delete "${currentSeriesInfo.name}"? This can't be undone.`)) return
+    if (!confirm(`"${currentSeriesInfo.name}"을(를) 삭제하시겠습니까? 되돌릴 수 없습니다.`)) return
     setDeletingSeries(true)
     try {
       const res = await fetch(`/api/series/${currentSeriesInfo.id}`, { method: 'DELETE' })
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
-        alert(body.error || 'Failed to delete series')
+        alert(body.error || '시리즈 삭제 실패')
         return
       }
       const data = await fetchSeriesList()
       setSelectedSeries(data.length > 0 ? data[0].name : '')
     } catch (error) {
       console.error('Failed to delete series:', error)
-      alert('Failed to delete series')
+      alert('시리즈 삭제 실패')
     } finally {
       setDeletingSeries(false)
     }
@@ -296,12 +297,12 @@ export default function AdminRarityPage() {
       <main className="max-w-4xl mx-auto px-4 py-8 pb-28">
         <div className="flex items-center justify-between mb-2">
           <Link href="/admin/manage" className="text-sm text-gray-500 hover:text-gray-900">
-            ← Back to admin
+            ← 관리자 홈으로
           </Link>
         </div>
 
         <div className="flex items-center justify-between mb-6 mt-2 flex-wrap gap-3">
-          <h1 className="text-2xl font-bold text-gray-900">Manage Series</h1>
+          <h1 className="text-2xl font-bold text-gray-900">시리즈 관리</h1>
           <div className="flex items-center gap-2 flex-wrap">
             <select
               value={selectedSeries}
@@ -317,29 +318,29 @@ export default function AdminRarityPage() {
               disabled={creatingSeries}
               className="px-3 py-1.5 border border-gray-200 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 disabled:opacity-50"
             >
-              {creatingSeries ? 'Adding...' : '+ Add Series'}
+              {creatingSeries ? '추가하는 중...' : '+ 시리즈 추가'}
             </button>
             <button
               onClick={handleDeleteSeries}
               disabled={!canDeleteCurrentSeries || deletingSeries}
-              title={!canDeleteCurrentSeries ? 'Only an empty series (no bearbricks) can be deleted' : undefined}
+              title={!canDeleteCurrentSeries ? '베어브릭이 없는 시리즈만 삭제할 수 있습니다' : undefined}
               className="px-3 py-1.5 border border-red-200 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              {deletingSeries ? 'Deleting...' : 'Delete Series'}
+              {deletingSeries ? '삭제하는 중...' : '시리즈 삭제'}
             </button>
           </div>
         </div>
 
         {currentSeriesInfo && (
           <div className="flex items-center gap-2 mb-6 -mt-2 flex-wrap">
-            <span className="text-sm text-gray-500">Released:</span>
+            <span className="text-sm text-gray-500">출시:</span>
             <select
               value={seasonEdit}
               onChange={(e) => setSeasonEdit(e.target.value)}
               className="px-2 py-1 border border-gray-200 rounded text-sm"
             >
               {SEASONS.map((s) => (
-                <option key={s} value={s}>{s}</option>
+                <option key={s} value={s}>{SEASON_LABELS_KO[s]}</option>
               ))}
             </select>
             <input
@@ -353,7 +354,7 @@ export default function AdminRarityPage() {
 
         {!loading && bearbricks.length > 0 && (
           <div className="flex justify-end mb-1">
-            <span className="text-xs text-gray-400">☑ Secret</span>
+            <span className="text-xs text-gray-400">☑ 시크릿</span>
           </div>
         )}
 
@@ -363,7 +364,7 @@ export default function AdminRarityPage() {
           </div>
         ) : bearbricks.length === 0 ? (
           <p className="text-sm text-gray-400 py-10 text-center">
-            This series has no bearbricks yet.
+            이 시리즈에는 아직 베어브릭이 없습니다.
           </p>
         ) : (
           <div className="space-y-8">
@@ -402,7 +403,7 @@ export default function AdminRarityPage() {
                             <Link
                               href={`/admin/bearbricks/${editTargetId}/edit`}
                               className="shrink-0 text-gray-300 hover:text-blue-600"
-                              title="Open edit page"
+                              title="수정 페이지 열기"
                             >
                               ↗
                             </Link>
@@ -453,7 +454,7 @@ export default function AdminRarityPage() {
                                 for (const it of items) next[it.id] = e.target.checked
                                 setSecretEdits(next)
                               }}
-                              aria-label="Secret"
+                              aria-label="시크릿"
                               className="w-3.5 h-3.5"
                             />
                           </div>
@@ -471,7 +472,7 @@ export default function AdminRarityPage() {
                           <Link
                             href={`/admin/bearbricks/${item.id}/edit`}
                             className="shrink-0 text-gray-300 hover:text-blue-600"
-                            title="Open edit page"
+                            title="수정 페이지 열기"
                           >
                             ↗
                           </Link>
@@ -498,7 +499,7 @@ export default function AdminRarityPage() {
                               type="checkbox"
                               checked={isSecretNow}
                               onChange={(e) => setSecretEdits({ ...secretEdits, [item.id]: e.target.checked })}
-                              aria-label="Secret"
+                              aria-label="시크릿"
                               className="w-3.5 h-3.5"
                             />
                           </div>
@@ -511,7 +512,7 @@ export default function AdminRarityPage() {
             ))}
 
             <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-100">
-              <span className="text-sm font-semibold text-gray-500">Total:</span>
+              <span className="text-sm font-semibold text-gray-500">합계:</span>
               <span className="text-sm font-semibold text-gray-900 tabular-nums">
                 {grandTotal192}/192 {Math.round(grandTotalPercent * 100) / 100}%
               </span>
@@ -528,14 +529,14 @@ export default function AdminRarityPage() {
               disabled={saving}
               className="px-5 py-2 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              Cancel
+              취소
             </button>
             <button
               onClick={handleSave}
               disabled={saving}
               className="px-6 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-700"
             >
-              {saving ? 'Saving...' : 'Save'}
+              {saving ? '저장하는 중...' : '저장'}
             </button>
           </div>
         </div>

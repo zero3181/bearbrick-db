@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale } from "next-intl/server";
 import "./globals.css";
 import AuthProvider from "@/components/AuthProvider";
 import Footer from "@/components/Footer";
@@ -32,16 +34,20 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <body className="antialiased bg-white text-gray-900">
-        <AuthProvider>{children}</AuthProvider>
-        <Footer />
+        <NextIntlClientProvider>
+          <AuthProvider>{children}</AuthProvider>
+          <Footer />
+        </NextIntlClientProvider>
         <Analytics />
       </body>
     </html>

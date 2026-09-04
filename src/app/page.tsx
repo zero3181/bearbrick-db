@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useSession, signIn } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 import TopMenu from '@/components/TopMenu'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import { sortBearbricks, collapseBasicGroup, sortCategoriesOfficial, SECRET_BASIC_ORDERS, SECRET_BASIC_REPRESENTATIVE_NAMES } from '@/lib/sortBearbricks'
@@ -47,6 +48,8 @@ const CATEGORY_FILTER_STORAGE_KEY = 'gombrick:categoryFilter'
 const COLLECTION_CACHE_KEY = 'gombrick:collectionIds'
 
 export default function HomePage() {
+  const t = useTranslations('home')
+  const tc = useTranslations('common')
   const { data: session, status: sessionStatus } = useSession()
   const isAdmin = session?.user?.role === 'ADMIN' || session?.user?.role === 'OWNER'
   const [bearbricks, setBearbricks] = useState<Bearbrick[]>([])
@@ -315,7 +318,7 @@ export default function HomePage() {
       wasInCollection ? next.delete(bearbrickId) : next.add(bearbrickId)
       return next
     })
-    showToast(wasInCollection ? 'Removed from My Collection' : 'Added to My Collection')
+    showToast(wasInCollection ? t('toastRemoved') : t('toastAdded'))
 
     try {
       const res = await fetch('/api/collection/toggle', {
@@ -331,7 +334,7 @@ export default function HomePage() {
         wasInCollection ? next.add(bearbrickId) : next.delete(bearbrickId)
         return next
       })
-      showToast('Failed to update - try again')
+      showToast(t('toastUpdateFailed'))
     } finally {
       pendingToggleIdsRef.current.delete(bearbrickId)
     }
@@ -420,7 +423,7 @@ export default function HomePage() {
                   className="flex items-center gap-1 text-sm text-gray-900 hover:text-gray-500 transition-colors"
                 >
                   <span className="font-agency-wide inline-block">
-                    {selectedSeries === 'all' ? 'All' : selectedSeries}
+                    {selectedSeries === 'all' ? tc('all') : selectedSeries}
                   </span>
                   <svg viewBox="0 0 20 20" fill="none" className="w-4 h-4 text-gray-400">
                     <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
@@ -433,7 +436,7 @@ export default function HomePage() {
                       onClick={() => handleSeriesChange('all')}
                       className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === 'all' ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
                     >
-                      All
+                      {tc('all')}
                     </button>
                     {allSeries.map((series) => (
                       <button
@@ -459,7 +462,7 @@ export default function HomePage() {
                   }
                   setMyCollectionOnly((v) => !v)
                 }}
-                aria-label="My Collection"
+                aria-label={t('myCollection')}
                 className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                   myCollectionOnly ? 'bg-blue-50 text-blue-600' : 'text-gray-500 hover:bg-gray-100'
                 }`}
@@ -470,13 +473,13 @@ export default function HomePage() {
                 <span
                   className={`overflow-hidden whitespace-nowrap ${compactHeader ? 'max-w-0 opacity-0' : 'max-w-[8rem] opacity-100'}`}
                 >
-                  My Collection
+                  {t('myCollection')}
                 </span>
               </button>
               <div className="relative" ref={searchMenuRef}>
                 <button
                   onClick={() => (searchOpen ? setSearchOpen(false) : openSearch())}
-                  aria-label="Search"
+                  aria-label={t('search')}
                   className="p-2.5 rounded-full hover:bg-gray-100 active:bg-gray-200 transition-colors text-gray-500"
                 >
                   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -491,15 +494,15 @@ export default function HomePage() {
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search bearbricks..."
+                      placeholder={t('searchPlaceholder')}
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-400"
                     />
                     {searchQuery.trim() && (
                       <div className="mt-2 max-h-96 overflow-y-auto divide-y divide-gray-50">
                         {!searchPoolLoaded ? (
-                          <p className="text-sm text-gray-400 text-center py-4">Loading...</p>
+                          <p className="text-sm text-gray-400 text-center py-4">{tc('loading')}</p>
                         ) : searchResults.length === 0 ? (
-                          <p className="text-sm text-gray-400 text-center py-4">No matches</p>
+                          <p className="text-sm text-gray-400 text-center py-4">{t('noMatches')}</p>
                         ) : (
                           searchResults.map((item) => {
                             const img = item.images.find((i) => i.isPrimary)?.url || item.images[0]?.url || '/bearbrick-placeholder.svg'
@@ -539,7 +542,7 @@ export default function HomePage() {
                 className="flex items-center gap-2 text-xl sm:text-3xl md:text-4xl text-gray-900 hover:text-gray-500 transition-colors"
               >
                 <span className="font-agency-wide inline-block">
-                  {selectedSeries === 'all' ? 'All' : selectedSeries}
+                  {selectedSeries === 'all' ? tc('all') : selectedSeries}
                 </span>
                 <svg viewBox="0 0 20 20" fill="none" className="mt-1 text-gray-400 w-4 h-4 sm:w-[22px] sm:h-[22px]">
                   <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
@@ -573,7 +576,7 @@ export default function HomePage() {
                 onClick={() => setCategoryMenuOpen((v) => !v)}
                 className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
               >
-                {selectedCategory === 'all' ? 'All categories' : selectedCategory}
+                {selectedCategory === 'all' ? tc('allCategories') : selectedCategory}
                 <svg width="16" height="16" viewBox="0 0 20 20" fill="none" className="text-gray-400">
                   <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -585,7 +588,7 @@ export default function HomePage() {
                     onClick={() => handleCategoryChange('all')}
                     className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedCategory === 'all' ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
                   >
-                    All
+                    {tc('all')}
                   </button>
                   {categoryList.map((category) => (
                     <button
@@ -607,17 +610,17 @@ export default function HomePage() {
       <main className="max-w-7xl mx-auto px-4 pt-1 pb-8">
         {loading ? (
           <div className="min-h-[50vh] flex items-center justify-center">
-            <LoadingSpinner label="Loading..." />
+            <LoadingSpinner label={tc('loading')} />
           </div>
         ) : filteredBearbricks.length === 0 ? (
           <div className="text-center py-24">
-            <p className="text-gray-400">No bearbricks registered yet</p>
+            <p className="text-gray-400">{t('noBearbricksYet')}</p>
             {isAdmin && (
               <Link
                 href="/admin/manage"
                 className="mt-4 inline-block px-4 py-2 bg-gray-900 text-white rounded-full hover:bg-gray-700"
               >
-                Add a bearbrick
+                {t('addABearbrick')}
               </Link>
             )}
           </div>
@@ -636,7 +639,7 @@ export default function HomePage() {
                         isSuperSecretRarity(bearbrick.rarityPercentage) ? 'bg-yellow-400 text-gray-900' : 'bg-blue-600 text-white'
                       }`}
                     >
-                      Secret
+                      {tc('secret')}
                     </span>
                   )}
                   <img
@@ -655,7 +658,7 @@ export default function HomePage() {
                         return (
                           <button
                             onClick={(e) => bId && handleToggleCollection(e, bId)}
-                            aria-label={owned > 0 ? 'Remove from my collection' : 'Add to my collection'}
+                            aria-label={owned > 0 ? t('removeFromCollection') : t('addToCollection')}
                             className="absolute top-0 right-0 z-10 pt-0 pr-2 pb-3 pl-3 transition-transform hover:scale-105"
                           >
                             <svg width="22" height="32" viewBox="0 0 20 30" fill={owned > 0 ? '#2563eb' : 'white'} className="drop-shadow-md">
@@ -677,7 +680,7 @@ export default function HomePage() {
                     ) : (
                       <button
                         onClick={(e) => handleToggleCollection(e, bearbrick.id)}
-                        aria-label={collectionIds.has(bearbrick.id) ? 'Remove from my collection' : 'Add to my collection'}
+                        aria-label={collectionIds.has(bearbrick.id) ? t('removeFromCollection') : t('addToCollection')}
                         className="absolute top-0 right-0 z-10 pt-0 pr-2 pb-3 pl-3 transition-transform hover:scale-105"
                       >
                         <svg width="22" height="32" viewBox="0 0 20 30" fill={collectionIds.has(bearbrick.id) ? '#2563eb' : 'white'} className="drop-shadow-md">
@@ -716,7 +719,7 @@ export default function HomePage() {
       {showScrollTop && (
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          aria-label="Scroll to top"
+          aria-label={t('scrollToTop')}
           className="fixed bottom-6 right-6 z-50 w-11 h-11 flex items-center justify-center bg-gray-900 text-white rounded-full shadow-lg hover:bg-gray-700 transition-colors"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

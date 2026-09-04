@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useSession, signIn } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { upload } from '@vercel/blob/client'
 import TopMenu from '@/components/TopMenu'
@@ -49,6 +50,8 @@ interface Category {
 const COLLECTION_CACHE_KEY = 'gombrick:collectionIds'
 
 export default function BearbrickDetailPage() {
+  const t = useTranslations('bearbrickDetail')
+  const tc = useTranslations('common')
   const params = useParams()
   const router = useRouter()
   const { data: session, status: sessionStatus } = useSession()
@@ -207,7 +210,7 @@ export default function BearbrickDetailPage() {
   }
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this?')) return
+    if (!confirm(t('deleteConfirm'))) return
 
     try {
       const res = await fetch(`/api/admin/bearbricks/${params.id}`, {
@@ -215,14 +218,14 @@ export default function BearbrickDetailPage() {
       })
 
       if (res.ok) {
-        alert('Deleted')
+        alert(t('deleted'))
         router.push('/')
       } else {
-        alert('Delete failed')
+        alert(t('deleteFailed'))
       }
     } catch (error) {
       console.error('Delete failed:', error)
-      alert('Delete failed')
+      alert(t('deleteFailed'))
     }
   }
 
@@ -286,14 +289,14 @@ export default function BearbrickDetailPage() {
       })
 
       if (res.ok) {
-        alert('Your edit request has been submitted. It will take effect once an admin approves it.')
+        alert(t('requestSuccess'))
         setShowRequestForm(false)
       } else {
-        alert('Request failed')
+        alert(t('requestFailed'))
       }
     } catch (error) {
       console.error('Failed to submit edit request:', error)
-      alert('Request failed')
+      alert(t('requestFailed'))
     } finally {
       setSubmittingRequest(false)
     }
@@ -311,9 +314,9 @@ export default function BearbrickDetailPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4">Bearbrick not found</h2>
+          <h2 className="text-2xl font-bold mb-4">{t('notFound')}</h2>
           <Link href="/" className="text-blue-600 hover:underline">
-            Back to home
+            {t('backToHome')}
           </Link>
         </div>
       </div>
@@ -326,7 +329,7 @@ export default function BearbrickDetailPage() {
       <header className="border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/" className="text-sm text-gray-500 hover:text-gray-900">
-            ← Back to list
+            {t('backToList')}
           </Link>
           <TopMenu />
         </div>
@@ -375,7 +378,7 @@ export default function BearbrickDetailPage() {
                       isSuperSecretRarity(bearbrick.rarityPercentage) ? 'bg-yellow-400 text-gray-900' : 'bg-blue-600 text-white'
                     }`}
                   >
-                    Secret
+                    {tc('secret')}
                   </span>
                 )}
                 {bearbrick.category && (
@@ -386,7 +389,7 @@ export default function BearbrickDetailPage() {
 
               {basicVariants.length > 0 && (
                 <div className="mb-6">
-                  <span className="block font-semibold w-24 mb-2">Collected:</span>
+                  <span className="block font-semibold w-24 mb-2">{t('collected')}</span>
                   <div className="flex flex-wrap gap-2">
                     {basicVariants.map((variant) => (
                       <button
@@ -394,7 +397,7 @@ export default function BearbrickDetailPage() {
                         type="button"
                         disabled={!collectionLoaded}
                         onClick={(e) => handleToggleCollection(e, variant.id)}
-                        aria-label={collectionIds.has(variant.id) ? `${variant.name}: remove from my collection` : `${variant.name}: add to my collection`}
+                        aria-label={collectionIds.has(variant.id) ? t('removeFromCollection', { name: variant.name }) : t('addToCollection', { name: variant.name })}
                         className={`px-3 py-1.5 rounded-full border text-sm font-medium transition-colors ${
                           collectionIds.has(variant.id)
                             ? 'bg-blue-600 border-blue-600 text-white'
@@ -411,18 +414,18 @@ export default function BearbrickDetailPage() {
               <div className="space-y-3 mb-6">
                 {bearbrick.series && (
                   <div className="flex">
-                    <span className="font-semibold w-24">Series:</span>
+                    <span className="font-semibold w-24">{t('series')}</span>
                     <span>{bearbrick.series.name}</span>
                   </div>
                 )}
                 {bearbrick.series && (
                   <div className="flex">
-                    <span className="font-semibold w-24">Released:</span>
+                    <span className="font-semibold w-24">{t('released')}</span>
                     <span>{bearbrick.series.season} {bearbrick.series.releaseYear}</span>
                   </div>
                 )}
                 <div className="flex">
-                  <span className="font-semibold w-24">Rarity:</span>
+                  <span className="font-semibold w-24">{t('rarity')}</span>
                   <span>
                     {bearbrick.rarityPercentage != null
                       ? `${bearbrick.rarityPercentage}% (${toFraction(bearbrick.rarityPercentage)})`
@@ -433,13 +436,13 @@ export default function BearbrickDetailPage() {
 
               {bearbrick.description && (
                 <div className="mb-6">
-                  <h3 className="font-semibold mb-2">Description</h3>
+                  <h3 className="font-semibold mb-2">{t('description')}</h3>
                   <p className="text-gray-700 whitespace-pre-wrap">{bearbrick.description}</p>
                 </div>
               )}
 
               {bearbrick.contributor && (
-                <p className="text-xs text-gray-400 mb-6">Submitted by {bearbrick.contributor}</p>
+                <p className="text-xs text-gray-400 mb-6">{t('submittedBy', { name: bearbrick.contributor })}</p>
               )}
 
               {/* Admin Actions */}
@@ -449,13 +452,13 @@ export default function BearbrickDetailPage() {
                     href={`/admin/bearbricks/${bearbrick.id}/edit`}
                     className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-center"
                   >
-                    Edit
+                    {t('edit')}
                   </Link>
                   <button
                     onClick={handleDelete}
                     className="flex-1 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
                   >
-                    Delete
+                    {t('delete')}
                   </button>
                 </div>
               )}
@@ -468,14 +471,14 @@ export default function BearbrickDetailPage() {
                       onClick={openRequestForm}
                       className="w-full px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-900"
                     >
-                      Request a correction
+                      {t('requestCorrection')}
                     </button>
                   ) : (
                     <button
                       onClick={() => signIn('google')}
                       className="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
                     >
-                      Sign in to request a correction
+                      {t('signInToRequestCorrection')}
                     </button>
                   )}
                 </div>
@@ -489,10 +492,10 @@ export default function BearbrickDetailPage() {
       {showRequestForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <h3 className="text-xl font-bold mb-4">Request a Correction</h3>
+            <h3 className="text-xl font-bold mb-4">{t('requestModalTitle')}</h3>
             <form onSubmit={handleRequestSubmit} className="space-y-4">
               <div>
-                <label className="block font-semibold mb-1">Name</label>
+                <label className="block font-semibold mb-1">{t('name')}</label>
                 <input
                   type="text"
                   value={requestData.name}
@@ -502,13 +505,13 @@ export default function BearbrickDetailPage() {
                 />
               </div>
               <div>
-                <label className="block font-semibold mb-1">Series</label>
+                <label className="block font-semibold mb-1">{t('seriesLabel')}</label>
                 <select
                   value={requestData.seriesId}
                   onChange={(e) => setRequestData({ ...requestData, seriesId: e.target.value })}
                   className="w-full px-4 py-2 border rounded"
                 >
-                  <option value="">No series</option>
+                  <option value="">{t('noSeries')}</option>
                   {seriesList.map((s) => (
                     <option key={s.id} value={s.id}>
                       {s.name}
@@ -517,13 +520,13 @@ export default function BearbrickDetailPage() {
                 </select>
               </div>
               <div>
-                <label className="block font-semibold mb-1">Category</label>
+                <label className="block font-semibold mb-1">{t('categoryLabel')}</label>
                 <select
                   value={requestData.categoryId}
                   onChange={(e) => setRequestData({ ...requestData, categoryId: e.target.value })}
                   className="w-full px-4 py-2 border rounded"
                 >
-                  <option value="">No category</option>
+                  <option value="">{t('noCategory')}</option>
                   {categoryList.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
@@ -539,11 +542,11 @@ export default function BearbrickDetailPage() {
                     onChange={(e) => setRequestData({ ...requestData, isSecret: e.target.checked })}
                     className="w-4 h-4"
                   />
-                  Secret
+                  {tc('secret')}
                 </label>
               </div>
               <div>
-                <label className="block font-semibold mb-1">Rarity % (optional)</label>
+                <label className="block font-semibold mb-1">{t('rarityPercentLabel')}</label>
                 <input
                   type="number"
                   step="0.01"
@@ -551,12 +554,12 @@ export default function BearbrickDetailPage() {
                   max="100"
                   value={requestData.rarityPercentage}
                   onChange={(e) => setRequestData({ ...requestData, rarityPercentage: e.target.value })}
-                  placeholder="e.g. 4.16 for 1/24 in a 24-piece case"
+                  placeholder={t('rarityPlaceholder')}
                   className="w-full px-4 py-2 border rounded"
                 />
               </div>
               <div>
-                <label className="block font-semibold mb-1">Description</label>
+                <label className="block font-semibold mb-1">{t('descriptionLabel')}</label>
                 <textarea
                   value={requestData.description}
                   onChange={(e) => setRequestData({ ...requestData, description: e.target.value })}
@@ -565,11 +568,11 @@ export default function BearbrickDetailPage() {
                 />
               </div>
               <div>
-                <label className="block font-semibold mb-1">New Image (optional)</label>
+                <label className="block font-semibold mb-1">{t('newImageLabel')}</label>
                 <div className="flex items-center gap-3">
                   <label className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 text-sm font-medium text-gray-700 transition-colors">
                     <input type="file" accept="image/*" onChange={handleRequestImageSelect} className="hidden" />
-                    {requestImagePreview ? 'Change Image' : 'Attach Image'}
+                    {requestImagePreview ? t('changeImage') : t('attachImage')}
                   </label>
                   {requestImagePreview && (
                     <img src={requestImagePreview} alt="" className="w-12 h-12 object-cover object-top rounded" />
@@ -577,11 +580,11 @@ export default function BearbrickDetailPage() {
                 </div>
               </div>
               <div>
-                <label className="block font-semibold mb-1">Reason for the change</label>
+                <label className="block font-semibold mb-1">{t('reasonLabel')}</label>
                 <textarea
                   value={requestReason}
                   onChange={(e) => setRequestReason(e.target.value)}
-                  placeholder="Let us know what's wrong and why"
+                  placeholder={t('reasonPlaceholder')}
                   className="w-full px-4 py-2 border rounded"
                   rows={2}
                 />
@@ -592,7 +595,7 @@ export default function BearbrickDetailPage() {
                   disabled={submittingRequest}
                   className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
                 >
-                  {submittingRequest ? 'Submitting...' : 'Send Request'}
+                  {submittingRequest ? t('submitting') : t('sendRequest')}
                 </button>
                 <button
                   type="button"
@@ -600,7 +603,7 @@ export default function BearbrickDetailPage() {
                   disabled={submittingRequest}
                   className="flex-1 px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
                 >
-                  Cancel
+                  {tc('cancel')}
                 </button>
               </div>
             </form>

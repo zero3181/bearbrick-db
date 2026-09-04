@@ -79,12 +79,12 @@ export default function AdminRequestsPage() {
   }
 
   const seriesName = (id: string | null | undefined) => {
-    if (!id) return '(none)'
+    if (!id) return '(없음)'
     return seriesList.find((s) => s.id === id)?.name || id
   }
 
   const categoryName = (id: string | null | undefined) => {
-    if (!id) return '(none)'
+    if (!id) return '(없음)'
     return categoryList.find((c) => c.id === id)?.name || id
   }
 
@@ -99,11 +99,11 @@ export default function AdminRequestsPage() {
       if (res.ok) {
         setRequests((prev) => prev.filter((r) => r.id !== id))
       } else {
-        alert('Failed to process')
+        alert('처리 실패')
       }
     } catch (error) {
       console.error('Failed to review request:', error)
-      alert('Failed to process')
+      alert('처리 실패')
     } finally {
       setProcessingId(null)
     }
@@ -116,12 +116,12 @@ export default function AdminRequestsPage() {
         <span className="w-16 shrink-0 text-gray-500">{label}</span>
         {changed ? (
           <span>
-            <span className="text-gray-400 line-through">{oldVal || '(none)'}</span>
+            <span className="text-gray-400 line-through">{oldVal || '(없음)'}</span>
             {' → '}
-            <span className="text-blue-600 font-medium">{newVal || '(none)'}</span>
+            <span className="text-blue-600 font-medium">{newVal || '(없음)'}</span>
           </span>
         ) : (
-          <span className="text-gray-700">{oldVal || '(none)'}</span>
+          <span className="text-gray-700">{oldVal || '(없음)'}</span>
         )}
       </div>
     )
@@ -140,18 +140,18 @@ export default function AdminRequestsPage() {
       <header className="border-b border-gray-100">
         <div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/admin/manage" className="text-sm text-gray-500 hover:text-gray-900">
-            ← Back to admin
+            ← 관리자 홈으로
           </Link>
           <TopMenu />
         </div>
       </header>
       <div className="max-w-5xl mx-auto px-4 pt-6">
-        <h1 className="text-2xl font-bold text-gray-900">Approve Edit Requests</h1>
+        <h1 className="text-2xl font-bold text-gray-900">수정 요청 승인</h1>
       </div>
 
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
         {requests.length === 0 ? (
-          <p className="text-center text-gray-500 py-12">No pending edit requests</p>
+          <p className="text-center text-gray-500 py-12">대기 중인 수정 요청이 없습니다</p>
         ) : (
           requests.map((req) => (
             <div key={req.id} className="bg-white rounded-lg shadow p-6">
@@ -160,7 +160,7 @@ export default function AdminRequestsPage() {
                   <div className="flex items-center gap-2">
                     {req.type === 'NEW_ITEM' && (
                       <span className="inline-block px-2 py-0.5 text-xs font-semibold rounded-full bg-green-50 text-green-700">
-                        New
+                        신규
                       </span>
                     )}
                     {req.bearbricks ? (
@@ -168,39 +168,39 @@ export default function AdminRequestsPage() {
                         {req.bearbricks.name}
                       </Link>
                     ) : (
-                      <span className="text-lg font-bold text-gray-900">New Bearbrick</span>
+                      <span className="text-lg font-bold text-gray-900">신규 베어브릭</span>
                     )}
                   </div>
                   <p className="text-sm text-gray-500 mt-1">
-                    Requested by: {req.users.name || req.users.email} · {new Date(req.createdAt).toLocaleString('en-US')}
+                    요청자: {req.users.name || req.users.email} · {new Date(req.createdAt).toLocaleString('ko-KR')}
                   </p>
                 </div>
               </div>
 
               {req.description && (
-                <p className="text-sm bg-gray-50 border rounded p-3 mb-4">Reason: {req.description}</p>
+                <p className="text-sm bg-gray-50 border rounded p-3 mb-4">사유: {req.description}</p>
               )}
 
               <div className="space-y-1 mb-4">
-                <Field label="Name" oldVal={req.oldData?.name || ''} newVal={req.newData.name || ''} />
+                <Field label="이름" oldVal={req.oldData?.name || ''} newVal={req.newData.name || ''} />
                 <Field
-                  label="Series"
+                  label="시리즈"
                   oldVal={seriesName(req.oldData?.seriesId)}
                   newVal={seriesName(req.newData.seriesId)}
                 />
                 <Field
-                  label="Category"
+                  label="카테고리"
                   oldVal={categoryName(req.oldData?.categoryId)}
                   newVal={categoryName(req.newData.categoryId)}
                 />
-                <Field label="Description" oldVal={req.oldData?.description || ''} newVal={req.newData.description || ''} />
+                <Field label="설명" oldVal={req.oldData?.description || ''} newVal={req.newData.description || ''} />
                 <Field
-                  label="Secret"
-                  oldVal={req.oldData?.isSecret ? 'Yes' : 'No'}
-                  newVal={req.newData.isSecret ? 'Yes' : 'No'}
+                  label="시크릿"
+                  oldVal={req.oldData?.isSecret ? '예' : '아니오'}
+                  newVal={req.newData.isSecret ? '예' : '아니오'}
                 />
                 <Field
-                  label="Rarity"
+                  label="확률"
                   oldVal={req.oldData?.rarityPercentage != null ? `${req.oldData.rarityPercentage}%` : ''}
                   newVal={req.newData.rarityPercentage != null ? `${req.newData.rarityPercentage}%` : ''}
                 />
@@ -208,7 +208,7 @@ export default function AdminRequestsPage() {
 
               {req.newData.imageUrl && (
                 <div className="mb-4">
-                  <p className="text-sm text-gray-500 mb-1">Attached image</p>
+                  <p className="text-sm text-gray-500 mb-1">첨부 이미지</p>
                   <img src={req.newData.imageUrl} alt="" className="w-32 h-32 object-cover object-top rounded border" />
                 </div>
               )}
@@ -219,14 +219,14 @@ export default function AdminRequestsPage() {
                   disabled={processingId === req.id}
                   className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
                 >
-                  Approve
+                  승인
                 </button>
                 <button
                   onClick={() => handleReview(req.id, 'reject')}
                   disabled={processingId === req.id}
                   className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
                 >
-                  Reject
+                  거절
                 </button>
               </div>
             </div>
