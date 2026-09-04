@@ -66,6 +66,7 @@ export default function HomePage() {
   const [showScrollTop, setShowScrollTop] = useState(false)
   const [compactHeader, setCompactHeader] = useState(false)
   const seriesMenuRef = useRef<HTMLDivElement>(null)
+  const compactSeriesMenuRef = useRef<HTMLDivElement>(null)
   const categoryMenuRef = useRef<HTMLDivElement>(null)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -126,7 +127,10 @@ export default function HomePage() {
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (seriesMenuRef.current && !seriesMenuRef.current.contains(e.target as Node)) {
+      const target = e.target as Node
+      const inBigSeriesMenu = seriesMenuRef.current?.contains(target)
+      const inCompactSeriesMenu = compactSeriesMenuRef.current?.contains(target)
+      if (!inBigSeriesMenu && !inCompactSeriesMenu) {
         setSeriesMenuOpen(false)
       }
       if (categoryMenuRef.current && !categoryMenuRef.current.contains(e.target as Node)) {
@@ -376,179 +380,209 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header - sticky, and morphs into a single compact row once scrolled */}
+      {/* Header - sticky; the row below tucks away on scroll, leaving this pinned */}
       <header className="sticky top-0 z-30 bg-white border-b border-gray-100">
-        <div className={`max-w-7xl mx-auto px-4 flex items-center flex-wrap transition-[padding] duration-300 ${compactHeader ? 'py-2' : 'py-4'}`}>
-          {/* Clips down to just "G@M" once compact, instead of shrinking the whole wordmark */}
-          <div
-            className={`overflow-hidden order-1 transition-all duration-300 ${compactHeader ? 'h-6 w-[56px]' : 'h-9 md:h-[42px] w-[161px] md:w-[188px]'}`}
-          >
-            <img
-              src="/logo-gombrick.png"
-              alt="GomBrick"
-              className="h-full w-auto max-w-none"
-            />
-          </div>
-
-          {/* Series title / selector - same element throughout, just resized */}
-          <div
-            className={`relative transition-all duration-300 ${compactHeader ? 'order-2 ml-3' : 'order-4 basis-full mt-3'}`}
-            ref={seriesMenuRef}
-          >
-            <button
-              onClick={() => setSeriesMenuOpen((v) => !v)}
-              className={`flex items-center text-gray-900 hover:text-gray-500 transition-all duration-300 ${
-                compactHeader ? 'gap-1 text-sm' : 'gap-2 text-3xl md:text-4xl'
-              }`}
+        <div className={`max-w-7xl mx-auto px-4 transition-[padding] duration-300 ${compactHeader ? 'py-2' : 'py-4'}`}>
+          {/* Row 1: logo + icons - always a single line, never wraps */}
+          <div className="flex items-center flex-nowrap gap-3">
+            {/* Clips down to just "G@M" once compact, instead of shrinking the whole wordmark */}
+            <div
+              className={`overflow-hidden shrink-0 transition-all duration-300 ${compactHeader ? 'h-6 w-[56px]' : 'h-9 md:h-[42px] w-[161px] md:w-[188px]'}`}
             >
-              <span className="font-agency-wide inline-block">
-                {selectedSeries === 'all' ? 'All' : selectedSeries}
-              </span>
-              <svg
-                viewBox="0 0 20 20"
-                fill="none"
-                className={`text-gray-400 transition-all duration-300 ${compactHeader ? 'w-4 h-4' : 'w-[22px] h-[22px] mt-1'}`}
-              >
-                <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
+              <img
+                src="/logo-gombrick.png"
+                alt="GomBrick"
+                className="h-full w-auto max-w-none"
+              />
+            </div>
 
-            {seriesMenuOpen && (
-              <div className="absolute left-0 mt-2 w-72 max-h-96 overflow-y-auto bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-40">
+            {/* Compact-only mini series selector, sits next to the clipped logo */}
+            {compactHeader && (
+              <div className="relative shrink-0" ref={compactSeriesMenuRef}>
                 <button
-                  onClick={() => handleSeriesChange('all')}
-                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === 'all' ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
+                  onClick={() => setSeriesMenuOpen((v) => !v)}
+                  className="flex items-center gap-1 text-sm text-gray-900 hover:text-gray-500 transition-colors"
                 >
-                  All
+                  <span className="font-agency-wide inline-block">
+                    {selectedSeries === 'all' ? 'All' : selectedSeries}
+                  </span>
+                  <svg viewBox="0 0 20 20" fill="none" className="w-4 h-4 text-gray-400">
+                    <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 </button>
-                {allSeries.map((series) => (
-                  <button
-                    key={series.id}
-                    onClick={() => handleSeriesChange(series.name)}
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === series.name ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
-                  >
-                    {series.name}
-                    {series._count && <span className="text-gray-400"> ({series._count.bearbricks})</span>}
-                  </button>
-                ))}
+
+                {seriesMenuOpen && (
+                  <div className="absolute left-0 mt-2 w-72 max-h-96 overflow-y-auto bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-40">
+                    <button
+                      onClick={() => handleSeriesChange('all')}
+                      className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === 'all' ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
+                    >
+                      All
+                    </button>
+                    {allSeries.map((series) => (
+                      <button
+                        key={series.id}
+                        onClick={() => handleSeriesChange(series.name)}
+                        className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === series.name ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
+                      >
+                        {series.name}
+                        {series._count && <span className="text-gray-400"> ({series._count.bearbricks})</span>}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
+
+            <div className="ml-auto flex items-center gap-1 shrink-0">
+              <button
+                onClick={() => {
+                  if (!session) {
+                    signIn('google')
+                    return
+                  }
+                  setMyCollectionOnly((v) => !v)
+                }}
+                aria-label="My Collection"
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  myCollectionOnly ? 'bg-blue-50 text-blue-600' : 'text-gray-500 hover:bg-gray-100'
+                }`}
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill={myCollectionOnly ? 'currentColor' : 'none'}>
+                  <path d="M5 3h10a1 1 0 0 1 1 1v13l-6-3.5L4 17V4a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                </svg>
+                <span
+                  className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${compactHeader ? 'max-w-0 opacity-0' : 'max-w-[8rem] opacity-100'}`}
+                >
+                  My Collection
+                </span>
+              </button>
+              <div className="relative" ref={searchMenuRef}>
+                <button
+                  onClick={() => (searchOpen ? setSearchOpen(false) : openSearch())}
+                  aria-label="Search"
+                  className="p-2.5 rounded-full hover:bg-gray-100 active:bg-gray-200 transition-colors text-gray-500"
+                >
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <circle cx="9" cy="9" r="6" stroke="currentColor" strokeWidth="1.5" />
+                    <path d="M13.5 13.5L17.5 17.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  </svg>
+                </button>
+                {searchOpen && (
+                  <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-100 rounded-xl shadow-lg z-20 p-2">
+                    <input
+                      ref={searchInputRef}
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search bearbricks..."
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-400"
+                    />
+                    {searchQuery.trim() && (
+                      <div className="mt-2 max-h-96 overflow-y-auto divide-y divide-gray-50">
+                        {!searchPoolLoaded ? (
+                          <p className="text-sm text-gray-400 text-center py-4">Loading...</p>
+                        ) : searchResults.length === 0 ? (
+                          <p className="text-sm text-gray-400 text-center py-4">No matches</p>
+                        ) : (
+                          searchResults.map((item) => {
+                            const img = item.images.find((i) => i.isPrimary)?.url || item.images[0]?.url || '/bearbrick-placeholder.svg'
+                            const displayName = item.category?.name === 'Basic' && !item.isSecret ? 'BE@RBRICK' : item.name
+                            return (
+                              <Link
+                                key={item.id}
+                                href={`/bearbricks/${item.id}`}
+                                onClick={() => { setSearchOpen(false); setSearchQuery('') }}
+                                className="flex items-center gap-3 px-2 py-2 hover:bg-gray-50 rounded-lg"
+                              >
+                                <img src={img} alt="" className="w-10 h-10 object-cover object-top rounded bg-gray-50 shrink-0" />
+                                <div className="min-w-0">
+                                  <p className="text-sm text-gray-900 truncate">{displayName}</p>
+                                  {item.series && <p className="text-xs text-gray-400 truncate">{item.series.name}</p>}
+                                </div>
+                              </Link>
+                            )
+                          })
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              <TopMenu />
+            </div>
           </div>
 
-          <div className="order-3 ml-auto flex items-center gap-1">
-            <button
-              onClick={() => {
-                if (!session) {
-                  signIn('google')
-                  return
-                }
-                setMyCollectionOnly((v) => !v)
-              }}
-              aria-label="My Collection"
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                myCollectionOnly ? 'bg-blue-50 text-blue-600' : 'text-gray-500 hover:bg-gray-100'
-              }`}
-            >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill={myCollectionOnly ? 'currentColor' : 'none'}>
-                <path d="M5 3h10a1 1 0 0 1 1 1v13l-6-3.5L4 17V4a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-              </svg>
-              <span
-                className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${compactHeader ? 'max-w-0 opacity-0' : 'max-w-[8rem] opacity-100'}`}
-              >
-                My Collection
-              </span>
-            </button>
-            <div className="relative" ref={searchMenuRef}>
+          {/* Row 2: big title + category - collapses away entirely in compact mode */}
+          <div
+            className={`overflow-hidden transition-all duration-300 ${compactHeader ? 'max-h-0 opacity-0' : 'max-h-56 opacity-100'}`}
+          >
+            <div className="mt-3 mb-3 relative inline-block" ref={seriesMenuRef}>
               <button
-                onClick={() => (searchOpen ? setSearchOpen(false) : openSearch())}
-                aria-label="Search"
-                className="p-2.5 rounded-full hover:bg-gray-100 active:bg-gray-200 transition-colors text-gray-500"
+                onClick={() => setSeriesMenuOpen((v) => !v)}
+                className="flex items-center gap-2 text-3xl md:text-4xl text-gray-900 hover:text-gray-500 transition-colors"
               >
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <circle cx="9" cy="9" r="6" stroke="currentColor" strokeWidth="1.5" />
-                  <path d="M13.5 13.5L17.5 17.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                <span className="font-agency-wide inline-block">
+                  {selectedSeries === 'all' ? 'All' : selectedSeries}
+                </span>
+                <svg width="22" height="22" viewBox="0 0 20 20" fill="none" className="mt-1 text-gray-400">
+                  <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </button>
-              {searchOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-100 rounded-xl shadow-lg z-20 p-2">
-                  <input
-                    ref={searchInputRef}
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search bearbricks..."
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-400"
-                  />
-                  {searchQuery.trim() && (
-                    <div className="mt-2 max-h-96 overflow-y-auto divide-y divide-gray-50">
-                      {!searchPoolLoaded ? (
-                        <p className="text-sm text-gray-400 text-center py-4">Loading...</p>
-                      ) : searchResults.length === 0 ? (
-                        <p className="text-sm text-gray-400 text-center py-4">No matches</p>
-                      ) : (
-                        searchResults.map((item) => {
-                          const img = item.images.find((i) => i.isPrimary)?.url || item.images[0]?.url || '/bearbrick-placeholder.svg'
-                          const displayName = item.category?.name === 'Basic' && !item.isSecret ? 'BE@RBRICK' : item.name
-                          return (
-                            <Link
-                              key={item.id}
-                              href={`/bearbricks/${item.id}`}
-                              onClick={() => { setSearchOpen(false); setSearchQuery('') }}
-                              className="flex items-center gap-3 px-2 py-2 hover:bg-gray-50 rounded-lg"
-                            >
-                              <img src={img} alt="" className="w-10 h-10 object-cover object-top rounded bg-gray-50 shrink-0" />
-                              <div className="min-w-0">
-                                <p className="text-sm text-gray-900 truncate">{displayName}</p>
-                                {item.series && <p className="text-xs text-gray-400 truncate">{item.series.name}</p>}
-                              </div>
-                            </Link>
-                          )
-                        })
-                      )}
-                    </div>
-                  )}
+
+              {seriesMenuOpen && (
+                <div className="absolute left-0 mt-2 w-72 max-h-96 overflow-y-auto bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-40">
+                  <button
+                    onClick={() => handleSeriesChange('all')}
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === 'all' ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
+                  >
+                    All
+                  </button>
+                  {allSeries.map((series) => (
+                    <button
+                      key={series.id}
+                      onClick={() => handleSeriesChange(series.name)}
+                      className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === series.name ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
+                    >
+                      {series.name}
+                      {series._count && <span className="text-gray-400"> ({series._count.bearbricks})</span>}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
-            <TopMenu />
-          </div>
 
-          {/* Category filter - collapses away in compact mode */}
-          <div
-            className={`relative order-5 basis-full overflow-hidden transition-all duration-300 ${
-              compactHeader ? 'max-h-0 opacity-0' : 'max-h-16 opacity-100 mt-2'
-            }`}
-            ref={categoryMenuRef}
-          >
-            <button
-              onClick={() => setCategoryMenuOpen((v) => !v)}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              {selectedCategory === 'all' ? 'All categories' : selectedCategory}
-              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" className="text-gray-400">
-                <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
+            <div className="mb-8 relative inline-block" ref={categoryMenuRef}>
+              <button
+                onClick={() => setCategoryMenuOpen((v) => !v)}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                {selectedCategory === 'all' ? 'All categories' : selectedCategory}
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" className="text-gray-400">
+                  <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
 
-            {categoryMenuOpen && (
-              <div className="absolute left-0 mt-2 w-56 max-h-96 overflow-y-auto bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-40">
-                <button
-                  onClick={() => handleCategoryChange('all')}
-                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedCategory === 'all' ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
-                >
-                  All
-                </button>
-                {categoryList.map((category) => (
+              {categoryMenuOpen && (
+                <div className="absolute left-0 mt-2 w-56 max-h-96 overflow-y-auto bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-40">
                   <button
-                    key={category.id}
-                    onClick={() => handleCategoryChange(category.name)}
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedCategory === category.name ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
+                    onClick={() => handleCategoryChange('all')}
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedCategory === 'all' ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
                   >
-                    {category.name}
+                    All
                   </button>
-                ))}
-              </div>
-            )}
+                  {categoryList.map((category) => (
+                    <button
+                      key={category.id}
+                      onClick={() => handleCategoryChange(category.name)}
+                      className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedCategory === category.name ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
+                    >
+                      {category.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
