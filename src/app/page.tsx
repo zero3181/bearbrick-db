@@ -615,7 +615,7 @@ export default function HomePage() {
                     {bearbrick.category && <span className="text-gray-400">[{bearbrick.category.name}] </span>}
                     {bearbrick.category?.name === 'Basic' && !bearbrick.isSecret ? 'BE@RBRICK' : bearbrick.name}
                   </h3>
-                  {bearbrick.series && (
+                  {selectedSeries === 'all' && bearbrick.series && (
                     <p className="text-xs text-gray-400 mt-0.5">{bearbrick.series.name}</p>
                   )}
                 </div>
