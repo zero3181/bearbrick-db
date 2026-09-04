@@ -332,13 +332,14 @@ export default function HomePage() {
               <button
                 onClick={() => setMyCollectionOnly((v) => !v)}
                 aria-label="My Collection"
-                className={`p-2 rounded-full transition-colors ${
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                   myCollectionOnly ? 'bg-blue-50 text-blue-600' : 'text-gray-500 hover:bg-gray-100'
                 }`}
               >
                 <svg width="20" height="20" viewBox="0 0 20 20" fill={myCollectionOnly ? 'currentColor' : 'none'}>
                   <path d="M5 3h10a1 1 0 0 1 1 1v13l-6-3.5L4 17V4a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
                 </svg>
+                My Collection
               </button>
             )}
             <TopMenu />

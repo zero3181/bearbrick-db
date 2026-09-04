@@ -335,7 +335,7 @@ export default function BearbrickDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8">
             {/* Images */}
             <div>
-              <div className="aspect-square bg-gray-100 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
+              <div className="aspect-[3/4] bg-gray-100 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
                 <img
                   src={selectedImage || '/bearbrick-placeholder.svg'}
                   alt={bearbrick.name}
