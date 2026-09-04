@@ -117,9 +117,29 @@ export default function HomePage() {
   }, [sessionStatus])
 
   useEffect(() => {
+    // Direction-based, not position-based: scrolling down compacts the
+    // header immediately, scrolling up restores it immediately - it doesn't
+    // wait for the very top. A small deadzone plus rAF throttling stops
+    // tiny momentum-scroll jitters (mobile especially) from flip-flopping
+    // the state and causing a flicker.
+    let lastY = window.scrollY
+    let ticking = false
     const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 800)
-      setCompactHeader(window.scrollY > 48)
+      if (ticking) return
+      ticking = true
+      requestAnimationFrame(() => {
+        const currentY = window.scrollY
+        setShowScrollTop(currentY > 800)
+        if (currentY <= 10) {
+          setCompactHeader(false)
+        } else {
+          const delta = currentY - lastY
+          if (delta > 5) setCompactHeader(true)
+          else if (delta < -5) setCompactHeader(false)
+        }
+        lastY = currentY
+        ticking = false
+      })
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
@@ -382,19 +402,15 @@ export default function HomePage() {
     <div className="min-h-screen bg-white">
       {/* Header - sticky; the row below tucks away on scroll, leaving this pinned */}
       <header className="sticky top-0 z-30 bg-white border-b border-gray-100">
-        <div className={`max-w-7xl mx-auto px-4 transition-[padding] duration-300 ${compactHeader ? 'py-2' : 'py-4'}`}>
+        <div className={`max-w-7xl mx-auto px-4 ${compactHeader ? 'pt-2 pb-2' : 'pt-4 pb-0'}`}>
           {/* Row 1: logo + icons - always a single line, never wraps */}
           <div className="flex items-center flex-nowrap gap-3">
-            {/* Clips down to just "G@M" once compact, instead of shrinking the whole wordmark */}
-            <div
-              className={`overflow-hidden shrink-0 transition-all duration-300 ${compactHeader ? 'h-6 w-[56px]' : 'h-9 md:h-[42px] w-[161px] md:w-[188px]'}`}
-            >
-              <img
-                src="/logo-gombrick.png"
-                alt="GomBrick"
-                className="h-full w-auto max-w-none"
-              />
-            </div>
+            {/* Dedicated "G@M" mark once compact, instead of clipping the full wordmark */}
+            <img
+              src={compactHeader ? '/logo-gombrick-mark.png' : '/logo-gombrick.png'}
+              alt="GomBrick"
+              className={`w-auto shrink-0 ${compactHeader ? 'h-6' : 'h-9 md:h-[42px]'}`}
+            />
 
             {/* Compact-only mini series selector, sits next to the clipped logo */}
             {compactHeader && (
@@ -452,7 +468,7 @@ export default function HomePage() {
                   <path d="M5 3h10a1 1 0 0 1 1 1v13l-6-3.5L4 17V4a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
                 </svg>
                 <span
-                  className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${compactHeader ? 'max-w-0 opacity-0' : 'max-w-[8rem] opacity-100'}`}
+                  className={`overflow-hidden whitespace-nowrap ${compactHeader ? 'max-w-0 opacity-0' : 'max-w-[8rem] opacity-100'}`}
                 >
                   My Collection
                 </span>
@@ -515,17 +531,17 @@ export default function HomePage() {
 
           {/* Row 2: big title + category - collapses away entirely in compact mode */}
           <div
-            className={`overflow-hidden transition-all duration-300 ${compactHeader ? 'max-h-0 opacity-0' : 'max-h-56 opacity-100'}`}
+            className={compactHeader ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-56 opacity-100 overflow-visible'}
           >
             <div className="mt-3 mb-3 relative inline-block" ref={seriesMenuRef}>
               <button
                 onClick={() => setSeriesMenuOpen((v) => !v)}
-                className="flex items-center gap-2 text-3xl md:text-4xl text-gray-900 hover:text-gray-500 transition-colors"
+                className="flex items-center gap-2 text-xl sm:text-3xl md:text-4xl text-gray-900 hover:text-gray-500 transition-colors"
               >
                 <span className="font-agency-wide inline-block">
                   {selectedSeries === 'all' ? 'All' : selectedSeries}
                 </span>
-                <svg width="22" height="22" viewBox="0 0 20 20" fill="none" className="mt-1 text-gray-400">
+                <svg viewBox="0 0 20 20" fill="none" className="mt-1 text-gray-400 w-4 h-4 sm:w-[22px] sm:h-[22px]">
                   <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </button>
@@ -588,7 +604,7 @@ export default function HomePage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 pt-4 pb-8">
+      <main className="max-w-7xl mx-auto px-4 pt-1 pb-8">
         {loading ? (
           <div className="min-h-[50vh] flex items-center justify-center">
             <LoadingSpinner label="Loading..." />
