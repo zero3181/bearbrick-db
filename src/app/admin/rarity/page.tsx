@@ -6,8 +6,8 @@ import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import TopMenu from '@/components/TopMenu'
 import LoadingSpinner from '@/components/LoadingSpinner'
-import { sortBearbricks, SECRET_BASIC_REPRESENTATIVE_NAMES } from '@/lib/sortBearbricks'
-import { isSuperSecretRarity, toFraction } from '@/lib/rarity'
+import { sortBearbricks, sortCategoriesOfficial, SECRET_BASIC_REPRESENTATIVE_NAMES } from '@/lib/sortBearbricks'
+import { toFraction } from '@/lib/rarity'
 
 interface Bearbrick {
   id: string
@@ -44,13 +44,13 @@ export default function AdminRarityPage() {
   const [bearbricks, setBearbricks] = useState<Bearbrick[]>([])
   const [edits, setEdits] = useState<Record<string, string>>({})
   const [nameEdits, setNameEdits] = useState<Record<string, string>>({})
+  const [secretEdits, setSecretEdits] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [creatingSeries, setCreatingSeries] = useState(false)
   const [deletingSeries, setDeletingSeries] = useState(false)
   const [seasonEdit, setSeasonEdit] = useState('')
   const [yearEdit, setYearEdit] = useState('')
-  const [savingSeriesInfo, setSavingSeriesInfo] = useState(false)
 
   const fetchSeriesList = async () => {
     const res = await fetch('/api/series')
@@ -80,36 +80,45 @@ export default function AdminRarityPage() {
         setBearbricks(Array.isArray(data) ? data : [])
         const initialEdits: Record<string, string> = {}
         const initialNameEdits: Record<string, string> = {}
+        const initialSecretEdits: Record<string, boolean> = {}
         for (const b of data) {
           initialEdits[b.id] = b.rarityPercentage != null ? String(b.rarityPercentage) : ''
           initialNameEdits[b.id] = b.name
+          initialSecretEdits[b.id] = b.isSecret
         }
         setEdits(initialEdits)
         setNameEdits(initialNameEdits)
+        setSecretEdits(initialSecretEdits)
       })
       .finally(() => setLoading(false))
   }, [selectedSeries])
 
+  // Grouped by category alone (not category+secret), so e.g. a regular SF
+  // figure and a secret SF figure show up together under one "SF" heading
+  // instead of being split into a separate section at the end.
   const grouped = useMemo(() => {
-    const sorted = sortBearbricks(bearbricks)
-    const groups: { category: string; items: Bearbrick[] }[] = []
-    for (const item of sorted) {
+    const byCategory = new Map<string, Bearbrick[]>()
+    for (const item of bearbricks) {
       const categoryName = item.category?.name ?? 'Uncategorized'
-      const last = groups[groups.length - 1]
-      if (last && last.category === categoryName) {
-        last.items.push(item)
-      } else {
-        groups.push({ category: categoryName, items: [item] })
-      }
+      if (!byCategory.has(categoryName)) byCategory.set(categoryName, [])
+      byCategory.get(categoryName)!.push(item)
     }
-    return groups
+    const orderedNames = sortCategoriesOfficial(
+      Array.from(byCategory.keys()).map((name) => ({ name }))
+    ).map((c) => c.name)
+    return orderedNames.map((name) => ({
+      category: name,
+      items: sortBearbricks(byCategory.get(name)!),
+    }))
   }, [bearbricks])
 
   const dirty =
     bearbricks.some((b) => {
       const original = b.rarityPercentage != null ? String(b.rarityPercentage) : ''
       return (edits[b.id] ?? '') !== original
-    }) || bearbricks.some((b) => (nameEdits[b.id] ?? b.name) !== b.name)
+    }) ||
+    bearbricks.some((b) => (nameEdits[b.id] ?? b.name) !== b.name) ||
+    bearbricks.some((b) => (secretEdits[b.id] ?? b.isSecret) !== b.isSecret)
 
   const currentSeriesInfo = seriesList.find((s) => s.name === selectedSeries)
   const canDeleteCurrentSeries = !loading && bearbricks.length === 0 && !!currentSeriesInfo
@@ -124,65 +133,89 @@ export default function AdminRarityPage() {
     !!currentSeriesInfo &&
     (seasonEdit !== currentSeriesInfo.season || yearEdit !== String(currentSeriesInfo.releaseYear))
 
-  const handleSaveSeriesInfo = async () => {
-    if (!currentSeriesInfo) return
-    setSavingSeriesInfo(true)
-    try {
-      const res = await fetch(`/api/series/${currentSeriesInfo.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ season: seasonEdit, releaseYear: parseInt(yearEdit, 10) }),
-      })
-      if (!res.ok) throw new Error('Save failed')
-      await fetchSeriesList()
-    } catch (error) {
-      console.error('Failed to save series info:', error)
-      alert('Failed to save release info')
-    } finally {
-      setSavingSeriesInfo(false)
+  const anyDirty = dirty || seriesInfoDirty
+
+  const grandTotalPercent = bearbricks.reduce((sum, b) => {
+    const value = edits[b.id]
+    return sum + (value ? parseFloat(value) || 0 : 0)
+  }, 0)
+  const grandTotal192 = Math.round((grandTotalPercent / 100) * 192)
+
+  const handleCancel = () => {
+    const initialEdits: Record<string, string> = {}
+    const initialNameEdits: Record<string, string> = {}
+    const initialSecretEdits: Record<string, boolean> = {}
+    for (const b of bearbricks) {
+      initialEdits[b.id] = b.rarityPercentage != null ? String(b.rarityPercentage) : ''
+      initialNameEdits[b.id] = b.name
+      initialSecretEdits[b.id] = b.isSecret
+    }
+    setEdits(initialEdits)
+    setNameEdits(initialNameEdits)
+    setSecretEdits(initialSecretEdits)
+    if (currentSeriesInfo) {
+      setSeasonEdit(currentSeriesInfo.season)
+      setYearEdit(String(currentSeriesInfo.releaseYear))
     }
   }
 
   const handleSave = async () => {
     setSaving(true)
     try {
-      const updates = bearbricks
-        .map((b) => {
-          const originalRarity = b.rarityPercentage != null ? String(b.rarityPercentage) : ''
-          const rarityChanged = (edits[b.id] ?? '') !== originalRarity
-          const nameChanged = (nameEdits[b.id] ?? b.name) !== b.name
-          if (!rarityChanged && !nameChanged) return null
-          const update: { id: string; rarityPercentage?: number | null; name?: string } = { id: b.id }
-          if (rarityChanged) {
-            update.rarityPercentage = edits[b.id] === '' || edits[b.id] === undefined ? null : parseFloat(edits[b.id])
-          }
-          if (nameChanged) {
-            update.name = nameEdits[b.id]
-          }
-          return update
+      if (dirty) {
+        const updates = bearbricks
+          .map((b) => {
+            const originalRarity = b.rarityPercentage != null ? String(b.rarityPercentage) : ''
+            const rarityChanged = (edits[b.id] ?? '') !== originalRarity
+            const nameChanged = (nameEdits[b.id] ?? b.name) !== b.name
+            const secretChanged = (secretEdits[b.id] ?? b.isSecret) !== b.isSecret
+            if (!rarityChanged && !nameChanged && !secretChanged) return null
+            const update: { id: string; rarityPercentage?: number | null; name?: string; isSecret?: boolean } = { id: b.id }
+            if (rarityChanged) {
+              update.rarityPercentage = edits[b.id] === '' || edits[b.id] === undefined ? null : parseFloat(edits[b.id])
+            }
+            if (nameChanged) {
+              update.name = nameEdits[b.id]
+            }
+            if (secretChanged) {
+              update.isSecret = secretEdits[b.id] ?? b.isSecret
+            }
+            return update
+          })
+          .filter((u): u is { id: string; rarityPercentage?: number | null; name?: string; isSecret?: boolean } => u !== null)
+
+        if (updates.length > 0) {
+          const res = await fetch('/api/admin/bearbricks/update-rarity', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ updates }),
+          })
+          if (!res.ok) throw new Error('Save failed')
+
+          setBearbricks((prev) =>
+            prev.map((b) => {
+              const update = updates.find((u) => u.id === b.id)
+              if (!update) return b
+              return {
+                ...b,
+                rarityPercentage: 'rarityPercentage' in update ? update.rarityPercentage! : b.rarityPercentage,
+                name: update.name ?? b.name,
+                isSecret: update.isSecret ?? b.isSecret,
+              }
+            })
+          )
+        }
+      }
+
+      if (seriesInfoDirty && currentSeriesInfo) {
+        const res = await fetch(`/api/series/${currentSeriesInfo.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ season: seasonEdit, releaseYear: parseInt(yearEdit, 10) }),
         })
-        .filter((u): u is { id: string; rarityPercentage?: number | null; name?: string } => u !== null)
-
-      if (updates.length === 0) return
-
-      const res = await fetch('/api/admin/bearbricks/update-rarity', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ updates }),
-      })
-      if (!res.ok) throw new Error('Save failed')
-
-      setBearbricks((prev) =>
-        prev.map((b) => {
-          const update = updates.find((u) => u.id === b.id)
-          if (!update) return b
-          return {
-            ...b,
-            rarityPercentage: 'rarityPercentage' in update ? update.rarityPercentage! : b.rarityPercentage,
-            name: update.name ?? b.name,
-          }
-        })
-      )
+        if (!res.ok) throw new Error('Save failed')
+        await fetchSeriesList()
+      }
     } catch (error) {
       console.error('Failed to save changes:', error)
       alert('Failed to save changes')
@@ -260,7 +293,7 @@ export default function AdminRarityPage() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
+      <main className="max-w-4xl mx-auto px-4 py-8 pb-28">
         <div className="flex items-center justify-between mb-2">
           <Link href="/admin/manage" className="text-sm text-gray-500 hover:text-gray-900">
             ← Back to admin
@@ -294,13 +327,6 @@ export default function AdminRarityPage() {
             >
               {deletingSeries ? 'Deleting...' : 'Delete Series'}
             </button>
-            <button
-              onClick={handleSave}
-              disabled={!dirty || saving}
-              className="px-4 py-1.5 bg-blue-600 text-white text-sm font-semibold rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-700"
-            >
-              {saving ? 'Saving...' : 'Save Changes'}
-            </button>
           </div>
         </div>
 
@@ -322,13 +348,12 @@ export default function AdminRarityPage() {
               onChange={(e) => setYearEdit(e.target.value)}
               className="w-20 px-2 py-1 border border-gray-200 rounded text-sm"
             />
-            <button
-              onClick={handleSaveSeriesInfo}
-              disabled={!seriesInfoDirty || savingSeriesInfo}
-              className="px-3 py-1 border border-gray-200 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {savingSeriesInfo ? 'Saving...' : 'Save'}
-            </button>
+          </div>
+        )}
+
+        {!loading && bearbricks.length > 0 && (
+          <div className="flex justify-end mb-1">
+            <span className="text-xs text-gray-400">☑ Secret</span>
           </div>
         )}
 
@@ -349,52 +374,54 @@ export default function AdminRarityPage() {
                 </h2>
                 <div className="border border-gray-100 rounded-xl overflow-hidden divide-y divide-gray-100">
                   {group.category === 'Basic' ? (
-                    (() => {
-                      const values = group.items.map((it) => edits[it.id] ?? '')
+                    // A series can have both a regular Basic set (9 letters) and a
+                    // secret Basic sub-set (e.g. Series 5's GOODENOUGH) - partition by
+                    // their original isSecret so each still gets its own combined-total
+                    // row, just grouped under the same "Basic" heading.
+                    Array.from(
+                      group.items.reduce((map, it) => {
+                        const key = it.isSecret ? 'secret' : 'regular'
+                        if (!map.has(key)) map.set(key, [])
+                        map.get(key)!.push(it)
+                        return map
+                      }, new Map<string, Bearbrick[]>())
+                    ).map(([partitionKey, items]) => {
+                      const values = items.map((it) => edits[it.id] ?? '')
                       const allBlank = values.every((v) => v === '')
                       const total = values.reduce((sum, v) => sum + (v === '' ? 0 : parseFloat(v)), 0)
                       const totalValue = allBlank ? '' : String(Math.round(total * 100) / 100)
-                      const anySecret = group.items.some((it) => it.isSecret)
-                      const representative = group.items.find((it) => SECRET_BASIC_REPRESENTATIVE_NAMES.includes(it.name))
-                      const editTargetId = representative?.id ?? group.items[0]?.id
+                      const isSecretPartition = secretEdits[items[0].id] ?? items[0].isSecret
+                      const representative = items.find((it) => SECRET_BASIC_REPRESENTATIVE_NAMES.includes(it.name))
+                      const editTargetId = representative?.id ?? items[0]?.id
                       const displayName = representative
                         ? (nameEdits[representative.id] ?? representative.name)
                         : 'BE@RBRICK'
                       return (
-                        <div className="flex items-center justify-between gap-4 px-4 py-2.5">
-                          <div className="flex items-center gap-2 min-w-0 flex-1">
-                            {anySecret && (
-                              <span
-                                className={`shrink-0 px-2 py-0.5 text-xs font-semibold rounded-full ${
-                                  isSuperSecretRarity(allBlank ? null : total) ? 'bg-yellow-50 text-yellow-700' : 'bg-blue-50 text-blue-700'
-                                }`}
-                              >
-                                Secret
-                              </span>
-                            )}
-                            {representative ? (
-                              <input
-                                type="text"
-                                value={displayName}
-                                onChange={(e) => setNameEdits({ ...nameEdits, [representative.id]: e.target.value })}
-                                className="min-w-0 flex-1 text-sm text-gray-900 border-b border-transparent hover:border-gray-200 focus:border-blue-400 focus:outline-none bg-transparent"
-                              />
-                            ) : (
-                              <span className="truncate text-sm text-gray-900" title="Shown as BE@RBRICK on the collection page for every non-secret Basic set">
-                                {displayName}
-                              </span>
-                            )}
-                            {editTargetId && (
-                              <Link
-                                href={`/admin/bearbricks/${editTargetId}/edit`}
-                                className="shrink-0 text-gray-300 hover:text-blue-600"
-                                title="Open edit page"
-                              >
-                                ↗
-                              </Link>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2 shrink-0">
+                        <div key={partitionKey} className="flex items-center gap-3 px-4 py-2.5">
+                          {editTargetId ? (
+                            <Link
+                              href={`/admin/bearbricks/${editTargetId}/edit`}
+                              className="shrink-0 text-gray-300 hover:text-blue-600"
+                              title="Open edit page"
+                            >
+                              ↗
+                            </Link>
+                          ) : (
+                            <span className="shrink-0 w-[1em]" />
+                          )}
+                          {representative ? (
+                            <input
+                              type="text"
+                              value={displayName}
+                              onChange={(e) => setNameEdits({ ...nameEdits, [representative.id]: e.target.value })}
+                              className="min-w-0 flex-1 text-sm text-gray-900 border-b border-transparent hover:border-gray-200 focus:border-blue-400 focus:outline-none bg-transparent"
+                            />
+                          ) : (
+                            <span className="min-w-0 flex-1 truncate text-sm text-gray-900" title="Shown as BE@RBRICK on the collection page for every non-secret Basic set">
+                              {displayName}
+                            </span>
+                          )}
+                          <div className="flex items-center gap-3 shrink-0">
                             {!allBlank && <span className="text-xs text-gray-400 tabular-nums">{toFraction(total)}</span>}
                             <input
                               type="number"
@@ -406,53 +433,55 @@ export default function AdminRarityPage() {
                                 const raw = e.target.value
                                 const nextEdits = { ...edits }
                                 if (raw === '') {
-                                  for (const it of group.items) nextEdits[it.id] = ''
+                                  for (const it of items) nextEdits[it.id] = ''
                                 } else {
                                   const parsedTotal = parseFloat(raw)
-                                  const perItem = Number.isNaN(parsedTotal) ? 0 : parsedTotal / group.items.length
-                                  for (const it of group.items) nextEdits[it.id] = String(Math.round(perItem * 10000) / 10000)
+                                  const perItem = Number.isNaN(parsedTotal) ? 0 : parsedTotal / items.length
+                                  for (const it of items) nextEdits[it.id] = String(Math.round(perItem * 10000) / 10000)
                                 }
                                 setEdits(nextEdits)
                               }}
                               placeholder="—"
-                              className="w-20 px-2 py-1 border border-gray-200 rounded text-sm text-right"
+                              className="w-14 px-1.5 py-1 border border-gray-200 rounded text-sm text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
                             <span className="text-sm text-gray-400">%</span>
+                            <input
+                              type="checkbox"
+                              checked={isSecretPartition}
+                              onChange={(e) => {
+                                const next = { ...secretEdits }
+                                for (const it of items) next[it.id] = e.target.checked
+                                setSecretEdits(next)
+                              }}
+                              aria-label="Secret"
+                              className="w-3.5 h-3.5"
+                            />
                           </div>
                         </div>
                       )
-                    })()
+                    })
                   ) : (
                     group.items.map((item) => {
                       const value = edits[item.id] ?? ''
                       const parsed = value === '' ? null : parseFloat(value)
+                      const isSecretNow = secretEdits[item.id] ?? item.isSecret
+                      const displayName = nameEdits[item.id] ?? item.name
                       return (
-                        <div key={item.id} className="flex items-center justify-between gap-4 px-4 py-2.5">
-                          <div className="flex items-center gap-2 min-w-0 flex-1">
-                            {item.isSecret && (
-                              <span
-                                className={`shrink-0 px-2 py-0.5 text-xs font-semibold rounded-full ${
-                                  isSuperSecretRarity(parsed) ? 'bg-yellow-50 text-yellow-700' : 'bg-blue-50 text-blue-700'
-                                }`}
-                              >
-                                Secret
-                              </span>
-                            )}
-                            <input
-                              type="text"
-                              value={nameEdits[item.id] ?? item.name}
-                              onChange={(e) => setNameEdits({ ...nameEdits, [item.id]: e.target.value })}
-                              className="min-w-0 flex-1 text-sm text-gray-900 border-b border-transparent hover:border-gray-200 focus:border-blue-400 focus:outline-none bg-transparent"
-                            />
-                            <Link
-                              href={`/admin/bearbricks/${item.id}/edit`}
-                              className="shrink-0 text-gray-300 hover:text-blue-600"
-                              title="Open edit page"
-                            >
-                              ↗
-                            </Link>
-                          </div>
-                          <div className="flex items-center gap-2 shrink-0">
+                        <div key={item.id} className="flex items-center gap-3 px-4 py-2.5">
+                          <Link
+                            href={`/admin/bearbricks/${item.id}/edit`}
+                            className="shrink-0 text-gray-300 hover:text-blue-600"
+                            title="Open edit page"
+                          >
+                            ↗
+                          </Link>
+                          <input
+                            type="text"
+                            value={displayName}
+                            onChange={(e) => setNameEdits({ ...nameEdits, [item.id]: e.target.value })}
+                            className="min-w-0 flex-1 text-sm text-gray-900 border-b border-transparent hover:border-gray-200 focus:border-blue-400 focus:outline-none bg-transparent"
+                          />
+                          <div className="flex items-center gap-3 shrink-0">
                             {parsed != null && !Number.isNaN(parsed) && <span className="text-xs text-gray-400 tabular-nums">{toFraction(parsed)}</span>}
                             <input
                               type="number"
@@ -462,9 +491,16 @@ export default function AdminRarityPage() {
                               value={value}
                               onChange={(e) => setEdits({ ...edits, [item.id]: e.target.value })}
                               placeholder="—"
-                              className="w-20 px-2 py-1 border border-gray-200 rounded text-sm text-right"
+                              className="w-14 px-1.5 py-1 border border-gray-200 rounded text-sm text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
                             <span className="text-sm text-gray-400">%</span>
+                            <input
+                              type="checkbox"
+                              checked={isSecretNow}
+                              onChange={(e) => setSecretEdits({ ...secretEdits, [item.id]: e.target.checked })}
+                              aria-label="Secret"
+                              className="w-3.5 h-3.5"
+                            />
                           </div>
                         </div>
                       )
@@ -473,9 +509,37 @@ export default function AdminRarityPage() {
                 </div>
               </div>
             ))}
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-100">
+              <span className="text-sm font-semibold text-gray-500">Total:</span>
+              <span className="text-sm font-semibold text-gray-900 tabular-nums">
+                {grandTotal192}/192 {Math.round(grandTotalPercent * 100) / 100}%
+              </span>
+            </div>
           </div>
         )}
       </main>
+
+      {anyDirty && (
+        <div className="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-gray-200 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+          <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-end gap-3">
+            <button
+              onClick={handleCancel}
+              disabled={saving}
+              className="px-5 py-2 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="px-6 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-700"
+            >
+              {saving ? 'Saving...' : 'Save'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

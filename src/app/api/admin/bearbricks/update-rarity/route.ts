@@ -6,6 +6,7 @@ interface RarityUpdate {
   id: string
   rarityPercentage?: number | null
   name?: string
+  isSecret?: boolean
 }
 
 export async function PUT(request: NextRequest) {
@@ -24,9 +25,10 @@ export async function PUT(request: NextRequest) {
 
     await prisma.$transaction(
       updates.map((u) => {
-        const data: { rarityPercentage?: number | null; name?: string } = {}
+        const data: { rarityPercentage?: number | null; name?: string; isSecret?: boolean } = {}
         if ('rarityPercentage' in u) data.rarityPercentage = u.rarityPercentage
         if (u.name !== undefined) data.name = u.name
+        if (u.isSecret !== undefined) data.isSecret = u.isSecret
         return prisma.bearbrick.update({ where: { id: u.id }, data })
       })
     )
