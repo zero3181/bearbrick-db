@@ -67,9 +67,7 @@ export default function HomePage() {
   const [seriesMenuOpen, setSeriesMenuOpen] = useState(false)
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false)
   const [showScrollTop, setShowScrollTop] = useState(false)
-  const [compactHeader, setCompactHeader] = useState(false)
   const seriesMenuRef = useRef<HTMLDivElement>(null)
-  const compactSeriesMenuRef = useRef<HTMLDivElement>(null)
   const categoryMenuRef = useRef<HTMLDivElement>(null)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -120,27 +118,12 @@ export default function HomePage() {
   }, [sessionStatus])
 
   useEffect(() => {
-    // Direction-based, not position-based: scrolling down compacts the
-    // header immediately, scrolling up restores it immediately - it doesn't
-    // wait for the very top. A small deadzone plus rAF throttling stops
-    // tiny momentum-scroll jitters (mobile especially) from flip-flopping
-    // the state and causing a flicker.
-    let lastY = window.scrollY
     let ticking = false
     const handleScroll = () => {
       if (ticking) return
       ticking = true
       requestAnimationFrame(() => {
-        const currentY = window.scrollY
-        setShowScrollTop(currentY > 800)
-        if (currentY <= 10) {
-          setCompactHeader(false)
-        } else {
-          const delta = currentY - lastY
-          if (delta > 5) setCompactHeader(true)
-          else if (delta < -5) setCompactHeader(false)
-        }
-        lastY = currentY
+        setShowScrollTop(window.scrollY > 800)
         ticking = false
       })
     }
@@ -152,8 +135,7 @@ export default function HomePage() {
     function handleClickOutside(e: MouseEvent) {
       const target = e.target as Node
       const inBigSeriesMenu = seriesMenuRef.current?.contains(target)
-      const inCompactSeriesMenu = compactSeriesMenuRef.current?.contains(target)
-      if (!inBigSeriesMenu && !inCompactSeriesMenu) {
+      if (!inBigSeriesMenu) {
         setSeriesMenuOpen(false)
       }
       if (categoryMenuRef.current && !categoryMenuRef.current.contains(e.target as Node)) {
@@ -403,57 +385,18 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header - sticky; the row below tucks away on scroll, leaving this pinned */}
+      {/* Header - sticky; content is fixed, it never changes or resizes on scroll */}
       <header className="sticky top-0 z-30 bg-white border-b border-gray-100">
-        <div className={`max-w-7xl mx-auto px-4 ${compactHeader ? 'pt-2 pb-2' : 'pt-4 pb-0'}`}>
+        <div className="max-w-7xl mx-auto px-4 pt-4 pb-4">
           {/* Row 1: logo + icons - always a single line, never wraps */}
           <div className="flex items-center flex-nowrap gap-3">
-            {/* Dedicated "G@M" mark once compact, instead of clipping the full wordmark */}
             <img
-              src={compactHeader ? '/logo-gombrick-mark.png' : '/logo-gombrick.png'}
+              src="/logo-gombrick.png"
               alt="GomBrick"
-              className={`w-auto shrink-0 ${compactHeader ? 'h-6' : 'h-9 md:h-[42px]'}`}
+              className="w-auto shrink-0 h-9 md:h-[42px]"
             />
 
-            {/* Compact-only mini series selector, sits next to the clipped logo */}
-            {compactHeader && (
-              <div className="relative shrink-0" ref={compactSeriesMenuRef}>
-                <button
-                  onClick={() => setSeriesMenuOpen((v) => !v)}
-                  className="flex items-center gap-1 text-sm text-gray-900 hover:text-gray-500 transition-colors"
-                >
-                  <span className="font-agency-wide inline-block">
-                    {selectedSeries === 'all' ? tc('all') : selectedSeries}
-                  </span>
-                  <svg viewBox="0 0 20 20" fill="none" className="w-4 h-4 text-gray-400">
-                    <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
-
-                {seriesMenuOpen && (
-                  <div className="absolute left-0 mt-2 w-72 max-h-96 overflow-y-auto bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-40">
-                    <button
-                      onClick={() => handleSeriesChange('all')}
-                      className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === 'all' ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
-                    >
-                      {tc('all')}
-                    </button>
-                    {allSeries.map((series) => (
-                      <button
-                        key={series.id}
-                        onClick={() => handleSeriesChange(series.name)}
-                        className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedSeries === series.name ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
-                      >
-                        {series.name}
-                        {series._count && <span className="text-gray-400"> ({series._count.bearbricks})</span>}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div className="ml-auto flex items-center gap-1 shrink-0">
+            <div className="ml-auto flex items-center gap-0 shrink-0">
               <button
                 onClick={() => {
                   if (!session) {
@@ -470,9 +413,7 @@ export default function HomePage() {
                 <svg width="20" height="20" viewBox="0 0 20 20" fill={myCollectionOnly ? 'currentColor' : 'none'}>
                   <path d="M5 3h10a1 1 0 0 1 1 1v13l-6-3.5L4 17V4a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
                 </svg>
-                <span
-                  className={`overflow-hidden whitespace-nowrap ${compactHeader ? 'max-w-0 opacity-0' : 'max-w-[8rem] opacity-100'}`}
-                >
+                <span className="overflow-hidden whitespace-nowrap max-w-[8rem] opacity-100">
                   {t('myCollection')}
                 </span>
               </button>
@@ -531,12 +472,12 @@ export default function HomePage() {
               <TopMenu />
             </div>
           </div>
+        </div>
+      </header>
 
-          {/* Row 2: big title + category - collapses away entirely in compact mode */}
-          <div
-            className={compactHeader ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-56 opacity-100 overflow-visible'}
-          >
-            <div className="mt-3 mb-3 relative inline-block" ref={seriesMenuRef}>
+      {/* Series + category selectors - scroll away with the content, not part of the fixed header */}
+      <div className="max-w-7xl mx-auto px-4">
+          <div className="mt-3 mb-3 relative inline-block" ref={seriesMenuRef}>
               <button
                 onClick={() => setSeriesMenuOpen((v) => !v)}
                 className="flex items-center gap-2 text-xl sm:text-3xl md:text-4xl text-gray-900 hover:text-gray-500 transition-colors"
@@ -602,9 +543,7 @@ export default function HomePage() {
                 </div>
               )}
             </div>
-          </div>
-        </div>
-      </header>
+      </div>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 pt-1 pb-8">
