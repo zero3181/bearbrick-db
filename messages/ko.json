@@ -24,7 +24,8 @@
     "about": "소개",
     "nicknamePlaceholder": "닉네임 (선택)",
     "showCreditOnSubmissions": "제출물에 닉네임 표시",
-    "language": "언어"
+    "language": "언어",
+    "myCollectionStats": "마이 컬렉션"
   },
   "home": {
     "myCollection": "마이 컬렉션",
@@ -114,6 +115,34 @@
     "foundWrongBody": "누구나 로그인하여 제품 상세 페이지에서 수정을 요청할 수 있습니다. 요청은 관리자 검토 후 반영됩니다.",
     "contactTitle": "문의",
     "contactBody": "버그 제보, 제안 등 어떤 내용이든 <email>my@favorite.kr</email> 로 연락해주세요."
+  },
+  "myCollectionStats": {
+    "pageTitle": "마이 컬렉션",
+    "tabStats": "현황",
+    "tabOwnedList": "보유 목록",
+    "ownedListEmpty": "아직 추가된 아이템이 없습니다 - 컬렉션을 시작해보세요",
+    "colName": "이름",
+    "colSeries": "시리즈",
+    "colCategory": "카테고리",
+    "colSecret": "시크릿",
+    "bySeries": "시리즈별",
+    "byCategory": "카테고리별",
+    "seriesCaption": "시리즈{number}",
+    "signedOutTitle": "로그인하고 통계를 확인하세요",
+    "signedOutBody": "로그인하면 시리즈별 수집 진행 상황을 확인할 수 있습니다.",
+    "signInCta": "로그인",
+    "overallTitle": "전체 수집 현황",
+    "overallSubtitle": "전체 {total}개 중 {owned}개 수집",
+    "perSeriesTitle": "시리즈별 진행률",
+    "perSeriesEmpty": "아직 시리즈가 없습니다",
+    "seriesComplete": "완료",
+    "perCategoryTitle": "카테고리별 수집 현황",
+    "perCategoryEmpty": "아직 카테고리가 없습니다",
+    "secretItemsTitle": "시크릿 아이템 보유 현황",
+    "superSecretLabel": "그중 슈퍼시크릿(1/192): {owned}/{total}개",
+    "activityTitle": "최근 수집 활동",
+    "activityEmpty": "아직 추가된 아이템이 없습니다 - 컬렉션을 시작해보세요",
+    "activityAddedOn": "{date} 추가됨"
   },
   "footer": {
     "tagline": "GomBrick — BE@RBRICK 데이터베이스",

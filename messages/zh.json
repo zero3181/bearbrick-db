@@ -24,7 +24,8 @@
     "about": "关于",
     "nicknamePlaceholder": "昵称（可选）",
     "showCreditOnSubmissions": "在提交内容中显示我的昵称",
-    "language": "语言"
+    "language": "语言",
+    "myCollectionStats": "我的收藏"
   },
   "home": {
     "myCollection": "我的收藏",
@@ -114,6 +115,34 @@
     "foundWrongBody": "任何人登录后都可以在产品详情页申请更正。申请将由管理员审核后生效。",
     "contactTitle": "联系方式",
     "contactBody": "如有错误报告、建议或其他任何问题，请联系 <email>my@favorite.kr</email>。"
+  },
+  "myCollectionStats": {
+    "pageTitle": "我的收藏",
+    "tabStats": "统计",
+    "tabOwnedList": "已收藏列表",
+    "ownedListEmpty": "还没有添加任何内容 - 开始收集吧",
+    "colName": "名称",
+    "colSeries": "系列",
+    "colCategory": "分类",
+    "colSecret": "隐藏款",
+    "bySeries": "按系列",
+    "byCategory": "按分类",
+    "seriesCaption": "系列{number}",
+    "signedOutTitle": "登录后查看您的统计数据",
+    "signedOutBody": "登录后可查看每个系列的收集进度。",
+    "signInCta": "登录",
+    "overallTitle": "整体收集情况",
+    "overallSubtitle": "已收集 {owned} / 共 {total} 个",
+    "perSeriesTitle": "各系列进度",
+    "perSeriesEmpty": "暂无系列",
+    "seriesComplete": "已完成",
+    "perCategoryTitle": "各分类收集情况",
+    "perCategoryEmpty": "暂无分类",
+    "secretItemsTitle": "隐藏款收集情况",
+    "superSecretLabel": "其中超级隐藏款（1/192）：{owned}/{total}",
+    "activityTitle": "最近收集动态",
+    "activityEmpty": "还没有添加任何内容 - 开始收集吧",
+    "activityAddedOn": "于 {date} 添加"
   },
   "footer": {
     "tagline": "GomBrick — BE@RBRICK 数据库",

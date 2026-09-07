@@ -24,7 +24,8 @@
     "about": "このサイトについて",
     "nicknamePlaceholder": "ニックネーム（任意）",
     "showCreditOnSubmissions": "投稿にニックネームを表示する",
-    "language": "言語"
+    "language": "言語",
+    "myCollectionStats": "マイコレクション"
   },
   "home": {
     "myCollection": "マイコレクション",
@@ -114,6 +115,34 @@
     "foundWrongBody": "誰でもログインして、製品詳細ページから修正をリクエストできます。リクエストは管理者の確認後に反映されます。",
     "contactTitle": "お問い合わせ",
     "contactBody": "不具合報告やご提案など、どんな内容でも <email>my@favorite.kr</email> までご連絡ください。"
+  },
+  "myCollectionStats": {
+    "pageTitle": "マイコレクション",
+    "tabStats": "統計",
+    "tabOwnedList": "保有アイテム",
+    "ownedListEmpty": "まだ何も追加されていません - コレクションを始めましょう",
+    "colName": "名前",
+    "colSeries": "シリーズ",
+    "colCategory": "カテゴリー",
+    "colSecret": "シークレット",
+    "bySeries": "シリーズ別",
+    "byCategory": "カテゴリー別",
+    "seriesCaption": "シリーズ{number}",
+    "signedOutTitle": "ログインして統計を確認",
+    "signedOutBody": "ログインすると、シリーズごとの収集状況を確認できます。",
+    "signInCta": "ログイン",
+    "overallTitle": "全体の収集状況",
+    "overallSubtitle": "全{total}個中{owned}個を収集",
+    "perSeriesTitle": "シリーズ別の進捗",
+    "perSeriesEmpty": "まだシリーズがありません",
+    "seriesComplete": "コンプリート",
+    "perCategoryTitle": "カテゴリー別の収集状況",
+    "perCategoryEmpty": "まだカテゴリーがありません",
+    "secretItemsTitle": "シークレットアイテムの収集状況",
+    "superSecretLabel": "うちスーパーシークレット（1/192）: {owned}/{total}",
+    "activityTitle": "最近の収集アクティビティ",
+    "activityEmpty": "まだ何も追加されていません - コレクションを始めましょう",
+    "activityAddedOn": "{date}に追加"
   },
   "footer": {
     "tagline": "GomBrick — BE@RBRICKデータベース",

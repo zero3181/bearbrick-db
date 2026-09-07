@@ -7,7 +7,8 @@ import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { upload } from '@vercel/blob/client'
 import TopMenu from '@/components/TopMenu'
-import LoadingSpinner from '@/components/LoadingSpinner'
+import BearbrickThumb from '@/components/BearbrickThumb'
+import Skeleton from '@/components/Skeleton'
 import { BASIC_ORDER, SECRET_BASIC_ORDERS, SECRET_BASIC_REPRESENTATIVE_NAMES } from '@/lib/sortBearbricks'
 import { isSuperSecretRarity, toFraction } from '@/lib/rarity'
 import { compressImage } from '@/lib/compressImage'
@@ -99,7 +100,7 @@ export default function BearbrickDetailPage() {
         const data = await res.json()
         setBearbrick(data)
         const primary = data.images.find((img: { isPrimary: boolean }) => img.isPrimary)
-        setSelectedImage(primary?.url || data.images[0]?.url || '/bearbrick-placeholder.svg')
+        setSelectedImage(primary?.url || data.images[0]?.url || '')
 
         if (data.category?.name === 'Basic' && data.series?.name) {
           fetchBasicVariants(data.series.name, Boolean(data.isSecret))
@@ -304,8 +305,31 @@ export default function BearbrickDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner />
+      <div className="min-h-screen bg-white">
+        <header className="border-b border-gray-100">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <Link href="/" className="text-sm text-gray-500 hover:text-gray-900">
+              {t('backToList')}
+            </Link>
+            <TopMenu />
+          </div>
+        </header>
+        <main className="max-w-7xl mx-auto px-4 py-8">
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8">
+              <Skeleton className="aspect-[3/4] rounded-lg" />
+              <div className="space-y-4">
+                <Skeleton className="h-7 rounded w-3/4" />
+                <Skeleton className="h-4 rounded w-1/2" />
+                <div className="space-y-2 pt-4">
+                  <Skeleton className="h-4 rounded w-full" />
+                  <Skeleton className="h-4 rounded w-full" />
+                  <Skeleton className="h-4 rounded w-2/3" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
       </div>
     )
   }
@@ -341,12 +365,8 @@ export default function BearbrickDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8">
             {/* Images */}
             <div>
-              <div className="aspect-[3/4] bg-gray-100 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
-                <img
-                  src={selectedImage || '/bearbrick-placeholder.svg'}
-                  alt={bearbrick.name}
-                  className="w-full h-full object-cover object-top"
-                />
+              <div className="aspect-[3/4] bg-gray-100 rounded-lg mb-4 overflow-hidden">
+                <BearbrickThumb src={selectedImage || null} alt={bearbrick.name} />
               </div>
               {bearbrick.images.length > 1 && (
                 <div className="grid grid-cols-4 gap-2">

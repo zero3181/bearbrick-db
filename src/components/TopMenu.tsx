@@ -19,9 +19,7 @@ export default function TopMenu() {
   const t = useTranslations('topMenu')
   const tc = useTranslations('common')
   const isAdmin = session?.user?.role === 'ADMIN' || session?.user?.role === 'OWNER'
-  const isOwner = session?.user?.role === 'OWNER'
   const [open, setOpen] = useState(false)
-  const [exporting, setExporting] = useState(false)
   const [pendingCount, setPendingCount] = useState(0)
   const [nickname, setNickname] = useState('')
   const [showCredit, setShowCredit] = useState(false)
@@ -92,30 +90,6 @@ export default function TopMenu() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [open])
 
-  const handleExport = async () => {
-    setExporting(true)
-    try {
-      const res = await fetch('/api/admin/bearbricks/export')
-      if (!res.ok) {
-        alert('내보내기 실패')
-        return
-      }
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `bearbricks-${new Date().toISOString().split('T')[0]}.xlsx`
-      a.click()
-      URL.revokeObjectURL(url)
-    } catch (error) {
-      console.error('Failed to export:', error)
-      alert('내보내기 실패')
-    } finally {
-      setExporting(false)
-      setOpen(false)
-    }
-  }
-
   return (
     <div className="relative" ref={menuRef}>
       <button
@@ -175,23 +149,15 @@ export default function TopMenu() {
 
           <LanguageSwitcher />
 
+          {session && (
+            <MenuLink href="/my-collection" onClick={() => setOpen(false)}>
+              {t('myCollectionStats')}
+            </MenuLink>
+          )}
+
           {isAdmin && (
             <>
-              <MenuLink href="/admin/manage" onClick={() => setOpen(false)}>관리자 홈</MenuLink>
-              <MenuLink href="/admin/requests" onClick={() => setOpen(false)}>수정 요청 승인</MenuLink>
-              <MenuLink href="/admin/rarity" onClick={() => setOpen(false)}>시리즈 관리</MenuLink>
-              <button
-                onClick={handleExport}
-                disabled={exporting}
-                className="w-full text-left px-4 py-2 text-base text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-              >
-                {exporting ? '내보내는 중...' : '엑셀로 내보내기'}
-              </button>
-              <MenuLink href="/admin/manage?action=import" onClick={() => setOpen(false)}>엑셀에서 가져오기</MenuLink>
-              <MenuLink href="/admin/manage?action=add" onClick={() => setOpen(false)}>베어브릭 추가</MenuLink>
-              {isOwner && (
-                <MenuLink href="/admin/users" onClick={() => setOpen(false)}>사용자 관리</MenuLink>
-              )}
+              <MenuLink href="/admin/manage" onClick={() => setOpen(false)}>{t('adminHome')}</MenuLink>
               <div className="my-1 border-t border-gray-100" />
             </>
           )}

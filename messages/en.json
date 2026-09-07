@@ -24,7 +24,8 @@
     "about": "About",
     "nicknamePlaceholder": "Nickname (optional)",
     "showCreditOnSubmissions": "Show my nickname on submissions",
-    "language": "Language"
+    "language": "Language",
+    "myCollectionStats": "My Collection"
   },
   "home": {
     "myCollection": "My Collection",
@@ -114,6 +115,34 @@
     "foundWrongBody": "Anyone can sign in and request a correction from a product's detail page. Requests are reviewed by an admin before they take effect.",
     "contactTitle": "Contact",
     "contactBody": "For bug reports, suggestions, or anything else, reach out at <email>my@favorite.kr</email>."
+  },
+  "myCollectionStats": {
+    "pageTitle": "My Collection",
+    "tabStats": "Stats",
+    "tabOwnedList": "Owned Items",
+    "ownedListEmpty": "Nothing added yet - start building your collection",
+    "colName": "Name",
+    "colSeries": "Series",
+    "colCategory": "Category",
+    "colSecret": "Secret",
+    "bySeries": "By Series",
+    "byCategory": "By Category",
+    "seriesCaption": "Series {number}",
+    "signedOutTitle": "Sign in to see your stats",
+    "signedOutBody": "Log in to track your progress across every series.",
+    "signInCta": "Log in",
+    "overallTitle": "Overall Collection",
+    "overallSubtitle": "{owned} of {total} bearbricks collected",
+    "perSeriesTitle": "Progress by Series",
+    "perSeriesEmpty": "No series yet",
+    "seriesComplete": "Complete",
+    "perCategoryTitle": "Collected by Category",
+    "perCategoryEmpty": "No categories yet",
+    "secretItemsTitle": "Secret Items Owned",
+    "superSecretLabel": "Including {owned} of {total} Super Secret (1 in 192)",
+    "activityTitle": "Recent Activity",
+    "activityEmpty": "Nothing added yet - start building your collection",
+    "activityAddedOn": "Added {date}"
   },
   "footer": {
     "tagline": "GomBrick — BE@RBRICK DATABASE",

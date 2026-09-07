@@ -1,11 +1,13 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { useSession, signIn } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import TopMenu from '@/components/TopMenu'
-import LoadingSpinner from '@/components/LoadingSpinner'
+import BearbrickThumb from '@/components/BearbrickThumb'
+import Skeleton from '@/components/Skeleton'
 import { sortBearbricks, collapseBasicGroup, sortCategoriesOfficial, SECRET_BASIC_ORDERS, SECRET_BASIC_REPRESENTATIVE_NAMES } from '@/lib/sortBearbricks'
 import { isSuperSecretRarity } from '@/lib/rarity'
 
@@ -48,8 +50,17 @@ const CATEGORY_FILTER_STORAGE_KEY = 'gombrick:categoryFilter'
 const COLLECTION_CACHE_KEY = 'gombrick:collectionIds'
 
 export default function HomePage() {
+  return (
+    <Suspense fallback={null}>
+      <HomePageInner />
+    </Suspense>
+  )
+}
+
+function HomePageInner() {
   const t = useTranslations('home')
   const tc = useTranslations('common')
+  const searchParams = useSearchParams()
   const { data: session, status: sessionStatus } = useSession()
   const isAdmin = session?.user?.role === 'ADMIN' || session?.user?.role === 'OWNER'
   const [bearbricks, setBearbricks] = useState<Bearbrick[]>([])
@@ -77,10 +88,21 @@ export default function HomePage() {
   const searchInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
+    // Links from other pages (e.g. My Collection's per-series/per-category
+    // badges) can drive the initial series/category/filter state via the
+    // URL - they take priority over whatever was last saved locally.
+    const seriesParam = searchParams.get('series')
+    const categoryParam = searchParams.get('category')
+    const myParam = searchParams.get('my')
+
     const loadInitialData = async () => {
       // Fetch series first, then restore whichever series the user was
       // last looking at (if still valid), defaulting to the latest one
       const seriesData = await fetchSeries()
+      if (seriesParam && (seriesParam === 'all' || seriesData.some((s: Series) => s.name === seriesParam))) {
+        setSelectedSeries(seriesParam)
+        return
+      }
       const saved = sessionStorage.getItem(SERIES_STORAGE_KEY)
       const savedIsValid = saved === 'all' || (saved && seriesData.some((s: Series) => s.name === saved))
       setSelectedSeries(savedIsValid ? saved! : seriesData && seriesData.length > 0 ? seriesData[0].name : 'all')
@@ -89,8 +111,15 @@ export default function HomePage() {
     loadInitialData()
     fetchCategories()
 
-    const savedCategory = sessionStorage.getItem(CATEGORY_FILTER_STORAGE_KEY)
-    if (savedCategory) setSelectedCategory(savedCategory)
+    if (categoryParam) {
+      setSelectedCategory(categoryParam)
+    } else {
+      const savedCategory = sessionStorage.getItem(CATEGORY_FILTER_STORAGE_KEY)
+      if (savedCategory) setSelectedCategory(savedCategory)
+    }
+
+    if (myParam === '1') setMyCollectionOnly(true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -334,7 +363,7 @@ export default function HomePage() {
 
   const getPrimaryImage = (bearbrick: Bearbrick) => {
     const primary = bearbrick.images.find(img => img.isPrimary)
-    return primary?.url || bearbrick.images[0]?.url || '/bearbrick-placeholder.svg'
+    return primary?.url || bearbrick.images[0]?.url || null
   }
 
   const baseSortedBearbricks = collapseBasicGroup(sortBearbricks(bearbricks))
@@ -406,16 +435,13 @@ export default function HomePage() {
                   setMyCollectionOnly((v) => !v)
                 }}
                 aria-label={t('myCollection')}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                className={`p-2.5 rounded-full transition-colors ${
                   myCollectionOnly ? 'bg-blue-50 text-blue-600' : 'text-gray-500 hover:bg-gray-100'
                 }`}
               >
                 <svg width="20" height="20" viewBox="0 0 20 20" fill={myCollectionOnly ? 'currentColor' : 'none'}>
                   <path d="M5 3h10a1 1 0 0 1 1 1v13l-6-3.5L4 17V4a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
                 </svg>
-                <span className="overflow-hidden whitespace-nowrap max-w-[8rem] opacity-100">
-                  {t('myCollection')}
-                </span>
               </button>
               <div className="relative" ref={searchMenuRef}>
                 <button
@@ -446,7 +472,7 @@ export default function HomePage() {
                           <p className="text-sm text-gray-400 text-center py-4">{t('noMatches')}</p>
                         ) : (
                           searchResults.map((item) => {
-                            const img = item.images.find((i) => i.isPrimary)?.url || item.images[0]?.url || '/bearbrick-placeholder.svg'
+                            const img = item.images.find((i) => i.isPrimary)?.url || item.images[0]?.url || null
                             const displayName = item.category?.name === 'Basic' && !item.isSecret ? 'BE@RBRICK' : item.name
                             return (
                               <Link
@@ -455,7 +481,9 @@ export default function HomePage() {
                                 onClick={() => { setSearchOpen(false); setSearchQuery('') }}
                                 className="flex items-center gap-3 px-2 py-2 hover:bg-gray-50 rounded-lg"
                               >
-                                <img src={img} alt="" className="w-10 h-10 object-cover object-top rounded bg-gray-50 shrink-0" />
+                                <div className="w-10 h-10 rounded overflow-hidden bg-gray-50 shrink-0">
+                                  <BearbrickThumb src={img} alt="" />
+                                </div>
                                 <div className="min-w-0">
                                   <p className="text-sm text-gray-900 truncate">{displayName}</p>
                                   {item.series && <p className="text-xs text-gray-400 truncate">{item.series.name}</p>}
@@ -548,8 +576,16 @@ export default function HomePage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 pt-1 pb-8">
         {loading ? (
-          <div className="min-h-[50vh] flex items-center justify-center">
-            <LoadingSpinner label={tc('loading')} />
+          <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+            {Array.from({ length: 15 }).map((_, i) => (
+              <div key={i}>
+                <Skeleton className="aspect-[3/4] rounded-2xl" />
+                <div className="pt-2 px-1 space-y-1.5">
+                  <Skeleton className="h-3 rounded w-4/5" />
+                  <Skeleton className="h-3 rounded w-2/5" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : filteredBearbricks.length === 0 ? (
           <div className="text-center py-24">
@@ -581,10 +617,10 @@ export default function HomePage() {
                       {tc('secret')}
                     </span>
                   )}
-                  <img
+                  <BearbrickThumb
                     src={getPrimaryImage(bearbrick)}
                     alt={bearbrick.name}
-                    className="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
+                    className="transition-transform duration-300 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gray-900/[0.04] pointer-events-none" />
                   {collectionLoaded && (
