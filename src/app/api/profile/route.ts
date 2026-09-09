@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireUser } from '@/lib/serverAuth'
 
-export async function GET() {
-  const session = await requireUser()
+export async function GET(request: NextRequest) {
+  const session = await requireUser(request)
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
@@ -17,7 +17,7 @@ export async function GET() {
 }
 
 export async function PATCH(request: NextRequest) {
-  const session = await requireUser()
+  const session = await requireUser(request)
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }

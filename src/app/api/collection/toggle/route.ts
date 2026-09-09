@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { requireUser } from '@/lib/serverAuth'
 
 export async function POST(request: NextRequest) {
-  const session = await requireUser()
+  const session = await requireUser(request)
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
