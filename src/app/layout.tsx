@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { NextIntlClientProvider } from "next-intl";
@@ -14,9 +14,14 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://gom.favorite.kr"),
   title: SITE_TITLE,
   description: SITE_DESCRIPTION,
-  icons: {
-    // Versioned query string busts browsers' notoriously sticky favicon cache
-    icon: "/favicon.ico?v=2",
+  // Favicon/apple touch icon come from the src/app/icon.png and
+  // src/app/apple-icon.png file-convention instead of an explicit `icons`
+  // entry here - Next.js serves and links those automatically.
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: SITE_TITLE,
   },
   openGraph: {
     title: SITE_TITLE,
@@ -33,6 +38,10 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     images: ["/og-image.jpg"],
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#2563eb",
 };
 
 export default async function RootLayout({
