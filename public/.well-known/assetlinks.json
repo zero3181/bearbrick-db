@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "kr.favorite.gom",
+      "sha256_cert_fingerprints": [
+        "F4:47:D6:27:06:2C:4B:2C:A9:89:B6:5D:53:60:22:59:22:B7:5A:4E:3D:F1:EC:48:73:0F:58:E3:05:6A:AA:FB"
+      ]
+    }
+  }
+]
