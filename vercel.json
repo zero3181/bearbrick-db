@@ -2,8 +2,9 @@
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
   "framework": "nextjs",
+  "regions": ["icn1"],
   "functions": {
-    "src/pages/api/**/*.ts": {
+    "src/app/api/**/*.ts": {
       "maxDuration": 60
     }
   }
