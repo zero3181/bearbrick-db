@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireUser } from '@/lib/serverAuth'
 import { sortBearbricks, sortCategoriesOfficial } from '@/lib/sortBearbricks'
@@ -12,8 +12,8 @@ const RECENT_ACTIVITY_LIMIT = 20
 // this page reports, so each of the 9 Basic pieces (B E @ R b R I C K, or a
 // series' secret Basic sub-set) counts on its own rather than folding into
 // one representative card.
-export async function GET() {
-  const session = await requireUser()
+export async function GET(request: NextRequest) {
+  const session = await requireUser(request)
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
