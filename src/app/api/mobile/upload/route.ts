@@ -2,7 +2,6 @@ import { put } from '@vercel/blob'
 import { NextRequest, NextResponse } from 'next/server'
 import { requireUser } from '@/lib/serverAuth'
 
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
 const EXTENSIONS: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
@@ -11,41 +10,51 @@ const EXTENSIONS: Record<string, string> = {
 }
 // Vercel caps a serverless function's request body at 4.5MB, so the ceiling
 // here is lower than the browser flow's 5MB - that one streams straight to
-// Blob storage and never passes through a function.
-const MAX_BYTES = 4 * 1024 * 1024
+// Blob storage and never passes through a function. The app resizes before
+// sending, so this is a guard rail rather than a limit it works against.
+const MAX_BYTES = 3 * 1024 * 1024
 
 // The web uploads images client-side with a presigned Blob token, which needs
 // a session cookie the app doesn't have. This is the same upload for bearer
-// tokens: the file goes through the function and out to the same Blob store.
+// tokens: the bytes go through the function and out to the same Blob store.
+//
+// Base64 in a JSON body rather than multipart: Expo's fetch refuses to encode
+// a React Native file part, so the app can't send one.
 export async function POST(request: NextRequest) {
   const session = await requireUser(request)
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  let file: File | null = null
+  let data: unknown
+  let type: unknown
   try {
-    const form = await request.formData()
-    const value = form.get('file')
-    if (value instanceof File) file = value
+    const body = await request.json()
+    data = body.data
+    type = body.type
   } catch {
-    return NextResponse.json({ error: 'Expected multipart/form-data' }, { status: 400 })
+    return NextResponse.json({ error: 'Expected a JSON body' }, { status: 400 })
   }
 
-  if (!file) {
-    return NextResponse.json({ error: 'No file was uploaded' }, { status: 400 })
+  if (typeof data !== 'string' || !data) {
+    return NextResponse.json({ error: 'No image data was sent' }, { status: 400 })
   }
-  if (!ALLOWED_TYPES.includes(file.type)) {
-    return NextResponse.json({ error: `Unsupported image type: ${file.type}` }, { status: 400 })
+  if (typeof type !== 'string' || !(type in EXTENSIONS)) {
+    return NextResponse.json({ error: `Unsupported image type: ${String(type)}` }, { status: 400 })
   }
-  if (file.size > MAX_BYTES) {
-    return NextResponse.json({ error: 'Image is larger than 4MB' }, { status: 413 })
+
+  const bytes = Buffer.from(data, 'base64')
+  if (bytes.length === 0) {
+    return NextResponse.json({ error: 'Image data is not valid base64' }, { status: 400 })
+  }
+  if (bytes.length > MAX_BYTES) {
+    return NextResponse.json({ error: 'Image is larger than 3MB' }, { status: 413 })
   }
 
   try {
-    const blob = await put(`upload-${crypto.randomUUID()}.${EXTENSIONS[file.type]}`, file, {
+    const blob = await put(`upload-${crypto.randomUUID()}.${EXTENSIONS[type]}`, bytes, {
       access: 'public',
-      contentType: file.type,
+      contentType: type,
       token: process.env.BLOB_READ_WRITE_TOKEN,
     })
     return NextResponse.json({ url: blob.url })
