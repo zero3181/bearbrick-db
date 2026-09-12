@@ -4,13 +4,13 @@ import { requireAdmin } from '@/lib/serverAuth'
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await requireAdmin()
+    const session = await requireAdmin(request)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const body = await request.json()
-    const { id, name, seriesId, categoryId, description, isSecret } = body
+    const { id, name, seriesId, categoryId, description, isSecret, rarityPercentage } = body
 
     if (!id || !name) {
       return NextResponse.json(
@@ -28,6 +28,8 @@ export async function PUT(request: NextRequest) {
         categoryId: categoryId || null,
         description,
         isSecret: Boolean(isSecret),
+        // Absent means "leave it alone"; an explicit null clears it.
+        ...('rarityPercentage' in body ? { rarityPercentage } : {}),
       },
     })
 
