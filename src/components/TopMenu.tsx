@@ -179,15 +179,26 @@ export default function TopMenu() {
               {tc('logOut')}
             </button>
           ) : (
-            <button
-              onClick={() => {
-                signInWithGoogle()
-                setOpen(false)
-              }}
-              className="w-full text-left px-4 py-2 text-base text-gray-700 hover:bg-gray-50"
-            >
-              {tc('logIn')}
-            </button>
+            <>
+              <button
+                onClick={() => {
+                  signInWithGoogle()
+                  setOpen(false)
+                }}
+                className="w-full text-left px-4 py-2 text-base text-gray-700 hover:bg-gray-50"
+              >
+                {tc('logIn')}
+              </button>
+              {/* Only while an app store is reviewing the build: their testers
+                  cannot complete Google's OAuth from a review device, and the
+                  WebView gives them no address bar to reach this page with.
+                  Unset NEXT_PUBLIC_REVIEW_LOGIN once the build is approved. */}
+              {process.env.NEXT_PUBLIC_REVIEW_LOGIN === '1' && (
+                <MenuLink href="/review-signin" onClick={() => setOpen(false)}>
+                  App Review sign-in
+                </MenuLink>
+              )}
+            </>
           )}
         </div>
       )}
