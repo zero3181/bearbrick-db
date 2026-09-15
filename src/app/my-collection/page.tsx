@@ -268,7 +268,7 @@ export default function MyCollectionPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="border-b border-gray-100">
+      <header className="border-b border-gray-100 pt-[env(safe-area-inset-top)]">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center gap-2">
           <Link href="/" aria-label={tc('back')} className="p-1 -ml-1 text-gray-900 hover:text-gray-500 shrink-0">
             <svg width="22" height="22" viewBox="0 0 20 20" fill="none">

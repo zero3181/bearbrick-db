@@ -307,7 +307,7 @@ export default function BearbrickDetailPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-white">
-        <header className="border-b border-gray-100">
+        <header className="border-b border-gray-100 pt-[env(safe-area-inset-top)]">
           <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
             <Link href="/" className="text-sm text-gray-500 hover:text-gray-900">
               {t('backToList')}
@@ -351,7 +351,7 @@ export default function BearbrickDetailPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="border-b border-gray-100">
+      <header className="border-b border-gray-100 pt-[env(safe-area-inset-top)]">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/" className="text-sm text-gray-500 hover:text-gray-900">
             {t('backToList')}

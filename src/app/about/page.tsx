@@ -7,7 +7,7 @@ export default async function AboutPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="border-b border-gray-100">
+      <header className="border-b border-gray-100 pt-[env(safe-area-inset-top)]">
         <div className="max-w-3xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/" className="text-sm text-gray-500 hover:text-gray-900">
             {t('backHome')}

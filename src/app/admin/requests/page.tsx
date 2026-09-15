@@ -138,7 +138,7 @@ export default function AdminRequestsPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="border-b border-gray-100">
+      <header className="border-b border-gray-100 pt-[env(safe-area-inset-top)]">
         <div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/">
             <img src="/logo-gombrick.png" alt="GomBrick" className="h-9 md:h-[42px] w-auto" />
