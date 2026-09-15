@@ -19,6 +19,9 @@ export async function GET(request: NextRequest) {
             url: true,
             isPrimary: true,
           },
+          // Fixed order, so making a different image the primary one moves the
+          // badge without shuffling the gallery under the reader.
+          orderBy: { uploadedAt: 'asc' },
         },
         series: {
           select: {

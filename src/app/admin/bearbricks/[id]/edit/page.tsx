@@ -386,10 +386,12 @@ export default function EditBearbrickPage() {
             )}
           </div>
 
-          {/* Image List */}
+          {/* Image List - actions are always-visible icon buttons, not a
+              hover overlay: touch devices have no hover, so a hover-only
+              reveal makes these unreachable on mobile. */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {bearbrick.images.map((image) => (
-              <div key={image.id} className="relative group">
+              <div key={image.id} className="relative">
                 <img
                   src={image.url}
                   alt=""
@@ -400,20 +402,34 @@ export default function EditBearbrickPage() {
                     대표 이미지
                   </div>
                 )}
-                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all rounded flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                <div className="absolute top-2 right-2 flex flex-col gap-1.5">
                   {!image.isPrimary && (
                     <button
                       onClick={() => handleSetPrimary(image.id)}
-                      className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                      aria-label="대표로 설정"
+                      title="대표로 설정"
+                      className="w-8 h-8 flex items-center justify-center rounded-full bg-white/90 shadow-md text-gray-700 hover:bg-white active:scale-95 transition-transform"
                     >
-                      대표로 설정
+                      <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 1.5l2.55 5.31 5.86.58-4.36 3.98 1.2 5.76L10 14.1l-5.25 3.03 1.2-5.76-4.36-3.98 5.86-.58z" />
+                      </svg>
                     </button>
                   )}
                   <button
                     onClick={() => handleDeleteImage(image.id)}
-                    className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                    aria-label="삭제"
+                    title="삭제"
+                    className="w-8 h-8 flex items-center justify-center rounded-full bg-white/90 shadow-md text-red-600 hover:bg-white active:scale-95 transition-transform"
                   >
-                    삭제
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                      <path
+                        d="M4 6h12M8 6V4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2m-7 0v10a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V6"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
                   </button>
                 </div>
               </div>

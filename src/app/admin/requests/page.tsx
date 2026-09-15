@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import TopMenu from '@/components/TopMenu'
+import AdminTabs from '@/components/AdminTabs'
 import LoadingSpinner from '@/components/LoadingSpinner'
 
 interface RequestData {
@@ -139,13 +140,14 @@ export default function AdminRequestsPage() {
     <div className="min-h-screen bg-white">
       <header className="border-b border-gray-100">
         <div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/admin/manage" className="text-sm text-gray-500 hover:text-gray-900">
-            ← 관리자 홈으로
+          <Link href="/">
+            <img src="/logo-gombrick.png" alt="GomBrick" className="h-9 md:h-[42px] w-auto" />
           </Link>
           <TopMenu />
         </div>
       </header>
       <div className="max-w-5xl mx-auto px-4 pt-6">
+        <AdminTabs />
         <h1 className="text-2xl font-bold text-gray-900">수정 요청 승인</h1>
       </div>
 

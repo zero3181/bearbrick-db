@@ -11,7 +11,7 @@ interface RarityUpdate {
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await requireAdmin()
+    const session = await requireAdmin(request)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }

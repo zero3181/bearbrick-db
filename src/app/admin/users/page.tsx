@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import TopMenu from '@/components/TopMenu'
+import AdminTabs from '@/components/AdminTabs'
 import LoadingSpinner from '@/components/LoadingSpinner'
 
 interface UserRow {
@@ -85,14 +86,16 @@ export default function AdminUsersPage() {
     <div className="min-h-screen bg-white">
       <header className="border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/admin/manage" className="text-sm text-gray-500 hover:text-gray-900">
-            ← 관리자 홈으로
+          <Link href="/">
+            <img src="/logo-gombrick.png" alt="GomBrick" className="h-9 md:h-[42px] w-auto" />
           </Link>
           <TopMenu />
         </div>
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-8">
+        <AdminTabs />
+
         <div className="flex items-baseline gap-3 mb-6">
           <h1 className="text-2xl font-bold text-gray-900">사용자 관리</h1>
           <span className="text-sm text-gray-500">전체 {users.length}명</span>

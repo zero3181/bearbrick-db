@@ -13,7 +13,16 @@ export async function GET(request: NextRequest) {
     select: { nickname: true, showCredit: true },
   })
 
-  return NextResponse.json(user)
+  // The mobile app has no session cookie to read the signed-in user from, so
+  // this doubles as its "who am I" call - the role is what gates its admin UI.
+  return NextResponse.json({
+    id: session.user.id,
+    email: session.user.email,
+    name: session.user.name,
+    image: session.user.image,
+    role: session.user.role,
+    ...user,
+  })
 }
 
 export async function PATCH(request: NextRequest) {

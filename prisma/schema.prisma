@@ -156,6 +156,7 @@ model series {
   releaseYear Int
   theme       String?
   description String?
+  basicColor  String?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime @updatedAt
   bearbricks  Bearbrick[]

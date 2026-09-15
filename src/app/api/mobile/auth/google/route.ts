@@ -57,10 +57,11 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // The app calls this endpoint from inside the same WebView that renders
-    // the site, so setting next-auth's own session cookie here logs the
-    // WebView in exactly like the web OAuth flow would - no separate
-    // "mobile session" handling needed anywhere else in the app.
+    // Apps that render the site in a WebView (e.g. the iOS app) call this
+    // endpoint from inside that same WebView, so setting next-auth's own
+    // session cookie here logs the WebView in exactly like the web OAuth
+    // flow would. Clients that only use the bearer token (sessionToken
+    // above) simply ignore the Set-Cookie header.
     const useSecureCookies = (process.env.NEXTAUTH_URL || '').startsWith('https://')
     response.cookies.set({
       name: `${useSecureCookies ? '__Secure-' : ''}next-auth.session-token`,

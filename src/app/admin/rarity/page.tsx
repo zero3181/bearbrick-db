@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import TopMenu from '@/components/TopMenu'
+import AdminTabs from '@/components/AdminTabs'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import { sortBearbricks, sortCategoriesOfficial, SECRET_BASIC_REPRESENTATIVE_NAMES } from '@/lib/sortBearbricks'
 import { toFraction } from '@/lib/rarity'
@@ -295,11 +296,7 @@ export default function AdminRarityPage() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-8 pb-28">
-        <div className="flex items-center justify-between mb-2">
-          <Link href="/admin/manage" className="text-sm text-gray-500 hover:text-gray-900">
-            ← 관리자 홈으로
-          </Link>
-        </div>
+        <AdminTabs />
 
         <div className="flex items-center justify-between mb-6 mt-2 flex-wrap gap-3">
           <h1 className="text-2xl font-bold text-gray-900">시리즈 관리</h1>

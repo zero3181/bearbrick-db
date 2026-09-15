@@ -6,6 +6,8 @@ import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { upload } from '@vercel/blob/client'
 import TopMenu from '@/components/TopMenu'
+import AdminTabs from '@/components/AdminTabs'
+import BearbrickThumb from '@/components/BearbrickThumb'
 import { sortBearbricks, collapseBasicGroup } from '@/lib/sortBearbricks'
 import { isSuperSecretRarity } from '@/lib/rarity'
 import { compressImage } from '@/lib/compressImage'
@@ -413,9 +415,11 @@ function AdminManagePageInner() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
+        <AdminTabs />
+
+        <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <h1 className="text-2xl font-bold text-gray-900">베어브릭 관리</h1>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <label className="text-sm text-gray-500">시리즈</label>
             <select
               value={selectedSeries}
@@ -427,6 +431,25 @@ function AdminManagePageInner() {
                 <option key={s.id} value={s.name}>{s.name}</option>
               ))}
             </select>
+            <button
+              onClick={() => { setShowAddForm(true); setShowImportPanel(false) }}
+              className="px-3 py-1.5 border border-gray-200 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50"
+            >
+              베어브릭 추가
+            </button>
+            <button
+              onClick={() => { setShowImportPanel(true); setShowAddForm(false) }}
+              className="px-3 py-1.5 border border-gray-200 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50"
+            >
+              엑셀에서 가져오기
+            </button>
+            <button
+              onClick={handleExport}
+              disabled={exporting}
+              className="px-3 py-1.5 border border-gray-200 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 disabled:opacity-50"
+            >
+              {exporting ? '내보내는 중...' : '엑셀로 내보내기'}
+            </button>
           </div>
         </div>
 
@@ -675,11 +698,7 @@ function AdminManagePageInner() {
                   <tr key={bearbrick.id}>
                     <td className="px-6 py-4">
                       <div className="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden">
-                        <img
-                          src={primaryImage?.url || bearbrick.images[0]?.url || '/bearbrick-placeholder.svg'}
-                          alt={bearbrick.name}
-                          className="w-full h-full object-cover object-top"
-                        />
+                        <BearbrickThumb src={primaryImage?.url || bearbrick.images[0]?.url || null} alt={bearbrick.name} />
                       </div>
                     </td>
                     <td className="px-6 py-4 font-medium">

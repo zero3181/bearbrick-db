@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server'
 
 export default async function Footer() {
   const t = await getTranslations('footer')
+  const tp = await getTranslations('privacy')
 
   return (
     <footer className="border-t border-gray-100 mt-16 bg-white">
@@ -11,7 +12,7 @@ export default async function Footer() {
         <p className="mt-1">{t('disclaimer')}</p>
         <p className="mt-2">
           <Link href="/privacy" className="hover:text-gray-600 hover:underline">
-            {t('privacyLink')}
+            {tp('title')}
           </Link>
         </p>
       </div>
