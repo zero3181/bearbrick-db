@@ -82,7 +82,11 @@
     "sendRequest": "요청 보내기",
     "submitting": "제출 중...",
     "requestSuccess": "수정 요청이 접수되었습니다. 관리자가 승인하면 반영됩니다.",
-    "requestFailed": "요청 실패"
+    "requestFailed": "요청 실패",
+    "previousItem": "이전",
+    "nextItem": "다음",
+    "inCollection": "보유 중",
+    "addToCollectionShort": "보유 표시"
   },
   "suggest": {
     "title": "베어브릭 제안하기",

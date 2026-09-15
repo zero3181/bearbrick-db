@@ -82,7 +82,11 @@
     "sendRequest": "Send Request",
     "submitting": "Submitting...",
     "requestSuccess": "Your edit request has been submitted. It will take effect once an admin approves it.",
-    "requestFailed": "Request failed"
+    "requestFailed": "Request failed",
+    "previousItem": "Previous",
+    "nextItem": "Next",
+    "inCollection": "In my collection",
+    "addToCollectionShort": "Add to my collection"
   },
   "suggest": {
     "title": "Suggest a Bearbrick",

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
@@ -10,7 +10,8 @@ import TopMenu from '@/components/TopMenu'
 import BearbrickThumb from '@/components/BearbrickThumb'
 import Skeleton from '@/components/Skeleton'
 import { signInWithGoogle } from '@/lib/nativeAuth'
-import { shareLink, successFeedback } from '@/lib/native'
+import { shareLink, successFeedback, tapFeedback } from '@/lib/native'
+import { neighbours } from '@/lib/browseList'
 import { BASIC_ORDER, SECRET_BASIC_ORDERS, SECRET_BASIC_REPRESENTATIVE_NAMES } from '@/lib/sortBearbricks'
 import { isSuperSecretRarity, toFraction } from '@/lib/rarity'
 import { compressImage } from '@/lib/compressImage'
@@ -150,6 +151,56 @@ export default function BearbrickDetailPage() {
     } finally {
       setCollectionLoaded(true)
     }
+  }
+
+  // Whatever the home screen was showing when this page was opened. Read
+  // after mount: sessionStorage does not exist during the server render.
+  const [paging, setPaging] = useState<{ prevId: string | null; nextId: string | null }>({
+    prevId: null,
+    nextId: null,
+  })
+  useEffect(() => {
+    setPaging(neighbours(String(params.id)))
+  }, [params.id])
+
+  const goTo = useCallback(
+    (id: string | null) => {
+      if (!id) return
+      tapFeedback()
+      router.push(`/bearbricks/${id}`)
+    },
+    [router]
+  )
+
+  // Arrow keys for a desktop browser.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null
+      if (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)) return
+      if (e.key === 'ArrowLeft') goTo(paging.prevId)
+      if (e.key === 'ArrowRight') goTo(paging.nextId)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [goTo, paging])
+
+  // Horizontal swipe on a phone. Tracked by hand rather than with a gesture
+  // library so the page keeps scrolling normally: a drag that is mostly
+  // vertical is left alone.
+  const touchStart = useRef<{ x: number; y: number } | null>(null)
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0]
+    touchStart.current = { x: touch.clientX, y: touch.clientY }
+  }
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const start = touchStart.current
+    touchStart.current = null
+    if (!start) return
+    const touch = e.changedTouches[0]
+    const dx = touch.clientX - start.x
+    const dy = touch.clientY - start.y
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return
+    goTo(dx > 0 ? paging.prevId : paging.nextId)
   }
 
   // The OS share sheet on a phone, the Web Share API in a browser that has
@@ -376,13 +427,45 @@ export default function BearbrickDetailPage() {
           <Link href="/" className="text-sm text-gray-500 hover:text-gray-900">
             {t('backToList')}
           </Link>
-          <TopMenu />
+          <div className="flex items-center gap-1">
+            {(paging.prevId || paging.nextId) && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => goTo(paging.prevId)}
+                  disabled={!paging.prevId}
+                  aria-label={t('previousItem')}
+                  className="p-2 text-gray-500 disabled:opacity-30 hover:text-gray-900"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M15 18l-6-6 6-6" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => goTo(paging.nextId)}
+                  disabled={!paging.nextId}
+                  aria-label={t('nextItem')}
+                  className="p-2 text-gray-500 disabled:opacity-30 hover:text-gray-900"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 18l6-6-6-6" />
+                  </svg>
+                </button>
+              </>
+            )}
+            <TopMenu />
+          </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div
+          className="bg-white rounded-lg shadow-lg overflow-hidden"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8">
             {/* Images */}
             <div>
@@ -441,6 +524,29 @@ export default function BearbrickDetailPage() {
                 {shareToast ?? tc('share')}
               </button>
 
+              {basicVariants.length === 0 && (
+                <button
+                  type="button"
+                  disabled={!collectionLoaded}
+                  onClick={(e) => handleToggleCollection(e, bearbrick.id)}
+                  aria-label={
+                    collectionIds.has(bearbrick.id)
+                      ? t('removeFromCollection', { name: bearbrick.name })
+                      : t('addToCollection', { name: bearbrick.name })
+                  }
+                  className={`inline-flex items-center gap-2 px-4 py-2 mb-6 rounded-full border text-sm font-medium transition-colors disabled:opacity-50 ${
+                    collectionIds.has(bearbrick.id)
+                      ? 'bg-blue-600 border-blue-600 text-white'
+                      : 'bg-white border-gray-300 text-gray-700 hover:border-blue-400'
+                  }`}
+                >
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill={collectionIds.has(bearbrick.id) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round">
+                    <path d="M5 3h10a1 1 0 0 1 1 1v13l-6-3.5L4 17V4a1 1 0 0 1 1-1z" />
+                  </svg>
+                  {collectionIds.has(bearbrick.id) ? t('inCollection') : t('addToCollectionShort')}
+                </button>
+              )}
+
               {basicVariants.length > 0 && (
                 <div className="mb-6">
                   <span className="block font-semibold w-24 mb-2">{t('collected')}</span>
@@ -481,9 +587,16 @@ export default function BearbrickDetailPage() {
                 <div className="flex">
                   <span className="font-semibold w-24">{t('rarity')}</span>
                   <span>
-                    {bearbrick.rarityPercentage != null
-                      ? `${bearbrick.rarityPercentage}% (${toFraction(bearbrick.rarityPercentage)})`
-                      : '--%'}
+                    {bearbrick.rarityPercentage == null
+                      ? '--%'
+                      : basicVariants.length > 0
+                        ? // The page represents the whole Basic set, so show what
+                          // the set is worth in a case - the ~14% the official
+                          // series information lists - rather than the per-letter
+                          // share the rows are stored as. No fraction: the set
+                          // does not land on a clean one.
+                          `${Math.round(bearbrick.rarityPercentage * basicVariants.length * 100) / 100}%`
+                        : `${bearbrick.rarityPercentage}% (${toFraction(bearbrick.rarityPercentage)})`}
                   </span>
                 </div>
               </div>

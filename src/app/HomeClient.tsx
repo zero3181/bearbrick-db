@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { signInWithGoogle } from '@/lib/nativeAuth'
+import { saveBrowseList } from '@/lib/browseList'
 import { tapFeedback } from '@/lib/native'
 import { useTranslations } from 'next-intl'
 import TopMenu from '@/components/TopMenu'
@@ -425,6 +426,14 @@ function HomePageInner({ initial }: { initial: InitialData }) {
       return b.category?.name === selectedCategory
     })
     .filter((b) => !myCollectionOnly || collectionIds.has(b.id))
+
+  // Hand the on-screen order to the detail pages so they can page through
+  // it. Keyed off the joined ids because filteredBearbricks is rebuilt on
+  // every render and would otherwise write on every one of them.
+  const browseIds = filteredBearbricks.map((b) => b.id).join(',')
+  useEffect(() => {
+    saveBrowseList(browseIds ? browseIds.split(',') : [])
+  }, [browseIds])
 
   return (
     <div className="min-h-screen bg-white">

@@ -82,7 +82,11 @@
     "sendRequest": "发送申请",
     "submitting": "提交中...",
     "requestSuccess": "您的修改申请已提交，管理员审核通过后将生效。",
-    "requestFailed": "申请失败"
+    "requestFailed": "申请失败",
+    "previousItem": "上一个",
+    "nextItem": "下一个",
+    "inCollection": "已拥有",
+    "addToCollectionShort": "标记为已拥有"
   },
   "suggest": {
     "title": "建议添加 Bearbrick",

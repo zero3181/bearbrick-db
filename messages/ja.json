@@ -82,7 +82,11 @@
     "sendRequest": "リクエストを送信",
     "submitting": "送信中...",
     "requestSuccess": "修正リクエストを送信しました。管理者が承認すると反映されます。",
-    "requestFailed": "リクエストに失敗しました"
+    "requestFailed": "リクエストに失敗しました",
+    "previousItem": "前へ",
+    "nextItem": "次へ",
+    "inCollection": "所有中",
+    "addToCollectionShort": "所有としてマーク"
   },
   "suggest": {
     "title": "ベアブリックを提案する",
