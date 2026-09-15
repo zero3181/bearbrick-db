@@ -52,6 +52,12 @@
       </array>
     </dict>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Take a photo of a bearbrick to attach it to a suggestion.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Choose a bearbrick photo from your library to attach it to a suggestion.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Save a bearbrick photo to your library.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

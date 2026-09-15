@@ -44,9 +44,12 @@ export async function shareLink({ title, text, url }: { title: string; text?: st
       const { Share } = await import('@capacitor/share')
       await Share.share({ title, text, url, dialogTitle: title })
       return true
-    } catch {
-      // Cancelling the sheet throws too, which is not worth reporting.
-      return true
+    } catch (error) {
+      // Backing out of the sheet is a success as far as the caller cares.
+      // Anything else - most likely a build whose native side predates this
+      // plugin - has to fall through, or the button does nothing at all.
+      if (isDismissal(error)) return true
+      console.warn('Native share unavailable, falling back:', error)
     }
   }
 
@@ -54,11 +57,19 @@ export async function shareLink({ title, text, url }: { title: string; text?: st
     try {
       await navigator.share({ title, text, url })
       return true
-    } catch {
-      return true
+    } catch (error) {
+      if (isDismissal(error)) return true
+      console.warn('Web share failed, falling back:', error)
     }
   }
   return false
+}
+
+/** Tells "the user closed the sheet" apart from "sharing does not work here". */
+function isDismissal(error: unknown) {
+  if (error instanceof DOMException && error.name === 'AbortError') return true
+  const message = error instanceof Error ? error.message : String(error)
+  return /cancel/i.test(message)
 }
 
 /**

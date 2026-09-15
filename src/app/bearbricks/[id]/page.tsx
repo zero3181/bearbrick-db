@@ -427,35 +427,7 @@ export default function BearbrickDetailPage() {
           <Link href="/" className="text-sm text-gray-500 hover:text-gray-900">
             {t('backToList')}
           </Link>
-          <div className="flex items-center gap-1">
-            {(paging.prevId || paging.nextId) && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => goTo(paging.prevId)}
-                  disabled={!paging.prevId}
-                  aria-label={t('previousItem')}
-                  className="p-2 text-gray-500 disabled:opacity-30 hover:text-gray-900"
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M15 18l-6-6 6-6" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => goTo(paging.nextId)}
-                  disabled={!paging.nextId}
-                  aria-label={t('nextItem')}
-                  className="p-2 text-gray-500 disabled:opacity-30 hover:text-gray-900"
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M9 18l6-6-6-6" />
-                  </svg>
-                </button>
-              </>
-            )}
-            <TopMenu />
-          </div>
+          <TopMenu />
         </div>
       </header>
 
@@ -469,8 +441,58 @@ export default function BearbrickDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8">
             {/* Images */}
             <div>
-              <div className="aspect-[3/4] bg-gray-100 rounded-lg mb-4 overflow-hidden">
-                <BearbrickThumb src={selectedImage || null} alt={bearbrick.name} />
+              <div className="relative mb-4">
+                <div className="relative aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden">
+                  <BearbrickThumb src={selectedImage || null} alt={bearbrick.name} />
+
+                  {basicVariants.length === 0 && (
+                    <button
+                      type="button"
+                      disabled={!collectionLoaded}
+                      onClick={(e) => handleToggleCollection(e, bearbrick.id)}
+                      aria-label={
+                        collectionIds.has(bearbrick.id)
+                          ? t('removeFromCollection', { name: bearbrick.name })
+                          : t('addToCollection', { name: bearbrick.name })
+                      }
+                      className="absolute top-0 right-0 z-10 pt-0 pr-3 pb-3 pl-3 transition-transform hover:scale-105 disabled:opacity-50"
+                    >
+                      <svg width="30" height="44" viewBox="0 0 20 30" fill={collectionIds.has(bearbrick.id) ? '#2563eb' : 'white'} className="drop-shadow-md">
+                        <path
+                          d="M0 0h20v22l-10 8-10-8z"
+                          stroke={collectionIds.has(bearbrick.id) ? '#2563eb' : '#9ca3af'}
+                          strokeWidth="1.5"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+
+                {paging.prevId && (
+                  <button
+                    type="button"
+                    onClick={() => goTo(paging.prevId)}
+                    aria-label={t('previousItem')}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-md hover:bg-white"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M15 18l-6-6 6-6" />
+                    </svg>
+                  </button>
+                )}
+                {paging.nextId && (
+                  <button
+                    type="button"
+                    onClick={() => goTo(paging.nextId)}
+                    aria-label={t('nextItem')}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-md hover:bg-white"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 18l6-6-6-6" />
+                    </svg>
+                  </button>
+                )}
               </div>
               {bearbrick.images.length > 1 && (
                 <div className="grid grid-cols-4 gap-2">
@@ -523,29 +545,6 @@ export default function BearbrickDetailPage() {
                 </svg>
                 {shareToast ?? tc('share')}
               </button>
-
-              {basicVariants.length === 0 && (
-                <button
-                  type="button"
-                  disabled={!collectionLoaded}
-                  onClick={(e) => handleToggleCollection(e, bearbrick.id)}
-                  aria-label={
-                    collectionIds.has(bearbrick.id)
-                      ? t('removeFromCollection', { name: bearbrick.name })
-                      : t('addToCollection', { name: bearbrick.name })
-                  }
-                  className={`inline-flex items-center gap-2 px-4 py-2 mb-6 rounded-full border text-sm font-medium transition-colors disabled:opacity-50 ${
-                    collectionIds.has(bearbrick.id)
-                      ? 'bg-blue-600 border-blue-600 text-white'
-                      : 'bg-white border-gray-300 text-gray-700 hover:border-blue-400'
-                  }`}
-                >
-                  <svg width="16" height="16" viewBox="0 0 20 20" fill={collectionIds.has(bearbrick.id) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round">
-                    <path d="M5 3h10a1 1 0 0 1 1 1v13l-6-3.5L4 17V4a1 1 0 0 1 1-1z" />
-                  </svg>
-                  {collectionIds.has(bearbrick.id) ? t('inCollection') : t('addToCollectionShort')}
-                </button>
-              )}
 
               {basicVariants.length > 0 && (
                 <div className="mb-6">
