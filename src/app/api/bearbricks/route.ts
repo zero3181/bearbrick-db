@@ -1,58 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { listBearbricks } from '@/lib/queries'
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const series = searchParams.get('series')
 
-    const bearbricks = await prisma.bearbrick.findMany({
-      where: series ? {
-        series: {
-          name: series,
-        },
-      } : undefined,
-      include: {
-        images: {
-          select: {
-            id: true,
-            url: true,
-            isPrimary: true,
-          },
-          // Fixed order, so making a different image the primary one moves the
-          // badge without shuffling the gallery under the reader.
-          orderBy: { uploadedAt: 'asc' },
-        },
-        series: {
-          select: {
-            id: true,
-            name: true,
-            number: true,
-          },
-        },
-        categories: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    })
-
-    // Map to simpler structure
-    const mapped = bearbricks.map((b) => ({
-      id: b.id,
-      name: b.name,
-      series: b.series || null,
-      category: b.categories || null,
-      size: b.sizePercentage,
-      isSecret: b.isSecret,
-      rarityPercentage: b.rarityPercentage,
-      images: b.images,
-    }))
+    const mapped = await listBearbricks(series || undefined)
 
     return NextResponse.json(mapped)
   } catch (error) {

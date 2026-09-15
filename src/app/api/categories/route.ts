@@ -1,12 +1,9 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { listCategories } from '@/lib/queries'
 
 export async function GET() {
   try {
-    const categories = await prisma.categories.findMany({
-      select: { id: true, name: true },
-      orderBy: { name: 'asc' },
-    })
+    const categories = await listCategories()
     return NextResponse.json(categories, {
       headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=3600' },
     })
