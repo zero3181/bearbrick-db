@@ -8,7 +8,12 @@
     "all": "すべて",
     "allCategories": "すべてのカテゴリー",
     "logIn": "ログイン",
-    "logOut": "ログアウト"
+    "logOut": "ログアウト",
+    "share": "共有",
+    "linkCopied": "リンクをコピーしました",
+    "takePhoto": "写真を撮る",
+    "chooseFromLibrary": "ライブラリから選択",
+    "offlineNotice": "オフライン - 保存されたコレクションを表示しています"
   },
   "topMenu": {
     "menu": "メニュー",

@@ -8,7 +8,12 @@
     "all": "全部",
     "allCategories": "全部分类",
     "logIn": "登录",
-    "logOut": "退出登录"
+    "logOut": "退出登录",
+    "share": "分享",
+    "linkCopied": "已复制链接",
+    "takePhoto": "拍照",
+    "chooseFromLibrary": "从相册选择",
+    "offlineNotice": "离线 - 显示已保存的收藏"
   },
   "topMenu": {
     "menu": "菜单",

@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { upload } from '@vercel/blob/client'
 import TopMenu from '@/components/TopMenu'
 import { compressImage } from '@/lib/compressImage'
+import PhotoInput from '@/components/PhotoInput'
 import { signInWithGoogle } from '@/lib/nativeAuth'
 
 interface Series {
@@ -50,9 +51,7 @@ export default function SuggestBearbrickPage() {
       .catch(() => setCategoryList([]))
   }, [])
 
-  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const handleImageSelect = async (file: File) => {
     const compressed = await compressImage(file)
     setImageFile(compressed)
     setImagePreview(URL.createObjectURL(compressed))
@@ -218,10 +217,10 @@ export default function SuggestBearbrickPage() {
             <div>
               <label className="block font-semibold mb-1">{t('imageLabel')}</label>
               <div className="flex items-center gap-3">
-                <label className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 text-sm font-medium text-gray-700 transition-colors">
-                  <input type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
-                  {imagePreview ? t('changeImage') : t('attachImage')}
-                </label>
+                <PhotoInput
+                  onSelect={handleImageSelect}
+                  label={imagePreview ? t('changeImage') : t('attachImage')}
+                />
                 {imagePreview && (
                   <img src={imagePreview} alt="" className="w-12 h-12 object-cover object-top rounded" />
                 )}

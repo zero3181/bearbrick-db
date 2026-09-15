@@ -10,9 +10,11 @@ import TopMenu from '@/components/TopMenu'
 import BearbrickThumb from '@/components/BearbrickThumb'
 import Skeleton from '@/components/Skeleton'
 import { signInWithGoogle } from '@/lib/nativeAuth'
+import { shareLink, successFeedback } from '@/lib/native'
 import { BASIC_ORDER, SECRET_BASIC_ORDERS, SECRET_BASIC_REPRESENTATIVE_NAMES } from '@/lib/sortBearbricks'
 import { isSuperSecretRarity, toFraction } from '@/lib/rarity'
 import { compressImage } from '@/lib/compressImage'
+import PhotoInput from '@/components/PhotoInput'
 
 interface Bearbrick {
   id: string
@@ -150,6 +152,26 @@ export default function BearbrickDetailPage() {
     }
   }
 
+  // The OS share sheet on a phone, the Web Share API in a browser that has
+  // one, and a copied link everywhere else.
+  const [shareToast, setShareToast] = useState<string | null>(null)
+  const handleShare = async () => {
+    if (!bearbrick) return
+    const url = window.location.href
+    const shared = await shareLink({ title: bearbrick.name, url })
+    if (shared) {
+      successFeedback()
+      return
+    }
+    try {
+      await navigator.clipboard.writeText(url)
+      setShareToast(tc('linkCopied'))
+      setTimeout(() => setShareToast(null), 2000)
+    } catch {
+      // A browser that blocks clipboard access leaves the label as it was.
+    }
+  }
+
   const handleToggleCollection = async (e: React.MouseEvent, bearbrickId: string) => {
     e.preventDefault()
     e.stopPropagation()
@@ -247,9 +269,7 @@ export default function BearbrickDetailPage() {
     setShowRequestForm(true)
   }
 
-  const handleRequestImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const handleRequestImageSelect = async (file: File) => {
     const compressed = await compressImage(file)
     setRequestImageFile(compressed)
     setRequestImagePreview(URL.createObjectURL(compressed))
@@ -407,6 +427,19 @@ export default function BearbrickDetailPage() {
                 )}
                 {bearbrick.name}
               </h1>
+
+              <button
+                type="button"
+                onClick={handleShare}
+                className="inline-flex items-center gap-1.5 mb-6 text-sm text-gray-500 hover:text-gray-900"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                  <path d="M16 6l-4-4-4 4" />
+                  <path d="M12 2v14" />
+                </svg>
+                {shareToast ?? tc('share')}
+              </button>
 
               {basicVariants.length > 0 && (
                 <div className="mb-6">
@@ -591,10 +624,10 @@ export default function BearbrickDetailPage() {
               <div>
                 <label className="block font-semibold mb-1">{t('newImageLabel')}</label>
                 <div className="flex items-center gap-3">
-                  <label className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 text-sm font-medium text-gray-700 transition-colors">
-                    <input type="file" accept="image/*" onChange={handleRequestImageSelect} className="hidden" />
-                    {requestImagePreview ? t('changeImage') : t('attachImage')}
-                  </label>
+                  <PhotoInput
+                    onSelect={handleRequestImageSelect}
+                    label={requestImagePreview ? t('changeImage') : t('attachImage')}
+                  />
                   {requestImagePreview && (
                     <img src={requestImagePreview} alt="" className="w-12 h-12 object-cover object-top rounded" />
                   )}

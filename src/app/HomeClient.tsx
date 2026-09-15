@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { signInWithGoogle } from '@/lib/nativeAuth'
+import { tapFeedback } from '@/lib/native'
 import { useTranslations } from 'next-intl'
 import TopMenu from '@/components/TopMenu'
 import BearbrickThumb from '@/components/BearbrickThumb'
@@ -340,6 +341,9 @@ function HomePageInner({ initial }: { initial: InitialData }) {
       return next
     })
     showToast(wasInCollection ? t('toastRemoved') : t('toastAdded'))
+    // Fires with the optimistic update, not the response - the tap should
+    // feel answered straight away.
+    tapFeedback()
 
     try {
       const res = await fetch('/api/collection/toggle', {

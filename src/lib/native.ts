@@ -1,0 +1,94 @@
+'use client'
+
+import { Capacitor } from '@capacitor/core'
+
+/**
+ * Thin wrappers over the Capacitor plugins. Every one of these is a no-op in a
+ * browser, so callers never have to check the platform - and the plugin code
+ * is only pulled in when it's actually going to run, keeping it out of the
+ * website's bundle.
+ */
+
+export const isNative = () => Capacitor.isNativePlatform()
+
+/** A light tap - for toggling something on or off. */
+export async function tapFeedback() {
+  if (!isNative()) return
+  try {
+    const { Haptics, ImpactStyle } = await import('@capacitor/haptics')
+    await Haptics.impact({ style: ImpactStyle.Light })
+  } catch {
+    // Haptics are a nicety; a device without a taptic engine just misses out.
+  }
+}
+
+/** A short buzz - for confirming something was saved. */
+export async function successFeedback() {
+  if (!isNative()) return
+  try {
+    const { Haptics, NotificationType } = await import('@capacitor/haptics')
+    await Haptics.notification({ type: NotificationType.Success })
+  } catch {
+    // ignored, as above
+  }
+}
+
+/**
+ * Opens the OS share sheet. Falls back to the Web Share API in a browser that
+ * has one, and reports back whether anything was shown so the caller can
+ * offer copying the link instead.
+ */
+export async function shareLink({ title, text, url }: { title: string; text?: string; url: string }) {
+  if (isNative()) {
+    try {
+      const { Share } = await import('@capacitor/share')
+      await Share.share({ title, text, url, dialogTitle: title })
+      return true
+    } catch {
+      // Cancelling the sheet throws too, which is not worth reporting.
+      return true
+    }
+  }
+
+  if (typeof navigator !== 'undefined' && navigator.share) {
+    try {
+      await navigator.share({ title, text, url })
+      return true
+    } catch {
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * Captures a photo with the device camera, or picks one from the library, and
+ * hands it back as a File so it can go through the same compress-and-upload
+ * path as a browser file input. Returns null on the web, or if the user backs
+ * out of the camera.
+ */
+export async function capturePhoto(source: 'camera' | 'photos'): Promise<File | null> {
+  if (!isNative()) return null
+  try {
+    const { Camera, CameraResultType, CameraSource } = await import('@capacitor/camera')
+    const photo = await Camera.getPhoto({
+      quality: 85,
+      resultType: CameraResultType.Uri,
+      source: source === 'camera' ? CameraSource.Camera : CameraSource.Photos,
+      // Phones record orientation in EXIF rather than rotating the pixels;
+      // without this a photo taken sideways uploads sideways.
+      correctOrientation: true,
+    })
+    if (!photo.webPath) return null
+
+    const blob = await (await fetch(photo.webPath)).blob()
+    const format = photo.format || 'jpg'
+    return new File([blob], `photo-${Date.now()}.${format}`, {
+      type: blob.type || `image/${format === 'jpg' ? 'jpeg' : format}`,
+    })
+  } catch {
+    // Cancelling the camera throws; so does a denied permission, which the
+    // OS has already explained to the user.
+    return null
+  }
+}

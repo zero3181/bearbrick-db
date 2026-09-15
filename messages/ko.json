@@ -8,7 +8,12 @@
     "all": "전체",
     "allCategories": "전체 카테고리",
     "logIn": "로그인",
-    "logOut": "로그아웃"
+    "logOut": "로그아웃",
+    "share": "공유",
+    "linkCopied": "링크를 복사했습니다",
+    "takePhoto": "사진 촬영",
+    "chooseFromLibrary": "앨범에서 선택",
+    "offlineNotice": "오프라인 - 저장된 컬렉션을 표시합니다"
   },
   "topMenu": {
     "menu": "메뉴",
