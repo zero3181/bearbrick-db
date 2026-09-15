@@ -3,6 +3,37 @@
 import { Capacitor } from '@capacitor/core'
 import { signIn } from 'next-auth/react'
 
+/** Loads the plugin and configures the Google provider. */
+async function initializeGoogle() {
+  const { SocialLogin } = await import('@capgo/capacitor-social-login')
+  await SocialLogin.initialize({
+    google: {
+      iOSClientId: process.env.NEXT_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+      iOSServerClientId: process.env.NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+      mode: 'online',
+    },
+  })
+  return SocialLogin
+}
+
+/**
+ * Ends the Google session the on-device SDK keeps, which next-auth's signOut
+ * knows nothing about. Without this, signing out only dropped this site's
+ * cookie: the next tap on "Log in" handed the same account straight back with
+ * no account picker, so on a shared phone one person could land in the
+ * previous person's collection.
+ */
+export async function signOutFromGoogle() {
+  if (!Capacitor.isNativePlatform()) return
+  try {
+    const SocialLogin = await initializeGoogle()
+    await SocialLogin.logout({ provider: 'google' })
+  } catch (error) {
+    // Already signed out at the SDK level, which is the state we wanted.
+    console.warn('Google sign-out skipped:', error)
+  }
+}
+
 // Google refuses to complete OAuth inside an embedded WebView (the one the
 // iOS/Android app uses to show this site), so the normal next-auth redirect
 // flow bounces the user out to Safari and never returns. Native platforms
@@ -15,15 +46,7 @@ export async function signInWithGoogle() {
     return signIn('google')
   }
 
-  const { SocialLogin } = await import('@capgo/capacitor-social-login')
-
-  await SocialLogin.initialize({
-    google: {
-      iOSClientId: process.env.NEXT_PUBLIC_GOOGLE_IOS_CLIENT_ID,
-      iOSServerClientId: process.env.NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-      mode: 'online',
-    },
-  })
+  const SocialLogin = await initializeGoogle()
 
   const result = await SocialLogin.login({
     provider: 'google',

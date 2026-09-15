@@ -5,7 +5,7 @@ import { useSession, signOut } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import LanguageSwitcher from './LanguageSwitcher'
-import { signInWithGoogle } from '@/lib/nativeAuth'
+import { signInWithGoogle, signOutFromGoogle } from '@/lib/nativeAuth'
 
 function MenuLink({ href, onClick, children }: { href: string; onClick: () => void; children: React.ReactNode }) {
   return (
@@ -170,9 +170,14 @@ export default function TopMenu() {
 
           {session ? (
             <button
-              onClick={() => {
-                signOut()
+              onClick={async () => {
                 setOpen(false)
+                // Drop the device's Google session first; signOut() navigates
+                // away and would cut this short if it ran the other way round.
+                await signOutFromGoogle()
+                // The offline cache holds this account's collection.
+                navigator.serviceWorker?.controller?.postMessage('clear-user-data')
+                signOut()
               }}
               className="w-full text-left px-4 py-2 text-base text-red-600 hover:bg-gray-50"
             >
