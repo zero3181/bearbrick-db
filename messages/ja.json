@@ -115,8 +115,29 @@
     "contactTitle": "お問い合わせ",
     "contactBody": "不具合報告やご提案など、どんな内容でも <email>my@favorite.kr</email> までご連絡ください。"
   },
+  "privacy": {
+    "backHome": "← ホーム",
+    "title": "プライバシーポリシー",
+    "effectiveDate": "施行日: 2026年9月14日",
+    "intro": "GomBrick（以下「本サービス」）は、利用者のプライバシーを尊重します。このページでは、収集する情報の内容、その利用方法、お問い合わせ先について説明します。",
+    "section1Title": "収集する情報",
+    "section1Body": "Googleログイン時に、氏名・メールアドレス・プロフィール画像を取得します。サービス利用時には、表示用ニックネーム、マイコレクションに登録したベアブリック、アップロードした画像、送信した修正・提案リクエストも保存されることがあります。",
+    "section2Title": "情報の利用方法",
+    "section2Body": "取得した情報は、アカウント認証、マイコレクションの保存、管理者による投稿・修正リクエストの確認、そして利用者が同意した場合に限り投稿コンテンツへのニックネーム表示に使用します。",
+    "section3Title": "第三者サービス",
+    "section3Body": "認証にはGoogleログインを、ホスティング・ファイル保存・匿名の利用統計にはVercelを利用しています。これらの事業者は、各社のプライバシーポリシーに基づき、当方に代わって情報を処理します。",
+    "section4Title": "データの保管と削除",
+    "section4Body": "アカウントが有効である間、関連情報を保管します。下記の連絡先までご連絡いただければ、いつでもアカウントおよび関連データの削除をリクエストできます。",
+    "section5Title": "児童のプライバシー",
+    "section5Body": "GomBrickは14歳未満の児童を対象としておらず、児童の個人情報を意図的に収集することはありません。",
+    "section6Title": "ポリシーの変更",
+    "section6Body": "本ポリシーは随時更新される場合があります。重要な変更がある場合は、上部の施行日を更新して反映します。",
+    "contactTitle": "お問い合わせ",
+    "contactBody": "本ポリシーやご自身の情報に関するご質問は <email>my@favorite.kr</email> までご連絡ください。"
+  },
   "footer": {
     "tagline": "GomBrick — BE@RBRICKデータベース",
-    "disclaimer": "BE@RBRICKおよび関連商標はMedicom Toy Corporationに帰属します。GomBrickは非公式・非営利のファンプロジェクトであり、Medicom Toyとの提携や公認を受けたものではありません。"
+    "disclaimer": "BE@RBRICKおよび関連商標はMedicom Toy Corporationに帰属します。GomBrickは非公式・非営利のファンプロジェクトであり、Medicom Toyとの提携や公認を受けたものではありません。",
+    "privacyLink": "プライバシーポリシー"
   }
 }

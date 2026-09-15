@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { useSession, signIn } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
+import { signInWithGoogle } from '@/lib/nativeAuth'
 import { useTranslations } from 'next-intl'
 import TopMenu from '@/components/TopMenu'
 import LoadingSpinner from '@/components/LoadingSpinner'
@@ -284,7 +285,7 @@ export default function HomePage() {
     e.stopPropagation()
 
     if (!session) {
-      signIn('google')
+      signInWithGoogle()
       return
     }
 
@@ -400,7 +401,7 @@ export default function HomePage() {
               <button
                 onClick={() => {
                   if (!session) {
-                    signIn('google')
+                    signInWithGoogle()
                     return
                   }
                   setMyCollectionOnly((v) => !v)

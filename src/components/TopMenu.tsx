@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { useSession, signIn, signOut } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import LanguageSwitcher from './LanguageSwitcher'
+import { signInWithGoogle } from '@/lib/nativeAuth'
 
 function MenuLink({ href, onClick, children }: { href: string; onClick: () => void; children: React.ReactNode }) {
   return (
@@ -177,20 +178,20 @@ export default function TopMenu() {
 
           {isAdmin && (
             <>
-              <MenuLink href="/admin/manage" onClick={() => setOpen(false)}>관리자 홈</MenuLink>
-              <MenuLink href="/admin/requests" onClick={() => setOpen(false)}>수정 요청 승인</MenuLink>
-              <MenuLink href="/admin/rarity" onClick={() => setOpen(false)}>시리즈 관리</MenuLink>
+              <MenuLink href="/admin/manage" onClick={() => setOpen(false)}>{t('adminHome')}</MenuLink>
+              <MenuLink href="/admin/requests" onClick={() => setOpen(false)}>{t('approveEditRequests')}</MenuLink>
+              <MenuLink href="/admin/rarity" onClick={() => setOpen(false)}>{t('manageSeries')}</MenuLink>
               <button
                 onClick={handleExport}
                 disabled={exporting}
                 className="w-full text-left px-4 py-2 text-base text-gray-700 hover:bg-gray-50 disabled:opacity-50"
               >
-                {exporting ? '내보내는 중...' : '엑셀로 내보내기'}
+                {exporting ? t('exporting') : t('exportToExcel')}
               </button>
-              <MenuLink href="/admin/manage?action=import" onClick={() => setOpen(false)}>엑셀에서 가져오기</MenuLink>
-              <MenuLink href="/admin/manage?action=add" onClick={() => setOpen(false)}>베어브릭 추가</MenuLink>
+              <MenuLink href="/admin/manage?action=import" onClick={() => setOpen(false)}>{t('importFromExcel')}</MenuLink>
+              <MenuLink href="/admin/manage?action=add" onClick={() => setOpen(false)}>{t('addBearbrick')}</MenuLink>
               {isOwner && (
-                <MenuLink href="/admin/users" onClick={() => setOpen(false)}>사용자 관리</MenuLink>
+                <MenuLink href="/admin/users" onClick={() => setOpen(false)}>{t('manageUsers')}</MenuLink>
               )}
               <div className="my-1 border-t border-gray-100" />
             </>
@@ -214,7 +215,7 @@ export default function TopMenu() {
           ) : (
             <button
               onClick={() => {
-                signIn('google')
+                signInWithGoogle()
                 setOpen(false)
               }}
               className="w-full text-left px-4 py-2 text-base text-gray-700 hover:bg-gray-50"

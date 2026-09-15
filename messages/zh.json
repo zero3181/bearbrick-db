@@ -115,8 +115,29 @@
     "contactTitle": "联系方式",
     "contactBody": "如有错误报告、建议或其他任何问题，请联系 <email>my@favorite.kr</email>。"
   },
+  "privacy": {
+    "backHome": "← 首页",
+    "title": "隐私政策",
+    "effectiveDate": "生效日期：2026年9月14日",
+    "intro": "GomBrick（以下简称\"本服务\"）重视您的隐私。本页面说明我们收集哪些信息、如何使用这些信息，以及如何联系我们。",
+    "section1Title": "我们收集的信息",
+    "section1Body": "使用谷歌登录时，我们会获取您的姓名、电子邮箱和头像。在使用本服务过程中，您设置的显示昵称、加入\"我的收藏\"的百变机器人、上传的图片，以及提交的修改或推荐请求也可能被保存。",
+    "section2Title": "信息的使用方式",
+    "section2Body": "我们使用这些信息进行账户认证、保存您的个人收藏、供管理员审核您提交的内容和修改请求，并仅在您主动同意的情况下，在您提交的内容旁显示您的昵称。",
+    "section3Title": "第三方服务",
+    "section3Body": "我们使用谷歌登录进行身份验证，使用 Vercel 提供托管、文件存储和匿名使用统计服务。这些服务商依据各自的隐私政策，代表我们处理相关数据。",
+    "section4Title": "数据保留与删除",
+    "section4Body": "只要您的账户处于活跃状态，我们会保留相关信息。您可以随时通过下方联系方式，要求删除您的账户及相关数据。",
+    "section5Title": "儿童隐私",
+    "section5Body": "GomBrick 并非面向 14 岁以下儿童，我们不会故意收集儿童的个人信息。",
+    "section6Title": "政策变更",
+    "section6Body": "本政策可能会不时更新，重大变更将通过更新上方的生效日期予以体现。",
+    "contactTitle": "联系我们",
+    "contactBody": "如对本政策或您的个人信息有任何疑问，请联系 <email>my@favorite.kr</email>。"
+  },
   "footer": {
     "tagline": "GomBrick — BE@RBRICK 数据库",
-    "disclaimer": "BE@RBRICK 及相关商标 © Medicom Toy Corporation 所有。GomBrick 是非官方、非营利的粉丝项目，与 Medicom Toy 无任何关联，亦未获得其认可。"
+    "disclaimer": "BE@RBRICK 及相关商标 © Medicom Toy Corporation 所有。GomBrick 是非官方、非营利的粉丝项目，与 Medicom Toy 无任何关联，亦未获得其认可。",
+    "privacyLink": "隐私政策"
   }
 }

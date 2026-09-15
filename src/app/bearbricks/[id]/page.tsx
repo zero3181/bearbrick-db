@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { useSession, signIn } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { upload } from '@vercel/blob/client'
 import TopMenu from '@/components/TopMenu'
 import LoadingSpinner from '@/components/LoadingSpinner'
+import { signInWithGoogle } from '@/lib/nativeAuth'
 import { BASIC_ORDER, SECRET_BASIC_ORDERS, SECRET_BASIC_REPRESENTATIVE_NAMES } from '@/lib/sortBearbricks'
 import { isSuperSecretRarity, toFraction } from '@/lib/rarity'
 import { compressImage } from '@/lib/compressImage'
@@ -153,7 +154,7 @@ export default function BearbrickDetailPage() {
     e.stopPropagation()
 
     if (!session) {
-      signIn('google')
+      signInWithGoogle()
       return
     }
 
@@ -475,7 +476,7 @@ export default function BearbrickDetailPage() {
                     </button>
                   ) : (
                     <button
-                      onClick={() => signIn('google')}
+                      onClick={() => signInWithGoogle()}
                       className="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
                     >
                       {t('signInToRequestCorrection')}

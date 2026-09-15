@@ -4,6 +4,18 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import { UserRole } from "@prisma/client"
 import { prisma } from "./prisma"
 
+// First-time sign-in by the configured owner email gets promoted to OWNER.
+// Shared by the web NextAuth callback and the mobile Google sign-in route so
+// the promotion rule only lives in one place.
+export async function applyOwnerPromotion(user: { id: string; email?: string | null }) {
+  if (user.email && process.env.OWNER_EMAIL && user.email === process.env.OWNER_EMAIL) {
+    const existing = await prisma.user.findUnique({ where: { email: user.email } })
+    if (existing && existing.role !== UserRole.OWNER) {
+      await prisma.user.update({ where: { id: existing.id }, data: { role: UserRole.OWNER } })
+    }
+  }
+}
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
@@ -26,13 +38,7 @@ export const authOptions: NextAuthOptions = {
       return session
     },
     signIn: async ({ user }) => {
-      // First-time sign-in by the configured owner email gets promoted to OWNER
-      if (user.email && process.env.OWNER_EMAIL && user.email === process.env.OWNER_EMAIL) {
-        const existing = await prisma.user.findUnique({ where: { email: user.email } })
-        if (existing && existing.role !== UserRole.OWNER) {
-          await prisma.user.update({ where: { id: existing.id }, data: { role: UserRole.OWNER } })
-        }
-      }
+      await applyOwnerPromotion(user)
       return true
     },
   },

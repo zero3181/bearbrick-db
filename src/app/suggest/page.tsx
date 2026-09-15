@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession, signIn } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { upload } from '@vercel/blob/client'
 import TopMenu from '@/components/TopMenu'
 import { compressImage } from '@/lib/compressImage'
+import { signInWithGoogle } from '@/lib/nativeAuth'
 
 interface Series {
   id: string
@@ -120,7 +121,7 @@ export default function SuggestBearbrickPage() {
 
         {status === 'loading' ? null : !session ? (
           <button
-            onClick={() => signIn('google')}
+            onClick={() => signInWithGoogle()}
             className="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
           >
             {t('signInToSuggest')}
