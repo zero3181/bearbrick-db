@@ -3,6 +3,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
+import OfflineSupport from "@/components/OfflineSupport";
 import "./globals.css";
 import AuthProvider from "@/components/AuthProvider";
 import Footer from "@/components/Footer";
@@ -56,6 +57,7 @@ export default async function RootLayout({
     <html lang={locale}>
       <body className="antialiased bg-white text-gray-900">
         <NextIntlClientProvider>
+          <OfflineSupport />
           <AuthProvider>{children}</AuthProvider>
           <Footer />
         </NextIntlClientProvider>
