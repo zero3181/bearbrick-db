@@ -22,6 +22,16 @@ body {
   font-family: 'Pretendard', 'Noto Sans SC', 'Noto Sans JP', sans-serif;
 }
 
+/* iOS auto-zooms the page on focus for any text input under 16px, and on a
+   phone (no pinch-to-zoom-out gesture bound to a keyboard) it never zooms
+   back out on its own. Floor every form control at 16px so focus never
+   triggers it, site-wide - !important because several inputs carry a
+   Tailwind text-sm/text-xs class, which otherwise outranks a plain element
+   selector. */
+input, textarea, select {
+  font-size: 16px !important;
+}
+
 /* Wide, geometric sci-fi display font for the series selector, matching
    the official "SERIES XX" badge's wide tracking. */
 .font-agency-wide {
