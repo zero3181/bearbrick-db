@@ -51,11 +51,29 @@ export async function signInWithGoogle() {
     return signIn('google')
   }
 
+  // Every caller fires this from a click handler and awaits nothing, so a
+  // failure caught nowhere turns into a button that silently does nothing.
+  // Report it here, once, rather than trusting each call site to.
+  try {
+    await signInNative()
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    if (/cancel/i.test(message)) return
+    console.error('Google sign-in failed:', error)
+    window.alert(`Google sign-in failed.\n\n${message}`)
+  }
+}
+
+async function signInNative() {
   const SocialLogin = await initializeGoogle()
 
+  // No `scopes` option: email, profile and openid are already the plugin's
+  // defaults on both platforms, and on Android passing any scopes at all is
+  // rejected outright unless MainActivity is swapped for the plugin's own -
+  // which is what left the login button doing nothing there.
   const result = await SocialLogin.login({
     provider: 'google',
-    options: { scopes: ['email', 'profile'] },
+    options: {},
   })
 
   const googleResult = result.result
