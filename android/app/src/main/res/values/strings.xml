@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">곰브릭</string>
+    <string name="title_activity_main">곰브릭</string>
+    <string name="package_name">kr.favorite.gom</string>
+    <string name="custom_url_scheme">kr.favorite.gom</string>
+</resources>

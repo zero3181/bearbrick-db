@@ -10,6 +10,11 @@ async function initializeGoogle() {
     google: {
       iOSClientId: process.env.NEXT_PUBLIC_GOOGLE_IOS_CLIENT_ID,
       iOSServerClientId: process.env.NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+      // Android signs in through Credential Manager, which needs the *web*
+      // client here - not the Android one. The Android OAuth client only has
+      // to exist in the same Cloud project with this app's package name and
+      // signing-key SHA-1; it is never passed in.
+      webClientId: process.env.NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID,
       mode: 'online',
     },
   })
