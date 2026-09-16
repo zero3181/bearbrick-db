@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { upload } from '@vercel/blob/client'
 import TopMenu from '@/components/TopMenu'
 import LoadingSpinner from '@/components/LoadingSpinner'
+import PhotoInput from '@/components/PhotoInput'
 import { compressImage } from '@/lib/compressImage'
 
 interface Bearbrick {
@@ -154,10 +155,7 @@ export default function EditBearbrickPage() {
     }
   }
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
+  const handleImageUpload = async (file: File) => {
     setUploading(true)
     setUploadProgress(0)
 
@@ -364,16 +362,13 @@ export default function EditBearbrickPage() {
           {/* Upload */}
           <div className="mb-6">
             <div className="flex items-center gap-3">
-              <label className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:text-blue-600 text-sm font-medium text-gray-700 transition-colors">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  disabled={uploading}
-                  className="hidden"
-                />
-                {uploading ? `업로드 중... ${uploadProgress}%` : '이미지 업로드'}
-              </label>
+              {uploading ? (
+                <span className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700">
+                  업로드 중... {uploadProgress}%
+                </span>
+              ) : (
+                <PhotoInput onSelect={handleImageUpload} label="이미지 업로드" />
+              )}
               <span className="text-xs text-gray-400">JPG, PNG, GIF (최대 5MB)</span>
             </div>
             {uploading && (
