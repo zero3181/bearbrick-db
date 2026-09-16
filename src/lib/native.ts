@@ -84,19 +84,24 @@ export async function capturePhoto(source: 'camera' | 'photos'): Promise<File | 
     const { Camera, CameraResultType, CameraSource } = await import('@capacitor/camera')
     const photo = await Camera.getPhoto({
       quality: 85,
-      resultType: CameraResultType.Uri,
+      // This app points the WebView at the live site (server.url) rather
+      // than bundled local content, so the page's origin is
+      // https://gom.favorite.kr - a CameraResultType.Uri result comes back
+      // as a capacitor://localhost file URL, which counts as a different
+      // origin and silently fails to fetch(). Base64 sidesteps that: the
+      // bytes come back inline, no same-origin file access involved.
+      resultType: CameraResultType.Base64,
       source: source === 'camera' ? CameraSource.Camera : CameraSource.Photos,
       // Phones record orientation in EXIF rather than rotating the pixels;
       // without this a photo taken sideways uploads sideways.
       correctOrientation: true,
     })
-    if (!photo.webPath) return null
+    if (!photo.base64String) return null
 
-    const blob = await (await fetch(photo.webPath)).blob()
     const format = photo.format || 'jpg'
-    return new File([blob], `photo-${Date.now()}.${format}`, {
-      type: blob.type || `image/${format === 'jpg' ? 'jpeg' : format}`,
-    })
+    const mimeType = `image/${format === 'jpg' ? 'jpeg' : format}`
+    const bytes = Uint8Array.from(atob(photo.base64String), (c) => c.charCodeAt(0))
+    return new File([bytes], `photo-${Date.now()}.${format}`, { type: mimeType })
   } catch {
     // Cancelling the camera throws; so does a denied permission, which the
     // OS has already explained to the user.
