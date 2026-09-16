@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { capturePhoto, isNative } from '@/lib/native'
+import { capturePhoto, isNative, CameraPermissionDeniedError } from '@/lib/native'
 
 /**
  * Picks a photo to attach. On a phone that means the camera or the photo
@@ -44,8 +44,14 @@ export default function PhotoInput({
   }
 
   const pick = async (source: 'camera' | 'photos') => {
-    const file = await capturePhoto(source)
-    if (file) onSelect(file)
+    try {
+      const file = await capturePhoto(source)
+      if (file) onSelect(file)
+    } catch (error) {
+      if (error instanceof CameraPermissionDeniedError) {
+        alert(source === 'camera' ? tc('cameraPermissionDenied') : tc('photoLibraryPermissionDenied'))
+      }
+    }
   }
 
   return (

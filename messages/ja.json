@@ -13,6 +13,8 @@
     "linkCopied": "リンクをコピーしました",
     "takePhoto": "写真を撮る",
     "chooseFromLibrary": "ライブラリから選択",
+    "cameraPermissionDenied": "カメラのアクセスがオフになっています。設定 > GomBrick > カメラ でオンにしてください。",
+    "photoLibraryPermissionDenied": "写真ライブラリのアクセスがオフになっています。設定 > GomBrick > 写真 でオンにしてください。",
     "offlineNotice": "オフライン - 保存されたコレクションを表示しています"
   },
   "topMenu": {

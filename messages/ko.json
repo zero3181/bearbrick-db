@@ -13,6 +13,8 @@
     "linkCopied": "링크를 복사했습니다",
     "takePhoto": "사진 촬영",
     "chooseFromLibrary": "앨범에서 선택",
+    "cameraPermissionDenied": "카메라 권한이 꺼져 있어요. 설정 > 곰브릭 > 카메라에서 켜주세요.",
+    "photoLibraryPermissionDenied": "사진 보관함 권한이 꺼져 있어요. 설정 > 곰브릭 > 사진에서 켜주세요.",
     "offlineNotice": "오프라인 - 저장된 컬렉션을 표시합니다"
   },
   "topMenu": {

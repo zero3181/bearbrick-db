@@ -13,6 +13,8 @@
     "linkCopied": "已复制链接",
     "takePhoto": "拍照",
     "chooseFromLibrary": "从相册选择",
+    "cameraPermissionDenied": "相机权限已关闭，请在 设置 > GomBrick > 相机 中开启。",
+    "photoLibraryPermissionDenied": "照片权限已关闭，请在 设置 > GomBrick > 照片 中开启。",
     "offlineNotice": "离线 - 显示已保存的收藏"
   },
   "topMenu": {

@@ -13,6 +13,8 @@
     "linkCopied": "Link copied",
     "takePhoto": "Take a photo",
     "chooseFromLibrary": "Choose from library",
+    "cameraPermissionDenied": "Camera access is off. Turn it on in Settings > GomBrick > Camera.",
+    "photoLibraryPermissionDenied": "Photo library access is off. Turn it on in Settings > GomBrick > Photos.",
     "offlineNotice": "Offline - showing your saved collection"
   },
   "topMenu": {

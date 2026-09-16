@@ -735,13 +735,13 @@ export default function BearbrickDetailPage() {
               </div>
               <div>
                 <label className="block font-semibold mb-1">{t('newImageLabel')}</label>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col items-start gap-3">
                   <PhotoInput
                     onSelect={handleRequestImageSelect}
                     label={requestImagePreview ? t('changeImage') : t('attachImage')}
                   />
                   {requestImagePreview && (
-                    <img src={requestImagePreview} alt="" className="w-12 h-12 object-cover object-top rounded" />
+                    <img src={requestImagePreview} alt="" className="w-40 h-40 object-cover object-top rounded-lg border border-gray-200" />
                   )}
                 </div>
               </div>

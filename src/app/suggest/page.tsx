@@ -216,13 +216,13 @@ export default function SuggestBearbrickPage() {
             </div>
             <div>
               <label className="block font-semibold mb-1">{t('imageLabel')}</label>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col items-start gap-3">
                 <PhotoInput
                   onSelect={handleImageSelect}
                   label={imagePreview ? t('changeImage') : t('attachImage')}
                 />
                 {imagePreview && (
-                  <img src={imagePreview} alt="" className="w-12 h-12 object-cover object-top rounded" />
+                  <img src={imagePreview} alt="" className="w-40 h-40 object-cover object-top rounded-lg border border-gray-200" />
                 )}
               </div>
             </div>

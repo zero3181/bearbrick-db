@@ -72,16 +72,32 @@ function isDismissal(error: unknown) {
   return /cancel/i.test(message)
 }
 
+export class CameraPermissionDeniedError extends Error {}
+
 /**
  * Captures a photo with the device camera, or picks one from the library, and
  * hands it back as a File so it can go through the same compress-and-upload
  * path as a browser file input. Returns null on the web, or if the user backs
- * out of the camera.
+ * out of the picker. Throws CameraPermissionDeniedError if the OS-level
+ * permission was already refused, so the caller can point someone at
+ * Settings instead of a button that looks like it does nothing.
  */
 export async function capturePhoto(source: 'camera' | 'photos'): Promise<File | null> {
   if (!isNative()) return null
+  const { Camera, CameraResultType, CameraSource } = await import('@capacitor/camera')
+
+  // getPhoto() would otherwise fail the exact same way - no dialog, no
+  // error message a caller can tell apart from "user cancelled" - whether
+  // permission was never asked or was already refused. Checking first lets
+  // the caller tell someone who has already said no to go flip it back on
+  // in Settings, instead of the button looking like it does nothing.
+  const permissionKey = source === 'camera' ? 'camera' : 'photos'
+  const status = await Camera.checkPermissions()
+  if (status[permissionKey] === 'denied') {
+    throw new CameraPermissionDeniedError(permissionKey)
+  }
+
   try {
-    const { Camera, CameraResultType, CameraSource } = await import('@capacitor/camera')
     const photo = await Camera.getPhoto({
       quality: 85,
       // This app points the WebView at the live site (server.url) rather
