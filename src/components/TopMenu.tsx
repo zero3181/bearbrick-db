@@ -1,11 +1,10 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { useSession, signOut } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
-import LanguageSwitcher from './LanguageSwitcher'
-import { signInWithGoogle, signOutFromGoogle } from '@/lib/nativeAuth'
+import { signInWithGoogle } from '@/lib/nativeAuth'
 
 function MenuLink({ href, onClick, children }: { href: string; onClick: () => void; children: React.ReactNode }) {
   return (
@@ -22,10 +21,6 @@ export default function TopMenu() {
   const isAdmin = session?.user?.role === 'ADMIN' || session?.user?.role === 'OWNER'
   const [open, setOpen] = useState(false)
   const [pendingCount, setPendingCount] = useState(0)
-  const [nickname, setNickname] = useState('')
-  const [showCredit, setShowCredit] = useState(false)
-  const [savingProfile, setSavingProfile] = useState(false)
-  const [deletingAccount, setDeletingAccount] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
   const fetchPendingCount = async () => {
@@ -40,65 +35,9 @@ export default function TopMenu() {
     }
   }
 
-  const fetchProfile = async () => {
-    try {
-      const res = await fetch('/api/profile')
-      if (res.ok) {
-        const data = await res.json()
-        setNickname(data.nickname || '')
-        setShowCredit(Boolean(data.showCredit))
-      }
-    } catch (error) {
-      console.error('Failed to fetch profile:', error)
-    }
-  }
-
-  const saveProfile = async (next: { nickname: string; showCredit: boolean }) => {
-    setSavingProfile(true)
-    try {
-      const res = await fetch('/api/profile', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(next),
-      })
-      if (res.ok) {
-        const data = await res.json()
-        setNickname(data.nickname || '')
-        setShowCredit(Boolean(data.showCredit))
-      }
-    } catch (error) {
-      console.error('Failed to save profile:', error)
-    } finally {
-      setSavingProfile(false)
-    }
-  }
-
-  const handleDeleteAccount = async () => {
-    if (!window.confirm(t('deleteAccountConfirm'))) return
-    setDeletingAccount(true)
-    try {
-      const res = await fetch('/api/profile', { method: 'DELETE' })
-      if (!res.ok) throw new Error(`Delete failed with status ${res.status}`)
-      setOpen(false)
-      // Same teardown as logging out - the account is already gone server-side.
-      await signOutFromGoogle()
-      navigator.serviceWorker?.controller?.postMessage('clear-user-data')
-      signOut()
-    } catch (error) {
-      console.error('Failed to delete account:', error)
-      window.alert(t('deleteAccountFailed'))
-      setDeletingAccount(false)
-    }
-  }
-
   useEffect(() => {
     if (isAdmin) fetchPendingCount()
   }, [isAdmin])
-
-  useEffect(() => {
-    if (session) fetchProfile()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.user?.id])
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -134,40 +73,26 @@ export default function TopMenu() {
       {open && (
         <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50">
           {session && (
-            <div className="px-4 py-3 border-b border-gray-100">
-              <div className="flex items-center gap-2 mb-3">
-                {session.user.image && (
-                  <img src={session.user.image} alt="" className="w-8 h-8 rounded-full" />
-                )}
-                <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">{session.user.name}</p>
-                  <p className="text-xs text-gray-500 truncate">{session.user.email}</p>
-                </div>
+            // Nickname, language, account deletion, and logout all live one
+            // level down on /account - this row is the only entry point, so
+            // it needs to look and act like a real button, not decoration.
+            <Link
+              href="/account"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 px-4 py-3 border-b border-gray-100 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+            >
+              {session.user.image && (
+                <img src={session.user.image} alt="" className="w-8 h-8 rounded-full shrink-0" />
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium truncate">{session.user.name}</p>
+                <p className="text-xs text-gray-500 truncate">{session.user.email}</p>
               </div>
-
-              <input
-                type="text"
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                onBlur={() => saveProfile({ nickname, showCredit: nickname ? showCredit : false })}
-                placeholder={t('nicknamePlaceholder')}
-                maxLength={30}
-                disabled={savingProfile}
-                className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded-md mb-1.5"
-              />
-              <label className="flex items-center gap-2 text-xs text-gray-500">
-                <input
-                  type="checkbox"
-                  checked={showCredit}
-                  disabled={!nickname || savingProfile}
-                  onChange={(e) => saveProfile({ nickname, showCredit: e.target.checked })}
-                />
-                {t('showCreditOnSubmissions')}
-              </label>
-            </div>
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" className="shrink-0 text-gray-300">
+                <path d="M7.5 4.5L13 10l-5.5 5.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </Link>
           )}
-
-          <LanguageSwitcher />
 
           {session && (
             <MenuLink href="/my-collection" onClick={() => setOpen(false)}>
@@ -187,32 +112,7 @@ export default function TopMenu() {
           )}
           <MenuLink href="/about" onClick={() => setOpen(false)}>{t('about')}</MenuLink>
 
-          {session ? (
-            <button
-              onClick={async () => {
-                setOpen(false)
-                // Drop the device's Google session first; signOut() navigates
-                // away and would cut this short if it ran the other way round.
-                await signOutFromGoogle()
-                // The offline cache holds this account's collection.
-                navigator.serviceWorker?.controller?.postMessage('clear-user-data')
-                signOut()
-              }}
-              className="w-full text-left px-4 py-2 text-base text-red-600 hover:bg-gray-50"
-            >
-              {tc('logOut')}
-            </button>
-          ) : null}
-
-          {session ? (
-            <button
-              onClick={handleDeleteAccount}
-              disabled={deletingAccount}
-              className="w-full text-left px-4 py-2 text-xs text-gray-400 hover:bg-gray-50 disabled:opacity-50"
-            >
-              {t('deleteAccount')}
-            </button>
-          ) : (
+          {!session && (
             <>
               <button
                 onClick={() => {

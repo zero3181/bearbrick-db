@@ -29,10 +29,13 @@
     "manageUsers": "사용자 관리",
     "suggestABearbrick": "베어브릭 제안하기",
     "about": "소개",
+    "language": "언어",
+    "myCollectionStats": "마이 컬렉션"
+  },
+  "account": {
+    "pageTitle": "계정",
     "nicknamePlaceholder": "닉네임 (선택)",
     "showCreditOnSubmissions": "제출물에 닉네임 표시",
-    "language": "언어",
-    "myCollectionStats": "마이 컬렉션",
     "deleteAccount": "계정 삭제",
     "deleteAccountConfirm": "계정을 삭제하면 프로필과 내 컬렉션이 영구적으로 삭제되며 되돌릴 수 없습니다. 계속하시겠습니까?",
     "deleteAccountFailed": "계정 삭제에 실패했습니다. 다시 시도해 주세요."

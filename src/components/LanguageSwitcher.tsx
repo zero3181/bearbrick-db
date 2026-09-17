@@ -23,7 +23,7 @@ export default function LanguageSwitcher() {
   }
 
   return (
-    <div className="px-4 py-3 border-b border-gray-100">
+    <div className="p-4">
       <div className="flex items-center gap-1.5 mb-2 text-xs font-semibold text-gray-400">
         <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
           <circle cx="10" cy="10" r="7.5" stroke="currentColor" strokeWidth="1.3" />

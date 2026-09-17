@@ -29,10 +29,13 @@
     "manageUsers": "用户管理",
     "suggestABearbrick": "建议添加 Bearbrick",
     "about": "关于",
+    "language": "语言",
+    "myCollectionStats": "我的收藏"
+  },
+  "account": {
+    "pageTitle": "账户",
     "nicknamePlaceholder": "昵称（可选）",
     "showCreditOnSubmissions": "在提交内容中显示我的昵称",
-    "language": "语言",
-    "myCollectionStats": "我的收藏",
     "deleteAccount": "删除账户",
     "deleteAccountConfirm": "删除账户将永久删除您的个人资料和收藏，且无法恢复。是否继续？",
     "deleteAccountFailed": "删除账户失败，请重试。"
