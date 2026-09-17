@@ -29,10 +29,13 @@
     "manageUsers": "ユーザー管理",
     "suggestABearbrick": "ベアブリックを提案する",
     "about": "このサイトについて",
+    "language": "言語",
+    "myCollectionStats": "マイコレクション"
+  },
+  "account": {
+    "pageTitle": "アカウント",
     "nicknamePlaceholder": "ニックネーム（任意）",
     "showCreditOnSubmissions": "投稿にニックネームを表示する",
-    "language": "言語",
-    "myCollectionStats": "マイコレクション",
     "deleteAccount": "アカウントを削除",
     "deleteAccountConfirm": "アカウントを削除すると、プロフィールとコレクションが完全に削除され、元に戻せません。続行しますか？",
     "deleteAccountFailed": "アカウントの削除に失敗しました。もう一度お試しください。"
