@@ -1,4 +1,6 @@
+import { Suspense } from 'react'
 import HomeClient from './HomeClient'
+import HomeSkeleton from '@/components/HomeSkeleton'
 import { listBearbricks, listCategories, listSeriesWithCounts } from '@/lib/queries'
 
 /**
@@ -12,8 +14,21 @@ import { listBearbricks, listCategories, listSeriesWithCounts } from '@/lib/quer
  * Rendered per request rather than cached: reading the locale cookie makes
  * this route dynamic anyway, and an admin's edit should show up immediately
  * rather than after a revalidation window.
+ *
+ * The queries themselves still take a moment (cold Vercel function, a couple
+ * of DB round trips) - wrapping them in Suspense lets Next stream the shell
+ * below immediately instead of holding the whole response until they finish,
+ * so a cold launch shows the skeleton instead of a blank screen.
  */
-export default async function HomePage() {
+export default function HomePage() {
+  return (
+    <Suspense fallback={<HomeSkeleton />}>
+      <HomeData />
+    </Suspense>
+  )
+}
+
+async function HomeData() {
   const [series, categories] = await Promise.all([listSeriesWithCounts(), listCategories()])
   // The client defaults to the newest series unless the URL or this session's
   // last choice says otherwise, so that's what gets rendered ahead of time.
