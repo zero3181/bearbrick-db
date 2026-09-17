@@ -25,6 +25,7 @@ export default function TopMenu() {
   const [nickname, setNickname] = useState('')
   const [showCredit, setShowCredit] = useState(false)
   const [savingProfile, setSavingProfile] = useState(false)
+  const [deletingAccount, setDeletingAccount] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
   const fetchPendingCount = async () => {
@@ -69,6 +70,24 @@ export default function TopMenu() {
       console.error('Failed to save profile:', error)
     } finally {
       setSavingProfile(false)
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    if (!window.confirm(t('deleteAccountConfirm'))) return
+    setDeletingAccount(true)
+    try {
+      const res = await fetch('/api/profile', { method: 'DELETE' })
+      if (!res.ok) throw new Error(`Delete failed with status ${res.status}`)
+      setOpen(false)
+      // Same teardown as logging out - the account is already gone server-side.
+      await signOutFromGoogle()
+      navigator.serviceWorker?.controller?.postMessage('clear-user-data')
+      signOut()
+    } catch (error) {
+      console.error('Failed to delete account:', error)
+      window.alert(t('deleteAccountFailed'))
+      setDeletingAccount(false)
     }
   }
 
@@ -182,6 +201,16 @@ export default function TopMenu() {
               className="w-full text-left px-4 py-2 text-base text-red-600 hover:bg-gray-50"
             >
               {tc('logOut')}
+            </button>
+          ) : null}
+
+          {session ? (
+            <button
+              onClick={handleDeleteAccount}
+              disabled={deletingAccount}
+              className="w-full text-left px-4 py-2 text-xs text-gray-400 hover:bg-gray-50 disabled:opacity-50"
+            >
+              {t('deleteAccount')}
             </button>
           ) : (
             <>
