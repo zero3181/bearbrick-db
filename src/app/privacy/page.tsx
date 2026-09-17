@@ -53,9 +53,17 @@ export default async function PrivacyPage() {
           <p className="text-gray-600 leading-relaxed mt-2">{t('noSale')}</p>
         </section>
 
-        <section className="mt-8">
+        <section id="account-deletion" className="mt-8 scroll-mt-20">
           <h2 className="text-lg font-bold text-gray-900 mb-3">{t('retentionTitle')}</h2>
-          <p className="text-gray-600 leading-relaxed">{t('retentionBody')}</p>
+          <p className="text-gray-600 leading-relaxed mb-3">{t('retentionIntro')}</p>
+          <ol className="space-y-1.5 text-gray-600 leading-relaxed list-decimal list-inside mb-3">
+            <li>{t('retentionStep1')}</li>
+            <li>{t('retentionStep2')}</li>
+            <li>{t('retentionStep3')}</li>
+          </ol>
+          <p className="text-gray-600 leading-relaxed mb-2">{t('retentionDeleted')}</p>
+          <p className="text-gray-600 leading-relaxed mb-2">{t('retentionKept')}</p>
+          <p className="text-gray-600 leading-relaxed">{t('retentionContact')}</p>
         </section>
 
         <section className="mt-8">
