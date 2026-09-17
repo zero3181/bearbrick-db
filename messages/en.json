@@ -32,7 +32,10 @@
     "nicknamePlaceholder": "Nickname (optional)",
     "showCreditOnSubmissions": "Show my nickname on submissions",
     "language": "Language",
-    "myCollectionStats": "My Collection"
+    "myCollectionStats": "My Collection",
+    "deleteAccount": "Delete Account",
+    "deleteAccountConfirm": "Deleting your account permanently removes your profile and collection. This can't be undone. Continue?",
+    "deleteAccountFailed": "Failed to delete account. Please try again."
   },
   "home": {
     "myCollection": "My Collection",

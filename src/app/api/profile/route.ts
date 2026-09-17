@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireUser } from '@/lib/serverAuth'
+import { getOrCreateDeletedUserId } from '@/lib/deletedUser'
 
 export async function GET(request: NextRequest) {
   const session = await requireUser(request)
@@ -42,4 +43,32 @@ export async function PATCH(request: NextRequest) {
   })
 
   return NextResponse.json(user)
+}
+
+export async function DELETE(request: NextRequest) {
+  const session = await requireUser(request)
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const userId = session.user.id
+  const deletedUserId = await getOrCreateDeletedUserId()
+
+  // Reassign the content this user contributed to the shared database
+  // before deleting them - Account, Session, and CollectionItem cascade
+  // automatically via the schema, but Bearbrick/BearbrickImage/edit_requests/
+  // image_requests/user_submitted_images don't, and are meant to survive.
+  await prisma.$transaction([
+    prisma.bearbrick.updateMany({ where: { createdById: userId }, data: { createdById: deletedUserId } }),
+    prisma.bearbrickImage.updateMany({ where: { uploadedById: userId }, data: { uploadedById: deletedUserId } }),
+    prisma.edit_requests.updateMany({ where: { requestedById: userId }, data: { requestedById: deletedUserId } }),
+    prisma.edit_requests.updateMany({ where: { reviewedById: userId }, data: { reviewedById: deletedUserId } }),
+    prisma.image_requests.updateMany({ where: { requestedById: userId }, data: { requestedById: deletedUserId } }),
+    prisma.image_requests.updateMany({ where: { reviewedById: userId }, data: { reviewedById: deletedUserId } }),
+    prisma.user_submitted_images.updateMany({ where: { submittedById: userId }, data: { submittedById: deletedUserId } }),
+    prisma.user_submitted_images.updateMany({ where: { reviewedById: userId }, data: { reviewedById: deletedUserId } }),
+    prisma.user.delete({ where: { id: userId } }),
+  ])
+
+  return new NextResponse(null, { status: 204 })
 }
