@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import TopMenu from '@/components/TopMenu'
+import pkg from '../../../package.json'
 
 export default async function AboutPage() {
   const t = await getTranslations('about')
@@ -47,6 +48,10 @@ export default async function AboutPage() {
             })}
           </p>
         </section>
+
+        {/* Read from package.json, the one place the version is written, so
+            this always matches what the stores are serving. */}
+        <p className="mt-8 text-sm text-gray-400">{t('version', { version: pkg.version })}</p>
       </main>
     </div>
   )

@@ -131,7 +131,8 @@
     "foundWrongTitle": "間違いを見つけましたか？",
     "foundWrongBody": "誰でもログインして、製品詳細ページから修正をリクエストできます。リクエストは管理者の確認後に反映されます。",
     "contactTitle": "お問い合わせ",
-    "contactBody": "不具合報告やご提案など、どんな内容でも <email>my@favorite.kr</email> までご連絡ください。"
+    "contactBody": "不具合報告やご提案など、どんな内容でも <email>my@favorite.kr</email> までご連絡ください。",
+    "version": "バージョン {version}"
   },
   "myCollectionStats": {
     "pageTitle": "マイコレクション",

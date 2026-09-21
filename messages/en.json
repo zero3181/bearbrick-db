@@ -131,7 +131,8 @@
     "foundWrongTitle": "Found something wrong?",
     "foundWrongBody": "Anyone can sign in and request a correction from a product's detail page. Requests are reviewed by an admin before they take effect.",
     "contactTitle": "Contact",
-    "contactBody": "For bug reports, suggestions, or anything else, reach out at <email>my@favorite.kr</email>."
+    "contactBody": "For bug reports, suggestions, or anything else, reach out at <email>my@favorite.kr</email>.",
+    "version": "Version {version}"
   },
   "myCollectionStats": {
     "pageTitle": "My Collection",

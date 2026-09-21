@@ -1,5 +1,11 @@
 apply plugin: 'com.android.application'
 
+// The version people see is written once, in package.json, and read from
+// there by the web app, this build and the iOS project - so the About page
+// and the store listing can't drift apart. versionCode is separate: Play
+// needs a number that only ever goes up, and nobody sees it.
+def packageJson = new groovy.json.JsonSlurper().parse(rootProject.file('../package.json'))
+
 // The upload key and its passwords stay out of the repository: the keystore in
 // D:devkeys, the passwords in android/keystore.properties (git-ignored).
 // Without that file a release build still assembles, just unsigned, so a
@@ -18,7 +24,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 3
-        versionName "1.0.1"
+        versionName packageJson.version
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.

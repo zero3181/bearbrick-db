@@ -131,7 +131,8 @@
     "foundWrongTitle": "发现问题了吗？",
     "foundWrongBody": "任何人登录后都可以在产品详情页申请更正。申请将由管理员审核后生效。",
     "contactTitle": "联系方式",
-    "contactBody": "如有错误报告、建议或其他任何问题，请联系 <email>my@favorite.kr</email>。"
+    "contactBody": "如有错误报告、建议或其他任何问题，请联系 <email>my@favorite.kr</email>。",
+    "version": "版本 {version}"
   },
   "myCollectionStats": {
     "pageTitle": "我的收藏",
