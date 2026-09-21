@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
 
 /**
@@ -39,8 +40,17 @@ export default function ReviewSignInPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-4 pt-[env(safe-area-inset-top)]">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm">
+    <div className="min-h-screen bg-white px-4 pt-[env(safe-area-inset-top)]">
+      {/* The app's WebView has no address bar or back button of its own, so
+          without this the page is a dead end for anyone who opens it by
+          mistake. */}
+      <header className="py-4">
+        <Link href="/" className="text-sm text-gray-500 hover:text-gray-900">
+          &larr; Back
+        </Link>
+      </header>
+
+      <form onSubmit={handleSubmit} className="w-full max-w-sm mx-auto pt-8">
         <h1 className="text-xl font-bold text-gray-900 mb-1">App Review sign-in</h1>
         <p className="text-sm text-gray-500 mb-6">
           For Apple and Google reviewers. Everyone else should sign in with Google.

@@ -51,6 +51,12 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  // Hidden in the UI for these roles, and refused here too: the button is
+  // not the only way to reach this endpoint.
+  if (session.user.role === 'ADMIN' || session.user.role === 'OWNER') {
+    return NextResponse.json({ error: 'Admin accounts cannot be deleted here' }, { status: 403 })
+  }
+
   const userId = session.user.id
   const deletedUserId = await getOrCreateDeletedUserId()
 

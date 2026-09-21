@@ -11,6 +11,7 @@ import { signOutFromGoogle } from '@/lib/nativeAuth'
 
 export default function AccountPage() {
   const { data: session, status } = useSession()
+  const isAdmin = session?.user?.role === 'ADMIN' || session?.user?.role === 'OWNER'
   const router = useRouter()
   const t = useTranslations('account')
   const tc = useTranslations('common')
@@ -149,13 +150,19 @@ export default function AccountPage() {
           >
             {tc('logOut')}
           </button>
-          <button
-            onClick={handleDeleteAccount}
-            disabled={deletingAccount}
-            className="w-full text-left px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
-          >
-            {t('deleteAccount')}
-          </button>
+          {/* Admins and the owner keep the catalogue running - losing one
+              would leave submissions with nobody to approve them - and the
+              owner is promoted back by email on the next sign-in anyway, so
+              deleting it would not even stick. */}
+          {!isAdmin && (
+            <button
+              onClick={handleDeleteAccount}
+              disabled={deletingAccount}
+              className="w-full text-left px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
+            >
+              {t('deleteAccount')}
+            </button>
+          )}
         </section>
       </main>
     </div>
