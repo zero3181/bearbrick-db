@@ -416,6 +416,20 @@ function HomePageInner({ initial }: { initial: InitialData }) {
     }
   }
 
+  // A Basic-group card on screen is one collapsed representative (always the
+  // "B" letter, or the secret set's representative record) - checking
+  // collectionIds against just that one id misses ownership of every other
+  // letter in the set. Check the whole group instead, the same way the
+  // on-card owned-count badge already does.
+  const isBearbrickOwned = (b: Bearbrick) => {
+    if (b.category?.name === 'Basic') {
+      const groupKey = `${b.series?.id ?? 'none'}:${b.isSecret}`
+      const ids = basicIdsByGroupKey.get(groupKey) ?? []
+      return ids.some((id) => collectionIds.has(id))
+    }
+    return collectionIds.has(b.id)
+  }
+
   const filteredBearbricks = sortedBearbricks
     .filter((b) => {
       if (selectedCategory === 'all') return true
@@ -425,7 +439,7 @@ function HomePageInner({ initial }: { initial: InitialData }) {
       if (selectedCategory === 'Secret') return b.isSecret
       return b.category?.name === selectedCategory
     })
-    .filter((b) => !myCollectionOnly || collectionIds.has(b.id))
+    .filter((b) => !myCollectionOnly || isBearbrickOwned(b))
 
   // Hand the on-screen order to the detail pages so they can page through
   // it. Keyed off the joined ids because filteredBearbricks is rebuilt on
