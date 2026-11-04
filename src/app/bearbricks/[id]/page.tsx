@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
-import { upload } from '@vercel/blob/client'
+import { uploadImage } from '@/lib/uploadImage'
 import TopMenu from '@/components/TopMenu'
 import BearbrickThumb from '@/components/BearbrickThumb'
 import Skeleton from '@/components/Skeleton'
@@ -336,10 +336,7 @@ export default function BearbrickDetailPage() {
 
       if (requestImageFile) {
         const ext = requestImageFile.name.split('.').pop() || 'jpg'
-        const blob = await upload(`request-${bearbrick.id}-${Date.now()}.${ext}`, requestImageFile, {
-          access: 'public',
-          handleUploadUrl: '/api/upload/presigned',
-        })
+        const blob = await uploadImage(`request-${bearbrick.id}-${Date.now()}.${ext}`, requestImageFile)
         imageUrl = blob.url
       }
 

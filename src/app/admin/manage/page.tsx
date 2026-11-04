@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
-import { upload } from '@vercel/blob/client'
+import { uploadImage } from '@/lib/uploadImage'
 import TopMenu from '@/components/TopMenu'
 import AdminTabs from '@/components/AdminTabs'
 import BearbrickThumb from '@/components/BearbrickThumb'
@@ -178,9 +178,7 @@ function AdminManagePageInner() {
           const ext = imageFile.name.split('.').pop() || 'jpg'
           const filename = `bearbrick-${created.id}-${Date.now()}.${ext}`
 
-          const blob = await upload(filename, imageFile, {
-            access: 'public',
-            handleUploadUrl: '/api/upload/presigned',
+          const blob = await uploadImage(filename, imageFile, {
             onUploadProgress: (progress) => {
               setUploadProgress(Math.round((progress.loaded / progress.total) * 100))
             },

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
-import { upload } from '@vercel/blob/client'
+import { uploadImage } from '@/lib/uploadImage'
 import TopMenu from '@/components/TopMenu'
 import { compressImage } from '@/lib/compressImage'
 import PhotoInput from '@/components/PhotoInput'
@@ -64,10 +64,7 @@ export default function SuggestBearbrickPage() {
       let imageUrl: string | null = null
       if (imageFile) {
         const ext = imageFile.name.split('.').pop() || 'jpg'
-        const blob = await upload(`suggestion-${Date.now()}.${ext}`, imageFile, {
-          access: 'public',
-          handleUploadUrl: '/api/upload/presigned',
-        })
+        const blob = await uploadImage(`suggestion-${Date.now()}.${ext}`, imageFile)
         imageUrl = blob.url
       }
 

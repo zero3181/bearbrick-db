@@ -1,6 +1,7 @@
-import { put } from '@vercel/blob'
+import { DeleteObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3'
 import sharp from 'sharp'
 import { prisma } from '@/lib/prisma'
+import { r2, R2_BUCKET, r2PublicUrl } from '@/lib/r2'
 
 const TARGET_W = 900
 const TARGET_H = 1200
@@ -63,11 +64,18 @@ export async function normalizeImageInBackground(imageId: string, sourceUrl: str
     if (!res.ok) throw new Error(`fetch ${res.status}`)
     const buf = Buffer.from(await res.arrayBuffer())
     const normalized = await normalize(buf)
-    const blob = await put(`bearbrick-${bearbrickId}-normalized-${Date.now()}.jpg`, normalized, {
-      access: 'public',
-      token: process.env.BLOB_READ_WRITE_TOKEN,
-    })
-    await prisma.bearbrickImage.update({ where: { id: imageId }, data: { url: blob.url } })
+    // A new key, not an overwrite of the original: Cloudflare's edge cache
+    // would otherwise keep serving the pre-normalized bytes under the old
+    // URL for up to its cache lifetime. The original key is deleted right
+    // after, so it doesn't linger as an orphan either way.
+    const key = `bearbrick-${bearbrickId}-normalized-${Date.now()}.jpg`
+    await r2.send(new PutObjectCommand({ Bucket: R2_BUCKET, Key: key, Body: normalized, ContentType: 'image/jpeg' }))
+    await prisma.bearbrickImage.update({ where: { id: imageId }, data: { url: r2PublicUrl(key) } })
+
+    const oldKey = new URL(sourceUrl).pathname.replace(/^\//, '')
+    if (oldKey !== key) {
+      await r2.send(new DeleteObjectCommand({ Bucket: R2_BUCKET, Key: oldKey }))
+    }
   } catch (error) {
     console.error(`Failed to normalize image ${imageId}:`, error)
   }

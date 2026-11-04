@@ -1,6 +1,7 @@
-import { put } from '@vercel/blob'
+import { PutObjectCommand } from '@aws-sdk/client-s3'
 import { NextRequest, NextResponse } from 'next/server'
 import { requireUser } from '@/lib/serverAuth'
+import { r2, R2_BUCKET, r2PublicUrl } from '@/lib/r2'
 
 const EXTENSIONS: Record<string, string> = {
   'image/jpeg': 'jpg',
@@ -52,12 +53,9 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const blob = await put(`upload-${crypto.randomUUID()}.${EXTENSIONS[type]}`, bytes, {
-      access: 'public',
-      contentType: type,
-      token: process.env.BLOB_READ_WRITE_TOKEN,
-    })
-    return NextResponse.json({ url: blob.url })
+    const key = `upload-${crypto.randomUUID()}.${EXTENSIONS[type]}`
+    await r2.send(new PutObjectCommand({ Bucket: R2_BUCKET, Key: key, Body: bytes, ContentType: type }))
+    return NextResponse.json({ url: r2PublicUrl(key) })
   } catch (error) {
     console.error('Mobile image upload failed:', error)
     return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
