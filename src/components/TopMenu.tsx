@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { signInWithGoogle } from '@/lib/nativeAuth'
+import { setAppBadge } from '@/lib/native'
 
 function MenuLink({ href, onClick, children }: { href: string; onClick: () => void; children: React.ReactNode }) {
   return (
@@ -28,7 +29,9 @@ export default function TopMenu() {
       const res = await fetch('/api/admin/edit-requests')
       if (res.ok) {
         const data = await res.json()
-        setPendingCount(Array.isArray(data) ? data.length : 0)
+        const count = Array.isArray(data) ? data.length : 0
+        setPendingCount(count)
+        setAppBadge(count)
       }
     } catch (error) {
       console.error('Failed to fetch pending edit requests:', error)
@@ -36,7 +39,13 @@ export default function TopMenu() {
   }
 
   useEffect(() => {
-    if (isAdmin) fetchPendingCount()
+    if (isAdmin) {
+      fetchPendingCount()
+    } else {
+      // A non-admin session (or a logout) must not leave a stale badge
+      // behind from whoever used this device last.
+      setAppBadge(0)
+    }
   }, [isAdmin])
 
   useEffect(() => {

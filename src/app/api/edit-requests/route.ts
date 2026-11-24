@@ -47,6 +47,11 @@ export async function POST(request: NextRequest) {
         description: true,
         isSecret: true,
         rarityPercentage: true,
+        images: {
+          where: { isPrimary: true },
+          select: { url: true },
+          take: 1,
+        },
       },
     })
 
@@ -68,6 +73,7 @@ export async function POST(request: NextRequest) {
           description: bearbrick.description,
           isSecret: bearbrick.isSecret,
           rarityPercentage: bearbrick.rarityPercentage,
+          imageUrl: bearbrick.images[0]?.url ?? null,
         },
         newData,
         updatedAt: new Date(),

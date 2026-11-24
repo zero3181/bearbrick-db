@@ -160,9 +160,13 @@ export default function AdminRequestsPage() {
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <div className="flex items-center gap-2">
-                    {req.type === 'NEW_ITEM' && (
+                    {req.type === 'NEW_ITEM' ? (
                       <span className="inline-block px-2 py-0.5 text-xs font-semibold rounded-full bg-green-50 text-green-700">
                         신규
+                      </span>
+                    ) : (
+                      <span className="inline-block px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-50 text-blue-700">
+                        수정
                       </span>
                     )}
                     {req.bearbricks ? (
@@ -208,11 +212,48 @@ export default function AdminRequestsPage() {
                 />
               </div>
 
-              {req.newData.imageUrl && (
-                <div className="mb-4">
-                  <p className="text-sm text-gray-500 mb-1">첨부 이미지</p>
-                  <img src={req.newData.imageUrl} alt="" className="w-32 h-32 object-cover object-top rounded border" />
-                </div>
+              {req.type === 'NEW_ITEM' ? (
+                req.newData.imageUrl && (
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-500 mb-1">첨부 이미지</p>
+                    <img src={req.newData.imageUrl} alt="" className="w-32 h-32 object-cover object-top rounded border" />
+                  </div>
+                )
+              ) : (
+                (req.oldData?.imageUrl || req.newData.imageUrl) && (
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-500 mb-1">이미지</p>
+                    <div className="flex items-center gap-3">
+                      <div className="text-center">
+                        {req.oldData?.imageUrl ? (
+                          <img
+                            src={req.oldData.imageUrl}
+                            alt=""
+                            className="w-32 h-32 object-cover object-top rounded border"
+                          />
+                        ) : (
+                          <div className="w-32 h-32 flex items-center justify-center rounded border border-dashed text-xs text-gray-400">
+                            없음
+                          </div>
+                        )}
+                        <p className="text-xs text-gray-400 mt-1">기존</p>
+                      </div>
+                      {req.newData.imageUrl && req.newData.imageUrl !== req.oldData?.imageUrl && (
+                        <>
+                          <span className="text-gray-300">→</span>
+                          <div className="text-center">
+                            <img
+                              src={req.newData.imageUrl}
+                              alt=""
+                              className="w-32 h-32 object-cover object-top rounded border-2 border-blue-500"
+                            />
+                            <p className="text-xs text-blue-600 font-medium mt-1">변경 후</p>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )
               )}
 
               <div className="flex gap-3">

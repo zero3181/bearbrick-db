@@ -72,6 +72,30 @@ function isDismissal(error: unknown) {
   return /cancel/i.test(message)
 }
 
+/**
+ * Sets the app icon badge count (0 clears it). No-op on the web and on
+ * Android launchers that don't support badges - isSupported() covers that,
+ * and a missing OS permission on iOS just leaves the badge unset.
+ */
+export async function setAppBadge(count: number) {
+  if (!isNative()) return
+  try {
+    const { Badge } = await import('@capawesome/capacitor-badge')
+    const { isSupported } = await Badge.isSupported()
+    if (!isSupported) return
+
+    const permission = await Badge.checkPermissions()
+    if (permission.display !== 'granted') {
+      const requested = await Badge.requestPermissions()
+      if (requested.display !== 'granted') return
+    }
+
+    await Badge.set({ count })
+  } catch (error) {
+    console.warn('Failed to set app badge:', error)
+  }
+}
+
 export class CameraPermissionDeniedError extends Error {}
 
 /**
